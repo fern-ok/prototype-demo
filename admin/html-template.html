@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>{{TITLE}}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    /* 全局样式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    #root {
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      height: 100%;
+      min-height: 100vh;
+      overflow: visible;
+    }
+
+    /* 如果是元素演示页面（可能被内嵌到 iframe），设置固定尺寸 */
+    body.is-element-page #root {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* 平板和手机模式隐藏滚动条 */
+    @media (max-width: 1024px) {
+      ::-webkit-scrollbar {
+        display: none;
+      }
+
+      html,
+      body {
+        scrollbar-width: none;
+        /* Firefox */
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <script>
+    // 判断是否为元素演示页面（在 body 加载后执行）
+    (function () {
+      if (document.body && window.location.pathname.includes('/components/')) {
+        document.body.classList.add('is-element-page');
+      } else if (!document.body) {
+        // 如果 body 还没加载，等待 DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function () {
+          if (window.location.pathname.includes('/components/')) {
+            document.body.classList.add('is-element-page');
+          }
+        });
+      }
+    })();
+  </script>
+
+  <div id="root"></div>
+
+  <!-- 加载 bootstrap JS（会自动挂载到 window.HtmlTemplateBootstrap） -->
+  <script type="module" src="{{BOOTSTRAP_PATH}}"></script>
+
+  <script type="module">
+    function waitForBootstrap(timeoutMs = 10000) {
+      return new Promise((resolve, reject) => {
+        const startedAt = Date.now();
+
+        function check() {
+          if (window.HtmlTemplateBootstrap) {
+            resolve(window.HtmlTemplateBootstrap);
+            return;
+          }
+
+          if (Date.now() - startedAt >= timeoutMs) {
+            reject(new Error('[Html Template] Bootstrap 初始化超时'));
+            return;
+          }
+
+          setTimeout(check, 10);
+        }
+
+        check();
+      });
+    }
+
+    function loadEntryScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = false;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`[Html Template] 入口脚本加载失败: ${src}`));
+        document.body.appendChild(script);
+      });
+    }
+
+    async function bootstrapAndRender() {
+      try {
+        const bootstrap = await waitForBootstrap();
+        const { renderComponent, React, ReactDOM } = bootstrap;
+
+        // 将 React 和 ReactDOM 挂载到全局
+        window.React = React;
+        window.ReactDOM = ReactDOM;
+
+        // 加载组件 JS（IIFE 格式，会挂载 UserComponent 到 window）
+        await loadEntryScript('{{ENTRY}}');
+
+        const Component = window.UserComponent?.Component || window.UserComponent?.default || window.UserComponent;
+        if (!Component) {
+          throw new Error('[Html Template] 入口脚本未暴露 UserComponent');
+        }
+
+        // 渲染组件
+        renderComponent(Component);
+      } catch (error) {
+        console.error('[Html Template] 页面初始化失败:', error);
+      }
+    }
+
+    bootstrapAndRender();
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,593 @@
+{
+  "command": "inspect",
+  "generatedAt": "2026-04-01T10:21:53.845Z",
+  "figPath": "scripts/templates/empty-canvas.fig",
+  "archive": {
+    "prelude": "fig-make",
+    "version": 101,
+    "parts": 2
+  },
+  "sourceRoot": "src",
+  "summary": {
+    "totalCodeFiles": 63,
+    "pathCounts": {
+      "(root)": 2,
+      "components": 5,
+      "components/figma": 1,
+      "components/mockups": 5,
+      "components/ui": 48,
+      "guidelines": 1,
+      "styles": 1
+    },
+    "duplicateGroups": []
+  },
+  "entries": [
+    {
+      "nodeChangeIndex": 7,
+      "name": "App.tsx",
+      "codeFilePath": null,
+      "logicalPath": "App.tsx",
+      "sourceCodeSha1": "08dbcc7fa8dfe3f4d85267eaee09a1b86ce3ab3e",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 9,
+      "name": "accordion.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/accordion.tsx",
+      "sourceCodeSha1": "96e2ea4a76d985018b49b3f26c18bd060992ba1c",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 10,
+      "name": "alert-dialog.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/alert-dialog.tsx",
+      "sourceCodeSha1": "4499b93fee3f76e8a2cfee3e04ad9acc14e914f8",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 11,
+      "name": "alert.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/alert.tsx",
+      "sourceCodeSha1": "c4c43c93ca441a0cc96160fcbddc367b42bd0785",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 12,
+      "name": "aspect-ratio.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/aspect-ratio.tsx",
+      "sourceCodeSha1": "da69e8483774b6cb06c9f1109f6c5481846fa373",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 13,
+      "name": "avatar.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/avatar.tsx",
+      "sourceCodeSha1": "acca40a2a8a7b9e8b16d56e34722622875ce9279",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 14,
+      "name": "badge.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/badge.tsx",
+      "sourceCodeSha1": "2bed0297b71935fb53c36665a93713017b4efba0",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 15,
+      "name": "breadcrumb.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/breadcrumb.tsx",
+      "sourceCodeSha1": "2607a19685b58acec5df7cf79cf3f319860f10d0",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 16,
+      "name": "button.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/button.tsx",
+      "sourceCodeSha1": "8cc739da9862b0c46a941f2c2d3c04e88ed14f6e",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 17,
+      "name": "calendar.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/calendar.tsx",
+      "sourceCodeSha1": "dcf6f206c549acd3d3d93938af700040cf4736b3",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 18,
+      "name": "card.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/card.tsx",
+      "sourceCodeSha1": "368b7c30660e2357f967712258eb04a947d105e6",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 19,
+      "name": "carousel.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/carousel.tsx",
+      "sourceCodeSha1": "b18b2ad961ae8df8504cd08af7049da628cfcc84",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 20,
+      "name": "chart.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/chart.tsx",
+      "sourceCodeSha1": "e2fa2b6b71b5b989b07d655d0311b0b656370868",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 21,
+      "name": "checkbox.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/checkbox.tsx",
+      "sourceCodeSha1": "031623c953f24511c2b364736dc0c29bbd72b0da",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 22,
+      "name": "collapsible.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/collapsible.tsx",
+      "sourceCodeSha1": "c4a50eb76c7aa18863f1be0fcfb77a39c555dea5",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 23,
+      "name": "command.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/command.tsx",
+      "sourceCodeSha1": "e2bacd22ead0ead7c35ae4ea81cc063648be5551",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 24,
+      "name": "context-menu.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/context-menu.tsx",
+      "sourceCodeSha1": "dcc0f2c734146df4fdda300fb88fc4b778a8e943",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 25,
+      "name": "dialog.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/dialog.tsx",
+      "sourceCodeSha1": "d2e2d438b7ec8f4655cb363bff0b51c362403679",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 26,
+      "name": "drawer.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/drawer.tsx",
+      "sourceCodeSha1": "77956c0b7663cbe3de836e37395bc58bd441e662",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 27,
+      "name": "dropdown-menu.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/dropdown-menu.tsx",
+      "sourceCodeSha1": "f261713be8c0469a202d6571e667dced43443dc1",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 28,
+      "name": "form.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/form.tsx",
+      "sourceCodeSha1": "b35ebd81d98a9f3a1ab62fba289883715f1d1d21",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 29,
+      "name": "hover-card.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/hover-card.tsx",
+      "sourceCodeSha1": "b72c3f65947cd7593c1a89a354fa1d6c338f36e9",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 30,
+      "name": "input-otp.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/input-otp.tsx",
+      "sourceCodeSha1": "71c2917cc4fe8bb4c80b11323909cf710a93d0c6",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 31,
+      "name": "input.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/input.tsx",
+      "sourceCodeSha1": "e9f0dfef25dba4b04ad97609243106533bc078dc",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 32,
+      "name": "label.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/label.tsx",
+      "sourceCodeSha1": "8c069a29a97703512a9c930d5c4014476834cc96",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 33,
+      "name": "menubar.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/menubar.tsx",
+      "sourceCodeSha1": "ea4c2aa51da161eeb2298dfbc5e70308022214e7",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 34,
+      "name": "navigation-menu.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/navigation-menu.tsx",
+      "sourceCodeSha1": "0d7f19cd8946a82063e8d98d3709903326db0aad",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 35,
+      "name": "pagination.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/pagination.tsx",
+      "sourceCodeSha1": "a259b6b07136d542c95ba8bd37d9337376acf65b",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 36,
+      "name": "popover.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/popover.tsx",
+      "sourceCodeSha1": "762244296d854ac1ba4015cdb7fcbd9db5ef1754",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 37,
+      "name": "progress.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/progress.tsx",
+      "sourceCodeSha1": "1a41de261cc00b1eb94b36077854ad9ed3c18804",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 38,
+      "name": "radio-group.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/radio-group.tsx",
+      "sourceCodeSha1": "650cb3abc42c9a1664e27e7b47eb09b76c6a4e0d",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 39,
+      "name": "resizable.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/resizable.tsx",
+      "sourceCodeSha1": "588fb45baae2adbcec07d32a0e59476878621ca7",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 40,
+      "name": "scroll-area.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/scroll-area.tsx",
+      "sourceCodeSha1": "a86380f1aed911b34917005ba4f9949642910dbf",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 41,
+      "name": "select.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/select.tsx",
+      "sourceCodeSha1": "37fa9c4ceda7950664c385c9ef27ba1bbee47bde",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 42,
+      "name": "separator.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/separator.tsx",
+      "sourceCodeSha1": "979129951eb27258e96545382eaa9e37b9de1209",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 43,
+      "name": "sheet.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/sheet.tsx",
+      "sourceCodeSha1": "4f25f42b08ca91c04c4510cc16eb020a9c7f9587",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 44,
+      "name": "sidebar.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/sidebar.tsx",
+      "sourceCodeSha1": "f79dfb3dbeef2d211510e47f9ac70f5cf33f37cd",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 45,
+      "name": "skeleton.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/skeleton.tsx",
+      "sourceCodeSha1": "0662ecc7ab4b6c1746d91e009ef88d219005448d",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 46,
+      "name": "slider.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/slider.tsx",
+      "sourceCodeSha1": "23b80e2e9a0da874dcf78e56feb54346fe2bd0bb",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 47,
+      "name": "sonner.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/sonner.tsx",
+      "sourceCodeSha1": "72058ff9b056b79f72f79dfbbcf2db164a79e4ab",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 48,
+      "name": "switch.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/switch.tsx",
+      "sourceCodeSha1": "f83deec5e477bd7ca727eea401354d83ff22f6b5",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 49,
+      "name": "table.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/table.tsx",
+      "sourceCodeSha1": "ee1282461b1b247aa28520bb5cd6ce716ac1b468",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 50,
+      "name": "tabs.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/tabs.tsx",
+      "sourceCodeSha1": "40469be2dacfc3fc86909433bafd1d92bf7616d6",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 51,
+      "name": "textarea.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/textarea.tsx",
+      "sourceCodeSha1": "d608dfd62677493c7361908d510ef7d42a49c212",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 52,
+      "name": "toggle-group.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/toggle-group.tsx",
+      "sourceCodeSha1": "7b49c924ad02e9ffc94a0be4fab7f92caab54552",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 53,
+      "name": "toggle.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/toggle.tsx",
+      "sourceCodeSha1": "82d3925cf6ee63d4092d366e01ad478ad7d2f325",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 54,
+      "name": "tooltip.tsx",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/tooltip.tsx",
+      "sourceCodeSha1": "8e78e17fad045f62a35dabc021fb7477849ac93a",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 55,
+      "name": "use-mobile.ts",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/use-mobile.ts",
+      "sourceCodeSha1": "b1102c4af2fef644861e5df108eb5b133dc71805",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 56,
+      "name": "utils.ts",
+      "codeFilePath": "components/ui",
+      "logicalPath": "components/ui/utils.ts",
+      "sourceCodeSha1": "f095b349a6d6cbcbf7bcabdb2f51b3095e7403f0",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 57,
+      "name": "ImageWithFallback.tsx",
+      "codeFilePath": "components/figma",
+      "logicalPath": "components/figma/ImageWithFallback.tsx",
+      "sourceCodeSha1": "e93040f24666348383e937031a95b102570d13ec",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 58,
+      "name": "globals.css",
+      "codeFilePath": "styles",
+      "logicalPath": "styles/globals.css",
+      "sourceCodeSha1": "70abb71fd97a750fb4ba7c1b892f2b70d8d611d5",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 59,
+      "name": "Guidelines.md",
+      "codeFilePath": "guidelines",
+      "logicalPath": "guidelines/Guidelines.md",
+      "sourceCodeSha1": "11f6b0e620fa939a50999dada1539096198d9a3b",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 60,
+      "name": "Dashboard.tsx",
+      "codeFilePath": "components",
+      "logicalPath": "components/Dashboard.tsx",
+      "sourceCodeSha1": "9f8d3c852c0752919d2f1725be3c902902b20971",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 61,
+      "name": "AddExpense.tsx",
+      "codeFilePath": "components",
+      "logicalPath": "components/AddExpense.tsx",
+      "sourceCodeSha1": "dcc8ea2bcab75e0c954784d40e8cbfb2e2ee74b7",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 62,
+      "name": "Analytics.tsx",
+      "codeFilePath": "components",
+      "logicalPath": "components/Analytics.tsx",
+      "sourceCodeSha1": "961d99d46e2e7c2b475a77783a098bd48efc27b8",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 63,
+      "name": "SearchFilter.tsx",
+      "codeFilePath": "components",
+      "logicalPath": "components/SearchFilter.tsx",
+      "sourceCodeSha1": "7dd9d547b69d19e3390564e6387039bc067891af",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 64,
+      "name": "SettingsProfile.tsx",
+      "codeFilePath": "components",
+      "logicalPath": "components/SettingsProfile.tsx",
+      "sourceCodeSha1": "806456c50af5a3f7d302b75a21d9d784f59b4f7d",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 65,
+      "name": "Attributions.md",
+      "codeFilePath": null,
+      "logicalPath": "Attributions.md",
+      "sourceCodeSha1": "4f53c7de5eb7d707eea56961544b22433e1a86a3",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 67,
+      "name": "DashboardMockup.tsx",
+      "codeFilePath": "components/mockups",
+      "logicalPath": "components/mockups/DashboardMockup.tsx",
+      "sourceCodeSha1": "61b29d59129500144886e0cc403f491d49eac3e5",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 68,
+      "name": "AddExpenseMockup.tsx",
+      "codeFilePath": "components/mockups",
+      "logicalPath": "components/mockups/AddExpenseMockup.tsx",
+      "sourceCodeSha1": "e5d430c751a626680cf8bca5411234bb9dfd8adb",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 69,
+      "name": "AnalyticsMockup.tsx",
+      "codeFilePath": "components/mockups",
+      "logicalPath": "components/mockups/AnalyticsMockup.tsx",
+      "sourceCodeSha1": "f94a844fbe540becde9c6314c04867d13b94461c",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 70,
+      "name": "SearchMockup.tsx",
+      "codeFilePath": "components/mockups",
+      "logicalPath": "components/mockups/SearchMockup.tsx",
+      "sourceCodeSha1": "05442b617000ddd07d81961858d1bcd2b13c7509",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    },
+    {
+      "nodeChangeIndex": 71,
+      "name": "SettingsMockup.tsx",
+      "codeFilePath": "components/mockups",
+      "logicalPath": "components/mockups/SettingsMockup.tsx",
+      "sourceCodeSha1": "7a92a34c001a2c6be42031acf36eb657ce3810de",
+      "isDuplicate": false,
+      "duplicateCount": 1
+    }
+  ]
+}

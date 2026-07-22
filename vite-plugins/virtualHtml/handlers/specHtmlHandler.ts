@@ -1,0 +1,187 @@
+import type { IncomingMessage, ServerResponse } from 'http';
+import fs from 'fs';
+import path from 'path';
+import { encodeRoutePath, normalizePath } from './pathNormalizer';
+import { logVirtualHtmlDebug } from '../logger';
+import { buildDocApiPath } from '../../utils/docUtils';
+
+type HtmlResponder = (html: string, transformUrl?: string) => Promise<void>;
+
+export async function handleSpecHtml(
+  req: IncomingMessage,
+  res: ServerResponse,
+  specTemplate: string,
+  respondHtml: HtmlResponder,
+): Promise<boolean> {
+  if (!req.url) return false;
+
+  const rawPathname = req.url.split('?')[0];
+  if (rawPathname === '/markdown-file/spec.html') {
+    let requestedFilePath = '';
+    try {
+      const requestUrl = new URL(req.url, 'http://localhost');
+      requestedFilePath = decodeURIComponent(String(requestUrl.searchParams.get('file') || '').trim());
+    } catch {
+      requestedFilePath = '';
+    }
+
+    const normalizedFilePath = requestedFilePath.replace(/\\/g, '/');
+    if (!normalizedFilePath || !normalizedFilePath.toLowerCase().endsWith('.md')) {
+      return false;
+    }
+
+    const absolutePath = path.isAbsolute(normalizedFilePath)
+      ? path.resolve(normalizedFilePath)
+      : path.resolve(process.cwd(), normalizedFilePath);
+    const projectRoot = process.cwd();
+    const relativePath = path.relative(projectRoot, absolutePath);
+    if (
+      relativePath === '..'
+      || relativePath.startsWith(`..${path.sep}`)
+      || path.isAbsolute(relativePath)
+      || !fs.existsSync(absolutePath)
+    ) {
+      return false;
+    }
+
+    const docLabel = path.basename(normalizedFilePath, path.extname(normalizedFilePath)) || 'Markdown';
+    const specMdUrl = `/api/markdown-file?path=${encodeURIComponent(normalizedFilePath)}`;
+    let html = specTemplate.replace(/\{\{TITLE\}\}/g, `Markdown: ${docLabel}`);
+    html = html.replace(/\{\{SPEC_URL\}\}/g, specMdUrl);
+    html = html.replace(/\{\{DOCS_CONFIG\}\}/g, '[]');
+    html = html.replace(/\{\{MULTI_DOC\}\}/g, 'false');
+
+    await respondHtml(html, req.url);
+    return true;
+  }
+
+  if (rawPathname.startsWith('/docs/') && rawPathname.includes('/assets/')) {
+    return false;
+  }
+
+  // 先尝试标准化路径
+  const normalized = normalizePath(req.url);
+
+  // 只处理文档请求（action === 'spec'）
+  if (normalized && normalized.action === 'spec') {
+    const { type, name, versionId } = normalized;
+
+    logVirtualHtmlDebug('文档请求:', normalized.originalUrl, '→', normalized.normalizedUrl);
+
+    // 处理 prototypes/components/themes 的 spec 请求
+    if (['components', 'prototypes', 'themes'].includes(type)) {
+      let basePath: string;
+      let specMdPath: string;
+      let prdMdPath: string;
+
+      // 如果有版本参数，从 Git 版本目录读取
+      if (versionId) {
+        const gitVersionsDir = path.resolve(process.cwd(), '.git-versions', versionId);
+        basePath = path.join(gitVersionsDir, 'src', type, name);
+        specMdPath = path.join(basePath, 'spec.md');
+        prdMdPath = path.join(basePath, 'prd.md');
+        logVirtualHtmlDebug('从 Git 版本读取:', versionId, basePath);
+      } else {
+        // 否则从当前工作目录读取
+        basePath = path.join(process.cwd(), 'src', type, name);
+        specMdPath = path.join(basePath, 'spec.md');
+        prdMdPath = path.join(basePath, 'prd.md');
+      }
+
+      const typeLabel = type === 'components' ? 'Component' : type === 'prototypes' ? 'Prototype' : 'Theme';
+
+      logVirtualHtmlDebug('检查文档文件:', { specMdPath, prdMdPath });
+      logVirtualHtmlDebug('文件存在:', {
+        spec: fs.existsSync(specMdPath),
+        prd: fs.existsSync(prdMdPath)
+      });
+
+      // 收集所有存在的文档
+      const docs: Array<{ key: string; label: string; url: string }> = [];
+      const urlPath = encodeRoutePath(`/${type}/${name}`);
+
+      if (fs.existsSync(specMdPath)) {
+        const docUrl = versionId
+          ? `/api/git/version-file/${versionId}${urlPath}/spec.md`
+          : `${urlPath}/spec.md`;
+        docs.push({
+          key: 'spec',
+          label: 'Spec',
+          url: docUrl
+        });
+      }
+
+      if (fs.existsSync(prdMdPath)) {
+        const docUrl = versionId
+          ? `/api/git/version-file/${versionId}${urlPath}/prd.md`
+          : `${urlPath}/prd.md`;
+        docs.push({
+          key: 'prd',
+          label: 'PRD',
+          url: docUrl
+        });
+      }
+
+      if (docs.length > 0) {
+        const title = versionId
+          ? `${typeLabel}: ${name} (版本: ${versionId})`
+          : `${typeLabel}: ${name}`;
+        const isMultiDoc = docs.length > 1;
+        const transformUrl = versionId
+          ? `${urlPath}/__axhub_version__/${versionId}/spec.html`
+          : `${urlPath}/spec.html`;
+
+        // 使用 spec-template.html 模板
+        let html = specTemplate.replace(/\{\{TITLE\}\}/g, title);
+
+        if (isMultiDoc) {
+          // 多文档模式
+          const docsConfig = JSON.stringify(docs);
+          html = html.replace(/\{\{SPEC_URL\}\}/g, '');
+          html = html.replace(/\{\{DOCS_CONFIG\}\}/g, docsConfig.replace(/"/g, '&quot;'));
+          html = html.replace(/\{\{MULTI_DOC\}\}/g, 'true');
+          logVirtualHtmlDebug('返回多文档 Spec 虚拟 HTML:', normalized.normalizedUrl, '文档数:', docs.length);
+        } else {
+          // 单文档模式
+          html = html.replace(/\{\{SPEC_URL\}\}/g, docs[0].url);
+          html = html.replace(/\{\{DOCS_CONFIG\}\}/g, '[]');
+          html = html.replace(/\{\{MULTI_DOC\}\}/g, 'false');
+          logVirtualHtmlDebug('返回单文档 Spec 虚拟 HTML:', normalized.normalizedUrl);
+        }
+
+        await respondHtml(html, transformUrl);
+        return true;
+      } else {
+        logVirtualHtmlDebug('没有找到任何文档文件');
+      }
+    }
+
+    // 处理 /docs/* 的 spec 请求
+    if (type === 'docs') {
+      const decodedDocName = decodeURIComponent(name);
+      const mdPath = path.resolve(process.cwd(), 'src/docs', decodedDocName + '.md');
+
+      logVirtualHtmlDebug('检查 docs markdown 文件:', mdPath, '存在:', fs.existsSync(mdPath));
+
+      if (fs.existsSync(mdPath)) {
+        const title = `Docs: ${decodedDocName || 'Index'}`;
+        const specMdUrl = buildDocApiPath(`${decodedDocName}.md`);
+
+        let html = specTemplate.replace(/\{\{TITLE\}\}/g, title);
+        html = html.replace(/\{\{SPEC_URL\}\}/g, specMdUrl);
+        html = html.replace(/\{\{DOCS_CONFIG\}\}/g, '[]');
+        html = html.replace(/\{\{MULTI_DOC\}\}/g, 'false');
+
+        logVirtualHtmlDebug('返回 Docs 虚拟 HTML:', normalized.normalizedUrl);
+
+        const docsTransformUrl = `${encodeRoutePath(`/docs/${decodedDocName}`)}/spec.html`;
+        await respondHtml(html, docsTransformUrl);
+        return true;
+      } else {
+        logVirtualHtmlDebug('docs markdown 不存在:', mdPath);
+      }
+    }
+  }
+
+  return false;
+}

@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "axhub-annotation": [
+        "./vendor/axhub-annotation/dist/index.d.ts"
+      ]
+    }
+  }
+}

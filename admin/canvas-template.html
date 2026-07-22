@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="axhub-canvas-name" content="{{CANVAS_NAME}}">
+  <meta name="axhub-canvas-title" content="{{CANVAS_TITLE}}">
+  <title>Canvas</title>
+  <link rel="stylesheet" href="/assets/vendor-common.css?v=1776173379984">
+  <link rel="stylesheet" href="/assets/canvas-template-bootstrap.css?v=1776173379984">
+  <style>
+    html,
+    body,
+    #canvas-root {
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      overflow: hidden;
+      background: hsl(220 14% 96%);
+    }
+
+    .canvas-template-shell {
+      width: 100%;
+      height: 100%;
+    }
+
+    .canvas-template-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      color: hsl(215 16% 47%);
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="canvas-root">
+    <div class="canvas-template-placeholder">加载画布编辑器...</div>
+  </div>
+
+  <script type="module">
+    import '/@vite/client';
+    import '@vitejs/plugin-react/preamble';
+  </script>
+
+  <script type="module" src="/assets/canvas-template-bootstrap.js?v=1776173379984"></script>
+</body>
+
+</html>

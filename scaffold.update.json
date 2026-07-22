@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "neverOverwrite": [
+    "src/**",
+    "assets/**"
+  ],
+  "alwaysOverwrite": [
+    "src/common/**"
+  ],
+  "conflictCheck": [
+    "package.json"
+  ],
+  "defaultOverwrite": true
+}

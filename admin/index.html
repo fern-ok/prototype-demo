@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico?v=1776173379984">
+  <title>未命名项目 - Axhub Make</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #dfe4f7 0%, #c7c4e8 100%);
+      min-height: 100vh;
+    }
+
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header-title {
+      color: #333;
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin: 0 0 12px 0;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .header-subtitle {
+      color: #999;
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    .main-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      padding: 24px;
+    }
+
+    .api-info-banner {
+      background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
+      border-bottom: 1px solid #91d5ff;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .api-info-banner svg {
+      width: 20px;
+      height: 20px;
+      color: #1890ff;
+    }
+
+    .api-info-text {
+      color: #0050b3;
+      font-size: 14px;
+    }
+
+    .api-link {
+      color: #1890ff;
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 8px;
+    }
+
+    .api-link:hover {
+      text-decoration: underline;
+    }
+
+    .item-name-cell {
+      font-weight: 500;
+      color: #262626;
+    }
+
+    .item-key {
+      color: #8c8c8c;
+      font-size: 13px;
+      font-weight: 400;
+      margin-left: 8px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Ant Design overrides
+    .ant-tabs {
+      padding: 0 24px;
+    }
+
+    .ant-tabs-nav {
+      margin-bottom: 0 !important;
+    }
+
+    .ant-tabs-tab {
+      font-size: 16px;
+      padding: 12px 0;
+    }
+
+    .ant-tabs-content-holder {
+      padding: 24px;
+    }
+
+    .ant-table {
+      font-size: 14px;
+    }
+
+    .ant-btn {
+      font-size: 14px;
+    }
+
+    .ant-empty {
+      padding: 60px 0;
+    }
+
+    .ant-badge-count {
+      background: #1890ff;
+    } */
+
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 400px;
+    }
+
+    /* 表格优化 */
+    /* .ant-table-wrapper {
+      overflow-x: auto;
+    }
+
+    .ant-table-cell {
+      vertical-align: middle !important;
+    } */
+
+    /* 封面图片悬停效果 */
+    .cover-image-container {
+      transition: transform 0.2s ease;
+    }
+
+    .cover-image-container:hover {
+      transform: scale(1.05);
+    }
+
+    /* 代码样式 */
+    code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index.js?v=1776173379984"></script>
+  <link rel="modulepreload" crossorigin href="/assets/chunks/_commonjsHelpers.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/vendor-react.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/spec-template-vendor.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/preload-helper.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/vendor-export.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/_commonjs-dynamic-modules.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/vendor-common.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/AppDialogProvider.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/vendor-antd.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/vendor-genie.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/index-page.helpers.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/url.js?v=1776173379984">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/vendor-assistant.js?v=1776173379984">
+  <link rel="stylesheet" crossorigin href="/assets/AppDialogProvider.css?v=1776173379984">
+  <link rel="stylesheet" crossorigin href="/assets/vendor-common.css?v=1776173379984">
+  <link rel="stylesheet" crossorigin href="/assets/vendor-antd.css?v=1776173379984">
+  <link rel="stylesheet" crossorigin href="/assets/index.css?v=1776173379984">
+</head>
+
+<body>
+  <div id="root"></div>
+</body>
+
+</html>

@@ -1,0 +1,547 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>{{TITLE}}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    html,
+    body {
+       box-sizing: border-box;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      min-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    #root {
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      height: 100%;
+      min-height: 100vh;
+      overflow: visible;
+    }
+
+    /* 如果是元素演示页面（可能被内嵌到 iframe），设置固定尺寸 */
+    body.is-element-page #root {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* 平板和手机模式隐藏滚动条 */
+    @media (max-width: 1024px) {
+      ::-webkit-scrollbar {
+        display: none;
+      }
+
+      html,
+      body {
+        scrollbar-width: none;
+        /* Firefox */
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <script>
+    // 全局错误捕获系统（增强版）
+    (function () {
+      const bootTime = Date.now();
+      const errorQueue = [];
+      let reactReady = false;
+      let fallbackUIShown = false;
+
+      // 保存原始的 console 方法
+      const originalConsoleError = console.error;
+      const originalConsoleWarn = console.warn;
+
+      // 简易版错误显示（降级方案）
+      function showFallbackErrorUI(errors) {
+        if (fallbackUIShown) {
+          // 更新已有的错误列表
+          const errorList = document.getElementById('__fallback_error_list__');
+          if (errorList) {
+            errorList.innerHTML = errors.map((err, idx) => 
+              '<div style="margin-bottom: 12px; padding: 8px; background: #fff1f0; border-left: 3px solid #ff4d4f; border-radius: 2px;">' +
+              '<div style="font-weight: 600; color: #cf1322; margin-bottom: 4px;">[' + (idx + 1) + '] ' + escapeHtml(err.message) + '</div>' +
+              (err.stack ? '<pre style="margin: 0; font-size: 11px; color: #666; overflow-x: auto; white-space: pre-wrap; word-break: break-all;">' + escapeHtml(err.stack) + '</pre>' : '') +
+              '</div>'
+            ).join('');
+          }
+          return;
+        }
+
+        fallbackUIShown = true;
+        const overlay = document.createElement('div');
+        overlay.id = '__fallback_error_overlay__';
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 999999; display: flex; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow: auto;';
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = 'background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 700px; width: 100%; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;';
+        
+        modal.innerHTML = 
+          '<div style="padding: 16px 24px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between;">' +
+          '<div style="display: flex; align-items: center; gap: 8px;">' +
+          '<svg viewBox="64 64 896 896" width="20" height="20" fill="#ff4d4f"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm-32 232c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v272c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8V296zm32 440a48.01 48.01 0 0 1 0-96 48.01 48.01 0 0 1 0 96z"></path></svg>' +
+          '<span style="font-size: 16px; font-weight: 600; color: #262626;">运行时错误 (' + errors.length + ')</span>' +
+          '</div>' +
+          '<button id="__fallback_close__" style="border: none; background: none; cursor: pointer; font-size: 20px; color: #8c8c8c; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">×</button>' +
+          '</div>' +
+          '<div id="__fallback_error_list__" style="padding: 24px; overflow-y: auto; flex: 1;">' +
+          errors.map((err, idx) => 
+            '<div style="margin-bottom: 12px; padding: 8px; background: #fff1f0; border-left: 3px solid #ff4d4f; border-radius: 2px;">' +
+            '<div style="font-weight: 600; color: #cf1322; margin-bottom: 4px;">[' + (idx + 1) + '] ' + escapeHtml(err.message) + '</div>' +
+            (err.stack ? '<pre style="margin: 0; font-size: 11px; color: #666; overflow-x: auto; white-space: pre-wrap; word-break: break-all;">' + escapeHtml(err.stack) + '</pre>' : '') +
+            '</div>'
+          ).join('') +
+          '</div>' +
+          '<div style="padding: 12px 24px; border-top: 1px solid #f0f0f0; display: flex; gap: 8px; justify-content: flex-end;">' +
+          '<button id="__fallback_copy__" style="padding: 6px 16px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; font-size: 14px;">复制错误</button>' +
+          '<button id="__fallback_clear__" style="padding: 6px 16px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; font-size: 14px;">清空并关闭</button>' +
+          '</div>';
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        // 绑定事件
+        document.getElementById('__fallback_close__').onclick = function() {
+          overlay.style.display = 'none';
+        };
+        
+        document.getElementById('__fallback_clear__').onclick = function() {
+          errorQueue.length = 0;
+          document.body.removeChild(overlay);
+          fallbackUIShown = false;
+        };
+        
+        document.getElementById('__fallback_copy__').onclick = function() {
+          const text = errors.map((err, idx) => 
+            '[' + (idx + 1) + '] ' + err.message + '\n' + (err.stack || '无堆栈信息')
+          ).join('\n\n' + '='.repeat(80) + '\n\n');
+          
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+              showFallbackNotice('错误信息已复制到剪贴板');
+            }).catch(function() {
+              showFallbackTextPanel('请手动复制以下错误信息', text);
+            });
+          } else {
+            showFallbackTextPanel('请手动复制以下错误信息', text);
+          }
+        };
+      }
+
+      function showFallbackNotice(message) {
+        const existing = document.getElementById('__fallback_notice__');
+        if (existing) {
+          existing.remove();
+        }
+
+        const notice = document.createElement('div');
+        notice.id = '__fallback_notice__';
+        notice.textContent = message;
+        notice.style.cssText = 'position: fixed; right: 24px; bottom: 24px; z-index: 1000001; max-width: min(360px, calc(100vw - 48px)); padding: 10px 14px; border-radius: 8px; background: rgba(38, 38, 38, 0.92); color: white; font-size: 13px; line-height: 1.5; box-shadow: 0 8px 24px rgba(0,0,0,0.2);';
+        document.body.appendChild(notice);
+
+        window.setTimeout(function() {
+          notice.remove();
+        }, 2400);
+      }
+
+      function showFallbackTextPanel(title, text) {
+        const existing = document.getElementById('__fallback_text_panel__');
+        if (existing) {
+          existing.remove();
+        }
+
+        const overlay = document.createElement('div');
+        overlay.id = '__fallback_text_panel__';
+        overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000000; display: flex; align-items: center; justify-content: center; padding: 24px;';
+
+        const panel = document.createElement('div');
+        panel.style.cssText = 'width: min(720px, 100%); max-height: min(80vh, 640px); background: white; border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden;';
+
+        const header = document.createElement('div');
+        header.style.cssText = 'padding: 16px 20px; border-bottom: 1px solid #f0f0f0; font-size: 16px; font-weight: 600; color: #262626;';
+        header.textContent = title;
+
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.readOnly = true;
+        textarea.style.cssText = 'width: calc(100% - 40px); min-height: 280px; margin: 20px; padding: 12px; resize: vertical; border: 1px solid #d9d9d9; border-radius: 8px; font: 12px/1.6 SFMono-Regular, Consolas, monospace; color: #262626; background: #fafafa;';
+
+        const footer = document.createElement('div');
+        footer.style.cssText = 'padding: 12px 20px 20px; display: flex; justify-content: flex-end; gap: 8px;';
+
+        const selectButton = document.createElement('button');
+        selectButton.type = 'button';
+        selectButton.textContent = '全选内容';
+        selectButton.style.cssText = 'padding: 6px 16px; border: 1px solid #d9d9d9; background: white; border-radius: 6px; cursor: pointer; font-size: 14px;';
+        selectButton.onclick = function() {
+          textarea.focus();
+          textarea.select();
+        };
+
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.textContent = '关闭';
+        closeButton.style.cssText = 'padding: 6px 16px; border: 1px solid #1677ff; background: #1677ff; color: white; border-radius: 6px; cursor: pointer; font-size: 14px;';
+        closeButton.onclick = function() {
+          overlay.remove();
+        };
+
+        overlay.onclick = function(event) {
+          if (event.target === overlay) {
+            overlay.remove();
+          }
+        };
+
+        footer.appendChild(selectButton);
+        footer.appendChild(closeButton);
+        panel.appendChild(header);
+        panel.appendChild(textarea);
+        panel.appendChild(footer);
+        overlay.appendChild(panel);
+        document.body.appendChild(overlay);
+
+        window.setTimeout(function() {
+          textarea.focus();
+          textarea.select();
+        }, 0);
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function isIgnorableVersionProxyIssue(text) {
+        const normalizedText = String(text || '');
+        return normalizedText.includes('__axhub_version__') &&
+          normalizedText.includes('html-proxy') &&
+          normalizedText.includes('No matching HTML proxy module found');
+      }
+
+      // 统一的错误处理函数
+      function handleError(message, stack, type) {
+        const error = {
+          message: message,
+          stack: stack,
+          timestamp: Date.now(),
+          sinceBoot: Date.now() - bootTime,
+          type: type
+        };
+
+        errorQueue.push(error);
+
+        // 如果 React 已就绪，使用 React 组件显示
+        if (reactReady && typeof window.showErrorDialog === 'function') {
+          window.showErrorDialog(message, stack);
+        } else {
+          // 否则使用降级 UI
+          showFallbackErrorUI(errorQueue);
+        }
+      }
+
+      // 捕获未处理的错误（捕获阶段，优先级最高）
+      window.addEventListener('error', function (event) {
+        originalConsoleError.call(console, '捕获到错误事件:', {
+          message: event.message,
+          error: event.error,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+          target: event.target
+        });
+
+        try {
+          let message = event.message || '发生了一个未知错误';
+          let stack = '';
+
+          // 检查是否是资源加载错误
+          if (event.target !== window && event.target instanceof HTMLElement) {
+            const tagName = event.target.tagName;
+            const resourceUrl = event.target.src || event.target.href || '未知资源';
+            if (isIgnorableVersionProxyIssue(resourceUrl)) {
+              return;
+            }
+            message = `资源加载失败: ${tagName} - ${resourceUrl}`;
+            stack = `标签: <${tagName.toLowerCase()}>\nURL: ${resourceUrl}\n类型: 资源加载错误`;
+            originalConsoleError.call(console, '资源加载失败:', { tagName, resourceUrl });
+          } else if (event.error && event.error.stack) {
+            stack = event.error.stack;
+          } else if (event.error && event.error.message) {
+            message = event.error.message;
+            stack = '无详细堆栈信息';
+          } else if (event.filename) {
+            stack = event.filename + ':' + event.lineno + ':' + event.colno;
+          } else {
+            stack = '无堆栈信息';
+          }
+
+          handleError(message, stack, 'error');
+        } catch (err) {
+          originalConsoleError.call(console, '[Error Handler] 处理错误失败:', err);
+        }
+
+        event.preventDefault();
+      }, true); // ⚠️ 使用捕获阶段
+
+      // 捕获未处理的 Promise 拒绝
+      window.addEventListener('unhandledrejection', function (event) {
+        originalConsoleError.call(console, '捕获到未处理的 Promise 拒绝:', event.reason);
+
+        try {
+          const message = event.reason && event.reason.message
+            ? event.reason.message
+            : String(event.reason || '未知 Promise 拒绝');
+          const stack = event.reason && event.reason.stack ? event.reason.stack : '';
+
+          handleError('Promise 拒绝: ' + message, stack, 'unhandledrejection');
+        } catch (err) {
+          originalConsoleError.call(console, '[Error Handler] 处理 Promise 拒绝失败:', err);
+        }
+
+        event.preventDefault();
+      });
+
+      // 全局开关：是否启用错误捕获
+      let errorCaptureEnabled = true;
+
+      // 拦截 console.error（可选，捕获库的错误输出）
+      console.error = function () {
+        const args = Array.prototype.slice.call(arguments);
+        const message = args.join(' ');
+
+        // 先调用原始的 console.error
+        originalConsoleError.apply(console, args);
+
+        // 如果错误捕获被禁用，直接返回
+        if (!errorCaptureEnabled) {
+          return;
+        }
+
+        // 检查是否是重要错误
+        const lowerMessage = message.toLowerCase();
+        if (isIgnorableVersionProxyIssue(message)) {
+          return;
+        }
+        const shouldShow = !message.includes('[Error Dialog]') && 
+                          !message.includes('[Error Handler]') &&
+                          (lowerMessage.includes('error') || lowerMessage.includes('failed'));
+        
+        if (shouldShow) {
+          try {
+            const stack = new Error().stack || '无堆栈信息';
+            handleError('控制台错误: ' + message, stack, 'console.error');
+          } catch (err) {
+            originalConsoleError.call(console, '[Error Handler] 显示对话框失败:', err);
+          }
+        }
+      };
+
+      // 暴露 React 就绪标记和控制接口
+      window.__ERROR_SYSTEM__ = {
+        markReactReady: function() {
+          reactReady = true;
+          console.log('%c[Error System] React 错误系统已就绪', 'color: #52c41a; font-weight: bold;');
+          
+          // 如果有降级 UI 显示，迁移到 React 组件
+          if (fallbackUIShown && errorQueue.length > 0 && typeof window.showErrorDialog === 'function') {
+            const overlay = document.getElementById('__fallback_error_overlay__');
+            if (overlay) {
+              overlay.style.display = 'none';
+            }
+            errorQueue.forEach(function(err) {
+              window.showErrorDialog(err.message, err.stack);
+            });
+          }
+        },
+        getErrorQueue: function() {
+          return errorQueue;
+        },
+        clearErrors: function() {
+          errorQueue.length = 0;
+          const overlay = document.getElementById('__fallback_error_overlay__');
+          if (overlay && overlay.parentNode) {
+            document.body.removeChild(overlay);
+            fallbackUIShown = false;
+          }
+        },
+        // 新增：启用/禁用错误捕获
+        setErrorCaptureEnabled: function(enabled) {
+          errorCaptureEnabled = enabled;
+          console.log('%c[Error System] 错误捕获已' + (enabled ? '启用' : '禁用'), 'color: ' + (enabled ? '#52c41a' : '#faad14') + '; font-weight: bold;');
+        },
+        isErrorCaptureEnabled: function() {
+          return errorCaptureEnabled;
+        }
+      };
+
+      console.log('%c[Error System] 全局错误捕获已启用（增强版）', 'color: #52c41a; font-weight: bold;');
+    })();
+  </script>
+
+  <script>
+    // 判断是否为元素演示页面（在 body 加载后执行）
+    (function () {
+      if (document.body && window.location.pathname.includes('/components/')) {
+        document.body.classList.add('is-element-page');
+      } else if (!document.body) {
+        // 如果 body 还没加载，等待 DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function () {
+          if (window.location.pathname.includes('/components/')) {
+            document.body.classList.add('is-element-page');
+          }
+        });
+      }
+    })();
+  </script>
+
+  <div id="root"></div>
+
+  <!-- 加载自动调试客户端 -->
+  <script src="/auto-debug-client.js"></script>
+
+  <!-- 加载 bootstrap JS（会自动挂载到 window.DevTemplateBootstrap） -->
+  <script type="module" src="/assets/dev-template-bootstrap.js?v=1776173379984"></script>
+
+  <script type="module">
+    // 等待 bootstrap 加载完成
+    function waitForBootstrap() {
+      if (window.DevTemplateBootstrap) {
+        const { renderComponent, React, ReactDOM } = window.DevTemplateBootstrap;
+
+        // 将 React 和 ReactDOM 挂载到全局，让组件使用同一个实例
+        window.React = React;
+        window.ReactDOM = ReactDOM;
+
+        console.log('[Dev Template] Bootstrap 已就绪，React 已挂载到全局');
+
+        // 动态导入组件（此时组件会使用 window.React）
+        import('{{ENTRY}}').then(module => {
+          const Component = module.default;
+
+          if (!Component) {
+            const exportKeys = Object.keys(module);
+            throw new Error(`模块缺少默认导出${exportKeys.length > 0 ? `，当前导出: ${exportKeys.join(', ')}` : ''}`);
+          }
+
+          // 导出到全局（供调试使用）
+          window.AxhubDevComponent = Component;
+
+          console.log('[Dev Template] 组件默认导出已加载:', Component);
+          console.log('[Dev Template] 开始渲染');
+
+          // 渲染组件
+          renderComponent(Component);
+        }).catch(err => {
+          // 增强错误信息
+          const entryPath = '{{ENTRY}}';
+          let errorMessage = `组件加载失败: ${entryPath}`;
+          let errorDetails = [];
+
+          // 分析错误类型
+          if (err.message) {
+            if (err.message.includes('Failed to fetch')) {
+              errorDetails.push('• 可能原因：');
+              errorDetails.push('  1. 组件文件不存在或路径错误');
+              errorDetails.push('  2. 组件文件存在语法错误，导致编译失败');
+              errorDetails.push('  3. 组件依赖的模块无法解析');
+              errorDetails.push('  4. Vite 开发服务器未正确编译该文件');
+              errorDetails.push('');
+              errorDetails.push('• 建议检查：');
+              errorDetails.push(`  1. 确认文件存在: ${entryPath}`);
+              errorDetails.push('  2. 查看浏览器 Network 面板，检查该文件的 HTTP 状态码');
+              errorDetails.push('  3. 查看 Vite 开发服务器终端输出，是否有编译错误');
+              errorDetails.push('  4. 尝试直接访问该文件 URL，查看具体错误信息');
+            } else if (err.message.includes('does not provide an export') || err.message.includes('模块缺少默认导出')) {
+              errorDetails.push('• 错误原因：组件模块未按当前规范导出');
+              errorDetails.push('• 当前规范：组件文件必须使用 default export');
+              errorDetails.push('• 建议检查：');
+              errorDetails.push('  1. 确认文件包含 `export default ...`');
+              errorDetails.push('  2. 如果组件主体定义为 `const Component = ...`，请在文件末尾使用 `export default Component`');
+              errorDetails.push('  3. 检查 export 语法是否正确，且没有被条件逻辑包裹');
+            } else {
+              errorDetails.push(`• 错误信息: ${err.message}`);
+            }
+          }
+
+          // 构建完整的错误信息
+          const fullErrorMessage = [
+            errorMessage,
+            '',
+            ...errorDetails,
+            '',
+            '• 完整错误对象:',
+            JSON.stringify({
+              name: err.name,
+              message: err.message,
+              stack: err.stack
+            }, null, 2)
+          ].join('\n');
+
+          console.error('[Dev Template] 组件加载失败:\n' + fullErrorMessage);
+
+          // 在页面上显示友好的错误提示
+          const root = document.getElementById('root');
+          if (root) {
+            root.innerHTML = `
+              <div style="padding: 40px; max-width: 800px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                <div style="background: #fff1f0; border: 1px solid #ffccc7; border-radius: 8px; padding: 24px;">
+                  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <svg viewBox="64 64 896 896" width="24" height="24" fill="#ff4d4f">
+                      <path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm-32 232c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v272c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8V296zm32 440a48.01 48.01 0 0 1 0-96 48.01 48.01 0 0 1 0 96z"></path>
+                    </svg>
+                    <h2 style="margin: 0; color: #cf1322; font-size: 20px; font-weight: 600;">组件加载失败</h2>
+                  </div>
+                  
+                  <div style="background: white; border-radius: 4px; padding: 16px; margin-bottom: 16px;">
+                    <div style="font-weight: 600; margin-bottom: 8px; color: #262626;">入口文件:</div>
+                    <code style="display: block; padding: 8px 12px; background: #f5f5f5; border-radius: 4px; font-size: 13px; color: #d4380d; word-break: break-all;">${entryPath}</code>
+                  </div>
+
+                  ${errorDetails.length > 0 ? `
+                    <div style="background: white; border-radius: 4px; padding: 16px; margin-bottom: 16px;">
+                      <pre style="margin: 0; font-size: 13px; line-height: 1.6; color: #595959; white-space: pre-wrap; word-break: break-word;">${errorDetails.join('\n')}</pre>
+                    </div>
+                  ` : ''}
+
+                  <details style="background: white; border-radius: 4px; padding: 16px;">
+                    <summary style="cursor: pointer; font-weight: 600; color: #262626; user-select: none;">查看完整错误信息</summary>
+                    <pre style="margin: 12px 0 0 0; padding: 12px; background: #f5f5f5; border-radius: 4px; font-size: 12px; color: #595959; overflow-x: auto; white-space: pre-wrap; word-break: break-all;">${JSON.stringify({
+                      name: err.name,
+                      message: err.message,
+                      stack: err.stack
+                    }, null, 2)}</pre>
+                  </details>
+
+                  <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #ffccc7;">
+                    <div style="font-size: 13px; color: #8c8c8c;">
+                      💡 提示：打开浏览器开发者工具的 Network 和 Console 面板查看更多信息
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        });
+      } else {
+        setTimeout(waitForBootstrap, 10);
+      }
+    }
+
+    waitForBootstrap();
+  </script>
+
+</body>
+
+</html>

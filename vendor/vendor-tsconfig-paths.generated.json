@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "axhub-annotation": [
+        "./vendor/axhub-annotation/dist/index.d.ts"
+      ]
+    }
+  }
+}

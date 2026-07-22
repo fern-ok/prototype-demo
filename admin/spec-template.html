@@ -1,0 +1,220 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>{{TITLE}} - Spec</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="/assets/simple-editor.css?v=1776173379984">
+  <link rel="stylesheet" href="/assets/spec-template-reset.css?v=1776173379984">
+  <link rel="stylesheet" href="/assets/spec-template-styles.css?v=1776173379984">
+  <link rel="stylesheet" href="/assets/vendor-antd.css?v=1776173379984">
+  <link rel="stylesheet" href="/assets/spec-template-bootstrap.css?v=1776173379984">
+  <style>
+    /* 全局样式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f5f5f5;
+    }
+
+    #spec-root {
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* 加载状态 */
+    .loading {
+      padding: 60px 20px;
+      color: #8c8c8c;
+    }
+
+    .loading::after {
+      content: '...';
+      animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+      0%, 20% {
+        content: '.';
+      }
+      40% {
+        content: '..';
+      }
+      60%, 100% {
+        content: '...';
+      }
+    }
+
+    /* 错误状态 */
+    .error {
+      color: #ff4d4f;
+      padding: 20px;
+      background: #fff2f0;
+      border: 1px solid #ffccc7;
+      border-radius: 4px;
+      margin: 20px;
+    }
+
+    .error h2 {
+      margin-top: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="spec-root" class="loading">加载中</div>
+
+  <!-- 自定义模板不会走 Vite 默认 index.html 注入链路，这里手动补齐 HMR client 和 React preamble。 -->
+  <script type="module">
+    import '/@vite/client';
+    import '@vitejs/plugin-react/preamble';
+  </script>
+
+  <!-- 加载 bootstrap JS（会自动挂载到 window.SpecTemplateBootstrap） -->
+  <script type="module" src="/assets/spec-template-bootstrap.js?v=1776173379984"></script>
+
+  <script type="module">
+    const specTemplateState = {
+      mode: 'single',
+      currentSpecUrl: '',
+      currentDocsConfig: [],
+      currentDocUrls: []
+    };
+
+    function setSpecTemplateState(nextState) {
+      specTemplateState.mode = nextState.mode;
+      specTemplateState.currentSpecUrl = nextState.currentSpecUrl || '';
+      specTemplateState.currentDocsConfig = Array.isArray(nextState.currentDocsConfig) ? nextState.currentDocsConfig : [];
+      specTemplateState.currentDocUrls = Array.isArray(nextState.currentDocUrls) ? nextState.currentDocUrls : [];
+    }
+
+    async function reloadCurrentSpecDocuments() {
+      if (!window.SpecTemplateBootstrap) {
+        return;
+      }
+
+      if (specTemplateState.mode === 'multi' && specTemplateState.currentDocsConfig.length > 0) {
+        await window.SpecTemplateBootstrap.loadMarkdownDocumentsFromUrls(specTemplateState.currentDocsConfig);
+        return;
+      }
+
+      if (specTemplateState.currentSpecUrl) {
+        await window.SpecTemplateBootstrap.loadMarkdownFromUrl(specTemplateState.currentSpecUrl);
+      }
+    }
+
+    if (import.meta.hot) {
+      import.meta.hot.on('axhub:spec-doc-update', async (payload) => {
+        if (!payload?.docUrl || !specTemplateState.currentDocUrls.includes(payload.docUrl)) {
+          return;
+        }
+
+        console.log('[Spec Template] 检测到文档热更新，重新加载:', payload.docUrl);
+
+        try {
+          await reloadCurrentSpecDocuments();
+        } catch (error) {
+          console.error('[Spec Template] 热更新重载失败:', error);
+        }
+      });
+    }
+
+    function decodeHtmlEntities(str) {
+      const textarea = document.createElement('textarea');
+      textarea.innerHTML = str;
+      return textarea.value;
+    }
+
+    function waitForBootstrap() {
+      if (window.SpecTemplateBootstrap) {
+        console.log('[Spec Template] Bootstrap 已就绪');
+        console.log('[Spec Template] 可用方法:', Object.keys(window.SpecTemplateBootstrap));
+
+        const isMultiDoc = '{{MULTI_DOC}}' === 'true';
+        const docsConfigStr = decodeHtmlEntities('{{DOCS_CONFIG}}');
+        
+        console.log('[Spec Template] 多文档模式:', isMultiDoc);
+        console.log('[Spec Template] 文档配置字符串:', docsConfigStr);
+
+        if (isMultiDoc && docsConfigStr && docsConfigStr !== '[]') {
+          try {
+            const docsConfig = JSON.parse(docsConfigStr);
+            console.log('[Spec Template] 多文档模式，加载文档:', docsConfig);
+            setSpecTemplateState({
+              mode: 'multi',
+              currentDocsConfig: docsConfig,
+              currentDocUrls: docsConfig.map((item) => item.url)
+            });
+            
+            if (window.SpecTemplateBootstrap.loadMarkdownDocumentsFromUrls) {
+              window.SpecTemplateBootstrap.loadMarkdownDocumentsFromUrls(docsConfig).catch(err => {
+                console.error('[Spec Template] 加载失败:', err);
+              });
+            } else {
+              console.error('[Spec Template] loadMarkdownDocumentsFromUrls 方法不存在');
+            }
+          } catch (err) {
+            console.error('[Spec Template] 解析文档配置失败:', err);
+            console.error('[Spec Template] 原始字符串:', docsConfigStr);
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const specUrl = urlParams.get('url') || '{{SPEC_URL}}';
+            console.log('[Spec Template] 降级到单文档模式，加载 Spec:', specUrl);
+            setSpecTemplateState({
+              mode: 'single',
+              currentSpecUrl: specUrl,
+              currentDocUrls: specUrl ? [specUrl] : []
+            });
+            
+            // 检查是否是有效的 URL（不是占位符）
+            if (specUrl && !specUrl.includes('{{') && !specUrl.includes('}}') && window.SpecTemplateBootstrap.loadMarkdownFromUrl) {
+              window.SpecTemplateBootstrap.loadMarkdownFromUrl(specUrl).catch(err => {
+                console.error('[Spec Template] 加载失败:', err);
+              });
+            }
+          }
+        } else {
+          const urlParams = new URLSearchParams(window.location.search);
+          const specUrl = urlParams.get('url') || '{{SPEC_URL}}';
+
+          console.log('[Spec Template] 单文档模式，加载 Spec:', specUrl);
+          setSpecTemplateState({
+            mode: 'single',
+            currentSpecUrl: specUrl,
+            currentDocUrls: specUrl ? [specUrl] : []
+          });
+
+          // 检查是否是有效的 URL（不是占位符）
+          if (specUrl && !specUrl.includes('{{') && !specUrl.includes('}}')) {
+            console.log('[Spec Template] 开始加载文档');
+            window.SpecTemplateBootstrap.loadMarkdownFromUrl(specUrl).catch(err => {
+              console.error('[Spec Template] 加载失败:', err);
+            });
+          } else {
+            console.error('[Spec Template] 没有有效的文档 URL, specUrl:', specUrl);
+          }
+        }
+      } else {
+        setTimeout(waitForBootstrap, 10);
+      }
+    }
+
+    waitForBootstrap();
+  </script>
+
+</body>
+
+</html>

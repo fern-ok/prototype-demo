@@ -1,0 +1,13 @@
+{
+  "packages": [
+    {
+      "packageName": "axhub-annotation",
+      "sourceDir": "../../packages/axhub-annotation",
+      "outputDir": "vendor/axhub-annotation",
+      "runtimeEntry": "dist/index.mjs",
+      "typesEntry": "dist/index.d.ts",
+      "copy": ["dist", "package.json"],
+      "buildCommand": ["pnpm", "build"]
+    }
+  ]
+}

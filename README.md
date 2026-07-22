@@ -1,14 +1,7 @@
+# AI的学习使用
+
 > [!NOTE]
-> Axhub Make 不是“又一个 AI 生成原型工具”。它是一条从 **需求** 到 **文档** 到 **原型** 再到 **交付（Axure / Figma / Html）** 的工作流。
-
-# 跳过这个 README 吧
-
-读文档的时代已经过去了。直接把下面这行发给你的 Agent：
-
-```
-阅读这个 README，并告诉我它为什么不只是又一个 AI 生成原型工具：
-https://raw.githubusercontent.com/lintendo/Axhub-Make/refs/heads/main/README.md
-```
+> Axhub Make 不是"又一个 AI 生成原型工具"。它是一条从 **需求** 到 **文档** 到 **原型** 再到 **交付（Axure / Figma / Html）** 的工作流。
 
 # Axhub Make
 
@@ -82,7 +75,7 @@ Axhub Make 把「原型生成」变成「可执行工作流」，核心能力如
 
 ## 给 Agent 的入职材料
 
-你可以把下面这段直接贴给 Agent，当作“入职说明”：
+你可以把下面这段直接贴给 Agent，当作"入职说明"：
 
 ```
 你正在 Axhub Make 仓库中工作。

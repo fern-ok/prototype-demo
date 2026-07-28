@@ -31,13 +31,24 @@ if (fs.existsSync(distDir)) {
   fs.rmSync(distDir, { recursive: true, force: true });
 }
 
+const vitePath = path.resolve(workspaceRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'vite.cmd' : 'vite');
+
 for (const key of entryKeys) {
   console.log(`\n==== 构建入口: ${key} ====\n`);
-  const result = spawnSync('npx', ['vite', 'build'], {
-    cwd: workspaceRoot,
-    env: { ...process.env, ENTRY_KEY: key },
-    stdio: 'inherit'
-  });
+  let result;
+  if (process.platform === 'win32') {
+    result = spawnSync('cmd', ['/c', vitePath, 'build'], {
+      cwd: workspaceRoot,
+      env: { ...process.env, ENTRY_KEY: key },
+      stdio: 'inherit'
+    });
+  } else {
+    result = spawnSync(vitePath, ['build'], {
+      cwd: workspaceRoot,
+      env: { ...process.env, ENTRY_KEY: key },
+      stdio: 'inherit'
+    });
+  }
 
   if (result.status !== 0) {
     console.error(`构建 ${key} 失败，退出码 ${result.status}`);

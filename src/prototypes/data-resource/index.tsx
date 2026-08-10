@@ -10,9 +10,10 @@
  */
 
 import { useState } from 'react';
+import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
 
-const Component = () => {
+const OriginalComponent = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
@@ -325,5 +326,11 @@ const Component = () => {
     </div>
   );
 };
+
+const Component = () => (
+  <PasswordGuard>
+    <OriginalComponent />
+  </PasswordGuard>
+);
 
 export default Component;

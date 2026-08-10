@@ -50,6 +50,7 @@ import type {
 } from '../../common/axure-types';
 
 import SideMenu from '../../components/side-menu';
+import PasswordGuard from '../../common/PasswordGuard';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -254,7 +255,7 @@ const DATA_LIST: DataDesc[] = [
   }
 ];
 
-const Component = forwardRef<AxureHandle, AxureProps>(function EcommerceDashboard(innerProps, ref) {
+const OriginalComponent = forwardRef<AxureHandle, AxureProps>(function EcommerceDashboard(innerProps, ref) {
   const dataSource = innerProps && innerProps.data ? innerProps.data : {};
   const configSource = innerProps && innerProps.config ? innerProps.config : {};
   const onEventHandler = typeof innerProps.onEvent === 'function' ? innerProps.onEvent : () => undefined;
@@ -526,5 +527,11 @@ const Component = forwardRef<AxureHandle, AxureProps>(function EcommerceDashboar
     </Layout>
   );
 });
+
+const Component = () => (
+  <PasswordGuard>
+    <OriginalComponent />
+  </PasswordGuard>
+);
 
 export default Component;

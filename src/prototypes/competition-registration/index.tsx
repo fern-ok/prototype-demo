@@ -10,9 +10,10 @@
  */
 
 import { useState } from 'react';
+import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
 
-const Component = () => {
+const OriginalComponent = () => {
   const [formData, setFormData] = useState({
     teamName: '',
     units: [{
@@ -220,25 +221,25 @@ const Component = () => {
                   <div className="form-item">
                     <label>经营期限</label>
                     <div className="date-range">
-                      <input 
-                        type="date" 
+                      <div className="date-input"><input
+                        type="date"
                         value={formData.units[0].businessTerm[0]}
                         onChange={(e) => {
                           const units = [...formData.units];
                           units[0].businessTerm[0] = e.target.value;
                           setFormData({ ...formData, units });
                         }}
-                      />
-                      <span>至</span>
-                      <input 
-                        type="date" 
+                      /></div>
+                      <span className="date-separator">-</span>
+                      <div className="date-input"><input
+                        type="date"
                         value={formData.units[0].businessTerm[1]}
                         onChange={(e) => {
                           const units = [...formData.units];
                           units[0].businessTerm[1] = e.target.value;
                           setFormData({ ...formData, units });
                         }}
-                      />
+                      /></div>
                     </div>
                   </div>
                 </div>
@@ -319,25 +320,25 @@ const Component = () => {
                   <div className="form-item">
                     <label>有效期限</label>
                     <div className="date-range">
-                      <input 
-                        type="date" 
+                      <div className="date-input"><input
+                        type="date"
                         value={formData.units[0].legalPersonExpire[0]}
                         onChange={(e) => {
                           const units = [...formData.units];
                           units[0].legalPersonExpire[0] = e.target.value;
                           setFormData({ ...formData, units });
                         }}
-                      />
-                      <span>至</span>
-                      <input 
-                        type="date" 
+                      /></div>
+                      <span className="date-separator">-</span>
+                      <div className="date-input"><input
+                        type="date"
                         value={formData.units[0].legalPersonExpire[1]}
                         onChange={(e) => {
                           const units = [...formData.units];
                           units[0].legalPersonExpire[1] = e.target.value;
                           setFormData({ ...formData, units });
                         }}
-                      />
+                      /></div>
                     </div>
                   </div>
                 </div>
@@ -603,5 +604,11 @@ const Component = () => {
     </div>
   );
 };
+
+const Component = () => (
+  <PasswordGuard>
+    <OriginalComponent />
+  </PasswordGuard>
+);
 
 export default Component;

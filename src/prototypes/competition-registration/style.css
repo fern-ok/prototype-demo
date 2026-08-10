@@ -162,15 +162,62 @@
 .date-range {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
+  flex: 1;
 }
 
-.date-range input {
-  width: calc(50% - 12px);
+.date-input {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
 }
 
-.date-range span {
-  color: #909399;
+.date-input input[type="date"] {
+  width: 100%;
+  height: 32px;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 32px;
+  color: #4b5563;
+  border: 1px solid #d7dce6;
+  border-radius: 3px;
+  background: #fff;
+  outline: none;
+  box-shadow: none;
+  min-width: 0;
+}
+
+.date-input input[type="date"]::-webkit-calendar-picker-indicator {
+  display: block;
+  width: 12px;
+  height: 12px;
+  cursor: pointer;
+  opacity: 0.5;
+  margin: 0 auto;
+}
+
+.date-input input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.date-input input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+.date-input input[type="date"]::-webkit-datetime-edit {
+  padding: 0;
+}
+
+.date-separator {
+  flex: 0 0 auto;
+  width: 14px;
+  text-align: center;
+  color: #8b95a5;
+  font-size: 13px;
+  line-height: 32px;
+  user-select: none;
 }
 
 .unit-card {

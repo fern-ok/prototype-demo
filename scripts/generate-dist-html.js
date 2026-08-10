@@ -103,7 +103,28 @@ if (fs.existsSync(srcBootstrap)) {
   }
   fs.copyFileSync(srcBootstrap, destBootstrap);
   console.log('✓ html-template-bootstrap.js 已复制到 dist/assets');
-  
+
+  // 复制 chunks 目录（bootstrap 依赖的 chunk 文件）
+  const srcChunksDir = path.join(adminDir, 'assets', 'chunks');
+  const destChunksDir = path.join(destAssetsDir, 'chunks');
+  if (fs.existsSync(srcChunksDir)) {
+    function copyDir(src, dest) {
+      if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+      const entries = fs.readdirSync(src, { withFileTypes: true });
+      for (const entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+        if (entry.isDirectory()) {
+          copyDir(srcPath, destPath);
+        } else {
+          fs.copyFileSync(srcPath, destPath);
+        }
+      }
+    }
+    copyDir(srcChunksDir, destChunksDir);
+    console.log('✓ chunks 目录已复制到 dist/assets');
+  }
+
   // 同时复制其他必要的依赖（如果有的话）
   const assetsFiles = fs.readdirSync(path.join(adminDir, 'assets'));
   for (const file of assetsFiles) {

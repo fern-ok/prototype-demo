@@ -1,0 +1,491 @@
+{
+  "tableName": "消息通知模板",
+  "records": [
+    {
+      "id": 1,
+      "businessStage": "主体认证",
+      "messageType": "待办消息",
+      "recipient": "数据基础设施运营方",
+      "template": "【主体认证】您有新的企业主体认证待审核，请及时处理！",
+      "triggerAction": "企业提交主体认证申请单",
+      "updateTime": ""
+    },
+    {
+      "id": 2,
+      "businessStage": "主体认证",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【主体认证】您申请的企业主体认证审核通过，请及时查看！",
+      "triggerAction": "企业认证申请单审核通过",
+      "updateTime": ""
+    },
+    {
+      "id": 3,
+      "businessStage": "主体认证",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【主体认证】您申请的企业主体认证审核不通过，请及时查看！",
+      "triggerAction": "企业认证申请单审核不通过",
+      "updateTime": ""
+    },
+    {
+      "id": 4,
+      "businessStage": "用户反馈",
+      "messageType": "待办消息",
+      "recipient": "数据基础设施运营方",
+      "template": "【用户反馈】您有新的用户反馈待回复，请及时处理！",
+      "triggerAction": "用户提交反馈信息",
+      "updateTime": "【2026-07-13】用户反馈由数据基础设施运营方进行回复"
+    },
+    {
+      "id": 5,
+      "businessStage": "用户反馈",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【用户反馈】您提交的用户反馈已回复，请及时查看！",
+      "triggerAction": "数据基础设施运营方进行回复操作后",
+      "updateTime": ""
+    },
+    {
+      "id": 6,
+      "businessStage": "资源目录管理",
+      "messageType": "系统消息",
+      "recipient": "申请人（实施机构、数源机构）",
+      "template": "【资源目录】您提交的资源目录“$资源名称$”登记申请审核通过，请及时查看！",
+      "triggerAction": "用户提交资源登记申请审核通过，状态变为“已通过”",
+      "updateTime": "【2026-08-06】0904版本修改了触发动作"
+    },
+    {
+      "id": 7,
+      "businessStage": "资源目录管理",
+      "messageType": "系统消息",
+      "recipient": "申请人（实施机构、数源机构）",
+      "template": "【资源目录】您提交的资源目录“$资源名称$”登记申请审核不通过，请及时查看！",
+      "triggerAction": "用户提交资源登记申请审核不通过，状态变为“提交未通过”",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 8,
+      "businessStage": "数据资源授权/申请",
+      "messageType": "系统消息",
+      "recipient": "实施机构 / 运营机构",
+      "template": "【资源授权】您提交的资源授权单“$资源授权单名称$”审核通过，请及时查看！",
+      "triggerAction": "实施机构主动授权的资源复审通过、运营机构主动申请的资源复审通过",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 9,
+      "businessStage": "数据资源授权/申请",
+      "messageType": "系统消息",
+      "recipient": "实施机构 / 运营机构",
+      "template": "【资源授权】您提交的资源授权单“$资源授权单名称$”审核不通过，请及时查看！",
+      "triggerAction": "实施机构主动授权的资源初审/复审不通过、运营机构主动申请的资源初审/复审不通过",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 10,
+      "businessStage": "数据资源授权/申请",
+      "messageType": "系统消息",
+      "recipient": "运营机构",
+      "template": "【资源授权】实施机构已新增一条资源授权单“$资源授权单名称$”，请及时查看！",
+      "triggerAction": "实施机构主动授权的资源复审通过",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 11,
+      "businessStage": "数据资源授权/申请",
+      "messageType": "待办消息",
+      "recipient": "实施机构",
+      "template": "【资源授权】您有新的资源授权单“$资源授权单名称$”待初审，请及时处理！",
+      "triggerAction": "实施机构或运营机构提交了资源授权单",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 12,
+      "businessStage": "数据资源授权/申请",
+      "messageType": "待办消息",
+      "recipient": "实施机构",
+      "template": "【资源授权】您有新的资源授权单“$资源授权单名称$”待复审，请及时处理！",
+      "triggerAction": "资源授权单初审通过",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 13,
+      "businessStage": "场景申请管理",
+      "messageType": "待办消息",
+      "recipient": "运营机构",
+      "template": "【场景申请管理】您有新的场景申请待审核，场景名称“$场景名称$”，请及时处理！",
+      "triggerAction": "其他经营主体提交场景申请",
+      "updateTime": ""
+    },
+    {
+      "id": 14,
+      "businessStage": "场景申请管理",
+      "messageType": "待办消息",
+      "recipient": "实施机构",
+      "template": "【场景申请管理】您有新的场景申请待审核，场景名称“$场景名称$”，请及时处理！",
+      "triggerAction": "运营机构场景初审通过",
+      "updateTime": ""
+    },
+    {
+      "id": 15,
+      "businessStage": "场景申请管理",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【场景申请管理】您申报的场景“$场景名称$”已审核通过，请及时查看！",
+      "triggerAction": "场景申请复审通过",
+      "updateTime": ""
+    },
+    {
+      "id": 16,
+      "businessStage": "场景申请管理",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【场景申请管理】您申报的场景“$场景名称$”审核不通过，请及时查看！",
+      "triggerAction": "运营机构场景申请初审不通过、实施机构场景复审不通过",
+      "updateTime": ""
+    },
+    {
+      "id": 17,
+      "businessStage": "数据探查",
+      "messageType": "待办消息",
+      "recipient": "运营机构",
+      "template": "【数据探查】您有新的数据探查申请待审核，申请单号“$申请单号$”，请及时处理！",
+      "triggerAction": "其他经营主体提交数据探查申请",
+      "updateTime": ""
+    },
+    {
+      "id": 18,
+      "businessStage": "数据探查",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【数据探查】您申请的数据探查审核通过，申请单号“$申请单号$”，请及时查看！",
+      "triggerAction": "运营机构通过数据探查申请",
+      "updateTime": ""
+    },
+    {
+      "id": 19,
+      "businessStage": "数据探查",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【数据探查】您申请的数据探查审核不通过，申请单号“$申请单号$”，请及时查看！",
+      "triggerAction": "运营机构不通过探查审核申请",
+      "updateTime": ""
+    },
+    {
+      "id": 20,
+      "businessStage": "平台资源管理",
+      "messageType": "待办消息",
+      "recipient": "数据基础设施运营方",
+      "template": "【平台资源】您有新的平台资源申请待审核，申请单号“$申请单号$”，请及时处理！",
+      "triggerAction": "运营机构、其他经营主体提交平台资源申请",
+      "updateTime": ""
+    },
+    {
+      "id": 21,
+      "businessStage": "平台资源管理",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【平台资源】您提交的平台资源申请审核通过，申请单号“$申请单号$”，请及时查看！",
+      "triggerAction": "数据基础设施运营方通过平台资源申请申请",
+      "updateTime": ""
+    },
+    {
+      "id": 22,
+      "businessStage": "平台资源管理",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【平台资源】您提交的平台资源申请审核不通过，申请单号“$申请单号$”，请及时查看！",
+      "triggerAction": "数据基础设施运营方不通过平台资源申请申请",
+      "updateTime": ""
+    },
+    {
+      "id": 23,
+      "businessStage": "产品安全审查",
+      "messageType": "待办消息",
+      "recipient": "实施机构 / 运营机构",
+      "template": "【产品安全审查】您有新的产品安全审查申请待审查，申请单号“$申请单号$”，请及时处理！",
+      "triggerAction": "实施机构：运营机构提交产品安全审查申请\n运营机构：其他经营主体提交产品安全审查申请",
+      "updateTime": ""
+    },
+    {
+      "id": 24,
+      "businessStage": "产品安全审查",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品安全审查】您提交的产品安全审查申请审查通过，申请单号“$申请单号$”，请及时查看！",
+      "triggerAction": "实施机构 / 运营机构产品安全申请审查通过",
+      "updateTime": ""
+    },
+    {
+      "id": 25,
+      "businessStage": "产品安全审查",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品安全审查】您提交的产品安全审查申请审查不通过，申请单号“$申请单号$”，请及时查看！",
+      "triggerAction": "实施机构 / 运营机构产品安全申请审查不通过",
+      "updateTime": ""
+    },
+    {
+      "id": 26,
+      "businessStage": "产品登记",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品登记】您提交的数据产品“$产品名称$”登记申请审核通过，请及时查看！",
+      "triggerAction": "用户提交产品登记申请审核通过，审核状态变为“已通过”",
+      "updateTime": "【2026-08-06】0904版本修改了消息模板"
+    },
+    {
+      "id": 27,
+      "businessStage": "产品登记",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品登记】您提交的数据产品“$产品名称$”登记申请审核不通过，请及时查看！",
+      "triggerAction": "用户提交产品登记申请审核不通过，审核状态为“提交未通过”",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 28,
+      "businessStage": "产品登记",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品登记】您提交的数据产品“$产品名称$”变更登记申请审核通过，请及时查看！",
+      "triggerAction": "用户提交产品变更申请审核通过，审核状态变为“已通过”",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 29,
+      "businessStage": "产品登记",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品登记】您提交的数据产品“$产品名称$”变更登记申请审核不通过，请及时查看！",
+      "triggerAction": "用户提交产品变更申请审核不通过，审核状态为“变更未通过”",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 30,
+      "businessStage": "产品登记",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品登记】您提交的数据产品“$产品名称$”撤销登记申请审核通过，请及时查看！",
+      "triggerAction": "用户提交产品撤销申请审核通过，审核状态为“已撤销”",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 31,
+      "businessStage": "产品登记",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品登记】您提交的数据产品“$产品名称$”撤销登记申请审核不通过，请及时查看！",
+      "triggerAction": "用户提交产品撤销申请审核不通过，审核状态为“撤销未通过”",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 32,
+      "businessStage": "产品上架",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品上架】您提交的数据产品“$产品名称$”上架申请审核通过，请及时查看！",
+      "triggerAction": "用户提交产品上架申请审核通过",
+      "updateTime": "【2026-08-06】0904版本修改了消息模板"
+    },
+    {
+      "id": 33,
+      "businessStage": "产品上架",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品上架】您提交的数据产品“$产品名称$”上架申请审核不通过，请及时查看！",
+      "triggerAction": "用户提交产品上架申请审核不通过",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 34,
+      "businessStage": "产品上架",
+      "messageType": "待办消息",
+      "recipient": "运营机构",
+      "template": "【产品上架】您开发的数据产品“$产品名称$”已通过登记，请在3个工作日（$计算出3个工作日截止到哪天，精确年月日时分$）内通过授权运营平台发布上架",
+      "triggerAction": "产品提交到区域节点登记通过触发一次，到期前三日和超期后每天都各触发一次消息通知，直到完成上架申请提交操作",
+      "updateTime": "【2026-04-30】安全审查通过时还没有产品标识码，站内信息只展示产品名称\n【2026-08-06】修改了消息模板和更新时间，由之前安全审查通过触发变为产品登记通过后触发"
+    },
+    {
+      "id": 35,
+      "businessStage": "产品上架",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品下架】您提交的数据产品“$产品名称$”下架申请审核通过，请及时查看！",
+      "triggerAction": "用户提交产品下架申请审核通过",
+      "updateTime": "【2026-08-06】0904版本修改了消息模板"
+    },
+    {
+      "id": 36,
+      "businessStage": "产品上架",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品下架】您提交的数据产品“$产品名称$”下架申请审核不通过，请及时查看！",
+      "triggerAction": "用户提交产品下架申请审核不通过",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 37,
+      "businessStage": "实施机构备案",
+      "messageType": "待办消息",
+      "recipient": "对应地域的数据局",
+      "template": "【实施机构备案】您有新的实施机构备案申请待确认，请及时处理！",
+      "triggerAction": "行业主管部门提交实施机构备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 38,
+      "businessStage": "实施机构备案",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【实施机构备案】您提交的实施机构备案申请已通过，请及时查看！",
+      "triggerAction": "数据局通过实施机构备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 39,
+      "businessStage": "实施机构备案",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【实施机构备案】您提交的实施机构备案申请已退回，请及时查看！",
+      "triggerAction": "数据局退回实施机构备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 40,
+      "businessStage": "实施方案联审",
+      "messageType": "待办消息",
+      "recipient": "对应地域的数据局",
+      "template": "【实施方案联审】您有新的实施方案联审申请待确认，请及时处理！",
+      "triggerAction": "实施机构提交实施方案联审",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 41,
+      "businessStage": "实施方案联审",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【实施方案联审】您提交的实施方案联审申请已通过，请及时查看！",
+      "triggerAction": "数据局通过实施方案联审",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 42,
+      "businessStage": "实施方案联审",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【实施方案联审】您提交的实施方案联审申请不通过，请及时查看！",
+      "triggerAction": "数据局不通过实施方案联审",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 43,
+      "businessStage": "实施方案备案",
+      "messageType": "待办消息",
+      "recipient": "对应地域的数据局",
+      "template": "【实施方案备案】您有新的实施方案备案申请待确认，请及时处理！",
+      "triggerAction": "实施机构提交实施方案备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 44,
+      "businessStage": "实施方案备案",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【实施方案备案】您提交的实施方案备案申请已通过，请及时查看！",
+      "triggerAction": "数据局通过实施方案备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 45,
+      "businessStage": "实施方案备案",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【实施方案备案】您提交的实施方案备案申请已退回，请及时查看！",
+      "triggerAction": "数据局退回实施方案备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 46,
+      "businessStage": "运营机构备案",
+      "messageType": "待办消息",
+      "recipient": "对应地域的数据局",
+      "template": "【运营机构备案】您有新的运营机构备案申请待确认，请及时处理！",
+      "triggerAction": "实施机构提交运营机构备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 47,
+      "businessStage": "运营机构备案",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【运营机构备案】您提交的运营机构备案申请已通过，请及时查看！",
+      "triggerAction": "数据局通过运营机构备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 48,
+      "businessStage": "运营机构备案",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【运营机构备案】您提交的运营机构备案申请已退回，请及时查看！",
+      "triggerAction": "数据局退回运营机构备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 49,
+      "businessStage": "运营协议备案",
+      "messageType": "待办消息",
+      "recipient": "对应地域的数据局",
+      "template": "【运营协议备案】您有新的运营协议备案申请待确认，请及时处理！",
+      "triggerAction": "实施机构提交运营协议备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 50,
+      "businessStage": "运营协议备案",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【运营协议备案】您提交的运营协议备案申请已通过，请及时查看！",
+      "triggerAction": "数据局通过运营协议备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 51,
+      "businessStage": "运营协议备案",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【运营协议备案】您提交的运营协议备案申请已退回，请及时查看！",
+      "triggerAction": "数据局退回运营协议备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 52,
+      "businessStage": "产品和服务清单备案",
+      "messageType": "待办消息",
+      "recipient": "对应地域的实施机构 / 数据局",
+      "template": "【产品和服务清单备案】您有新的产品和服务清单备案申请待确认，请及时处理！",
+      "triggerAction": "实施机构：运营机构提交产品和服务清单备案\n数据局：实施机构通过产品和服务清单备案申请",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 53,
+      "businessStage": "产品和服务清单备案",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品和服务清单备案】您提交的产品和服务清单备案申请已通过，请及时查看！",
+      "triggerAction": "数据局通过产品和服务清单备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    },
+    {
+      "id": 54,
+      "businessStage": "产品和服务清单备案",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【产品和服务清单备案】您提交的产品和服务清单备案申请已退回，请及时查看！",
+      "triggerAction": "实施机构、数据局退回产品和服务清单备案",
+      "updateTime": "【2026-08-06】0904版本新增"
+    }
+  ]
+}

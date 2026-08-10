@@ -80,27 +80,27 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
             </div>
             {!sidebarCollapsed && !collapsedGroups['备案管理'] && (
               <div className="nav-items">
-                <a className={'nav-item nav-item-link' + (activeMenu === 'product-service-filing' ? ' active' : '')} href="../product-service-filing.html"><span className="nav-text">产品和服务清单备案</span></a>
-                <a className={'nav-item nav-item-link' + (activeMenu === 'operation-agreement-filing' ? ' active' : '')} href="../operation-agreement-filing.html"><span className="nav-text">运营协议备案</span></a>
+                <a className={'nav-item nav-item-link' + (activeMenu === 'product-service-filing' ? ' active' : '')} href="/prototypes/product-service-filing.html"><span className="nav-text">产品和服务清单备案</span></a>
+                <a className={'nav-item nav-item-link' + (activeMenu === 'operation-agreement-filing' ? ' active' : '')} href="/prototypes/operation-agreement-filing.html"><span className="nav-text">运营协议备案</span></a>
                 {onAuthRecordClick && (
                   <div className="nav-item nav-item-clickable" onClick={onAuthRecordClick}><span className="nav-text">授权记录</span></div>
                 )}
               </div>
             )}
           </div>
-          <a className={'nav-top-link' + (activeMenu === 'product-security-review' ? ' active' : '')} href="../product-security-review.html" title="产品安全审查">
+          <a className={'nav-top-link' + (activeMenu === 'product-security-review' ? ' active' : '')} href="/prototypes/product-security-review.html" title="产品安全审查">
             <span className="nav-icon"><ShieldCheck aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">产品安全审查</span>}
           </a>
-          <a className={'nav-top-link' + (activeMenu === 'data-resource-auth' ? ' active' : '')} href="../data-resource-auth.html" title="数据资源授权">
+          <a className={'nav-top-link' + (activeMenu === 'data-resource-auth' ? ' active' : '')} href="/prototypes/data-resource-auth.html" title="数据资源授权">
             <span className="nav-icon"><KeyRound aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">数据资源授权</span>}
           </a>
-          <a className={'nav-top-link' + (activeMenu === 'data-resource-review' ? ' active' : '')} href="../data-resource-review.html" title="数据资源初审">
+          <a className={'nav-top-link' + (activeMenu === 'data-resource-review' ? ' active' : '')} href="/prototypes/data-resource-review.html" title="数据资源初审">
             <span className="nav-icon"><FileSearch aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">数据资源初审</span>}
           </a>
-          <a className={'nav-top-link' + (activeMenu === 'data-resource-recheck' ? ' active' : '')} href="../data-resource-recheck.html" title="数据资源复审">
+          <a className={'nav-top-link' + (activeMenu === 'data-resource-recheck' ? ' active' : '')} href="/prototypes/data-resource-recheck.html" title="数据资源复审">
             <span className="nav-icon"><FileCheck aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">数据资源复审</span>}
           </a>
@@ -123,7 +123,7 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
             <span className="current">{breadcrumb}</span>
           </div>
           <div className="header-right">
-            <a className="spec-btn" href="../index.html">
+            <a className="spec-btn" href="/prototypes/index.html">
               <Home size={14} />
               <span>版本管理</span>
             </a>
@@ -166,7 +166,7 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
             <div className="backend-user-menu">
               <div className="backend-account"><div><strong>数***</strong><em>法人</em></div><span>湖南数据产业集团</span></div>
               <ChevronDown size={16} />
-              <div className="backend-user-dropdown"><a href="../authorized-operation-portal.html">门户首页</a></div>
+              <div className="backend-user-dropdown"><a href="/prototypes/authorized-operation-portal.html">门户首页</a></div>
             </div>
           </div>
         </header>

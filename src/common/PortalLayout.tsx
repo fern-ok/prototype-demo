@@ -13,9 +13,9 @@ interface PortalLayoutProps {
 }
 
 const navItems: Array<{ key: PortalNavKey; label: string; href: string }> = [
-  { key: 'home', label: '首页', href: '../authorized-operation-portal/index.html' },
+  { key: 'home', label: '首页', href: '/prototypes/authorized-operation-portal.html' },
   { key: 'resource', label: '数据资源', href: '#' },
-  { key: 'product', label: '数据产品', href: '../authorized-operation-portal-products/index.html' },
+  { key: 'product', label: '数据产品', href: '/prototypes/authorized-operation-portal-products.html' },
   { key: 'news', label: '新闻公告', href: '#' },
   { key: 'help', label: '帮助中心', href: '#' },
 ];
@@ -27,12 +27,12 @@ const PortalLayout = ({ children, activeNav = 'none', specContent, changeLogCont
     <div className={['portal-shell', className].filter(Boolean).join(' ')}>
       <header className="portal-shell-header">
         <div className="portal-shell-brand-zone">
-          <a className="portal-shell-brand" href="../authorized-operation-portal/index.html">
+          <a className="portal-shell-brand" href="/prototypes/authorized-operation-portal.html">
             <div className="portal-shell-brand-mark">数</div>
             <span>公共数据资源授权运营管理平台</span>
           </a>
           <div className="portal-shell-actions">
-            <a className="portal-shell-action" href="../index.html">
+            <a className="portal-shell-action" href="/prototypes/index.html">
               <Home size={14} />
               <span>版本管理</span>
             </a>
@@ -65,8 +65,8 @@ const PortalLayout = ({ children, activeNav = 'none', specContent, changeLogCont
             </div>
             <ChevronDown size={16} />
             <div className="portal-shell-user-dropdown">
-              <a href="../authorized-operation-portal-profile/index.html">个人中心</a>
-              <a href="../product-service-filing.html">管理后台</a>
+              <a href="/prototypes/authorized-operation-portal-profile.html">个人中心</a>
+              <a href="/prototypes/product-service-filing.html">管理后台</a>
             </div>
           </div>
         </div>

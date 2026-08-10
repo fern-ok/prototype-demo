@@ -75,7 +75,7 @@ const OriginalComponent = () => {
 
       <main className="index-main">
         <section className="entry-cards">
-          <a className="entry-card" href="../authorized-operation-portal.html">
+          <a className="entry-card" href="/prototypes/authorized-operation-portal.html">
             <div className="entry-card-icon portal">
               <Monitor size={36} />
             </div>
@@ -84,7 +84,7 @@ const OriginalComponent = () => {
             </div>
             <ExternalLink className="entry-card-arrow" size={20} />
           </a>
-          <a className="entry-card" href="../product-security-review.html">
+          <a className="entry-card" href="/prototypes/product-security-review.html">
             <div className="entry-card-icon admin">
               <LayoutDashboard size={36} />
             </div>

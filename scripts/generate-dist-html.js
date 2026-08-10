@@ -139,3 +139,35 @@ if (fs.existsSync(srcBootstrap)) {
 } else {
   console.warn('⚠ html-template-bootstrap.js 不存在，请先构建 prototype-admin');
 }
+
+// 在 dist 根目录生成 index.html，自动跳转到版本管理首页
+const rootIndexHtml = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>公共数据资源授权运营管理平台</title>
+  <meta http-equiv="refresh" content="0; url=./prototypes/index.html">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body { display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1e3a5f 0%, #0f63f4 100%); color: #fff; }
+    .redirect-box { text-align: center; padding: 40px; }
+    .redirect-box h1 { font-size: 22px; margin: 0 0 12px; }
+    .redirect-box p { font-size: 14px; opacity: 0.8; margin: 0; }
+    .redirect-box a { color: #fff; text-decoration: underline; }
+  </style>
+  <script>
+    // 如 meta refresh 未生效（通常会自动跳转），通过 JS 跳转
+    window.location.replace('./prototypes/index.html');
+  </script>
+</head>
+<body>
+  <div class="redirect-box">
+    <h1>公共数据资源授权运营管理平台</h1>
+    <p>正在跳转到版本管理首页...<br>如未自动跳转，请 <a href="./prototypes/index.html">点击此处</a></p>
+  </div>
+</body>
+</html>`;
+
+fs.writeFileSync(path.join(distDir, 'index.html'), rootIndexHtml, 'utf8');
+console.log('✓ 已生成根目录 index.html，跳转到版本管理首页');

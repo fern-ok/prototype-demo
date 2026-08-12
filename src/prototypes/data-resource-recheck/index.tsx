@@ -43,7 +43,7 @@ interface ResourceRecord {
 }
 
 const INITIATORS = ['实施机构', '运营机构'];
-const PROCESSED_STATUSES = ['待初审', '初审不通过', '复审不通过', '复审通过'];
+const PROCESSED_STATUSES = ['复审通过', '复审不通过'];
 const RECHECK_RESULTS = ['复审通过', '复审不通过'];
 
 const seedData: ResourceRecord[] = [
@@ -234,7 +234,7 @@ const OriginalComponent = () => {
   const [recheckErrors, setRecheckErrors] = useState<Record<string, string>>({});
 
   const pendingRecords = useMemo(() => records.filter(r => r.reviewStatus === '待复审'), [records]);
-  const processedRecords = useMemo(() => records.filter(r => r.reviewStatus !== '待复审'), [records]);
+  const processedRecords = useMemo(() => records.filter(r => PROCESSED_STATUSES.includes(r.reviewStatus)), [records]);
 
   const filteredPending = useMemo(() => {
     return pendingRecords.filter(r => {

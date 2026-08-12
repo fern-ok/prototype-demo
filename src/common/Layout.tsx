@@ -5,7 +5,7 @@
  * 提供统一的侧边栏和顶部栏布局，供各业务页面复用
  */
 
-import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, FileSearch, FileCheck, KeyRound, X, Bell } from 'lucide-react';
+import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, FileSearch, FileCheck, KeyRound, X, Bell, LayoutDashboard } from 'lucide-react';
 import { useState, ReactNode } from 'react';
 import messageTemplateTable from '../database/message-templates.json';
 import './layout.css';
@@ -35,7 +35,7 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplate[] = messageTemplateTa
 
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'product-service-filing' | 'operation-agreement-filing' | 'product-security-review' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck';
+  activeMenu: 'implement-org-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'product-security-review' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;
@@ -70,6 +70,10 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
           {!sidebarCollapsed && <div className="logo-text">公共数据资源授权运营管理平台</div>}
         </div>
         <nav className="sidebar-nav">
+          <a className={'nav-top-link' + (activeMenu === 'implement-org-workbench' ? ' active' : '')} href="/prototypes/implement-org-workbench.html" title="实施机构工作台">
+            <span className="nav-icon"><LayoutDashboard aria-hidden="true" /></span>
+            {!sidebarCollapsed && <span className="nav-text">实施机构工作台</span>}
+          </a>
           <div className="nav-group">
             <div className={'nav-group-title ' + (collapsedGroups['备案管理'] ? 'collapsed' : '')} onClick={() => toggleGroup('备案管理')}>
               <span className="nav-label">
@@ -118,7 +122,7 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
           <div className="breadcrumb">
             <span>首页</span>
             <span className="separator">/</span>
-            <span>{(activeMenu === 'product-security-review' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理' : '备案管理'}</span>
+            <span>{(activeMenu === 'product-security-review' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理' : (activeMenu === 'implement-org-workbench' ? '工作台' : '备案管理')}</span>
             <span className="separator">/</span>
             <span className="current">{breadcrumb}</span>
           </div>

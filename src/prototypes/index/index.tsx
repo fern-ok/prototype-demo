@@ -93,6 +93,16 @@ const OriginalComponent = () => {
             </div>
             <ExternalLink className="entry-card-arrow" size={20} />
           </a>
+          <a className="entry-card" href="/prototypes/implementation-workbench.html">
+            <div className="entry-card-icon admin">
+              <LayoutDashboard size={36} />
+            </div>
+            <div className="entry-card-info">
+              <h3>实施机构工作台</h3>
+              <p>统计分析与待办任务中心</p>
+            </div>
+            <ExternalLink className="entry-card-arrow" size={20} />
+          </a>
         </section>
 
         <section className="version-list">

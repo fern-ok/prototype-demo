@@ -35,7 +35,7 @@ const OriginalComponent = () => (
       <section className="profile-shell">
         <aside className="profile-tabs">
           <h1>个人中心</h1>
-          <nav>{menuItems.map((item, index) => <button className={[index === 0 ? 'active' : '', ['我的订阅', '我的需求', '我的应用', '我的收藏'].includes(item) ? 'menu-orange' : ''].filter(Boolean).join(' ')} key={item}>{item}</button>)}</nav>
+          <nav>{menuItems.map((item, index) => <button className={[index === 0 ? 'active' : '', ['我的订阅', '我的需求', '我的应用', '我的收藏'].includes(item) ? 'menu-orange' : ''].filter(Boolean).join(' ')} key={item} onClick={() => { if (index === 0) window.location.href = '/prototypes/authorized-operation-portal-profile.html'; if (index === 3) window.location.href = '/prototypes/my-demand.html'; }}>{item}</button>)}</nav>
         </aside>
         <section className="profile-content">
           <div className="info-section">

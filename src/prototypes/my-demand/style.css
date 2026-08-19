@@ -1,0 +1,28 @@
+@import "../authorized-operation-portal-profile/style.css";
+.my-demand-main { width: 1300px; margin: 0 auto; padding: 106px 0 64px; }
+.my-demand-shell { min-height: 746px; display: grid; grid-template-columns: 220px 1fr; background: #fff; box-shadow: 0 8px 24px rgba(30,65,110,.12); }
+.my-demand-shell .profile-tabs { background: #f7f9fc; }
+.my-demand-shell .profile-tabs button.active.menu-orange { color: var(--profile-blue); }
+.my-demand-content { position: relative; min-width: 0; min-height: 746px; padding: 40px 30px 0; overflow: hidden; }
+.my-demand-content::after { content: ''; position: absolute; right: 28px; bottom: 0; width: 360px; height: 72px; opacity: .55; background: repeating-linear-gradient(90deg, transparent 0 9px, #79b8ff 9px 11px); clip-path: polygon(0 100%, 0 85%, 20% 70%, 38% 78%, 56% 42%, 70% 65%, 80% 16%, 92% 62%, 100% 50%, 100% 100%); pointer-events: none; }
+.demand-filter { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px 20px; align-items: end; margin-bottom: 16px; }
+.demand-filter label { display: flex; align-items: center; gap: 8px; color: #101828; font-size: 13px; white-space: nowrap; }
+.demand-filter input, .demand-filter select { width: 100%; height: 36px; padding: 0 10px; border: 1px solid #d7deea; border-radius: 4px; background: #fff; color: #344054; outline: none; }
+.demand-filter .date-range { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.demand-filter .date-range input { min-width: 0; }
+.demand-filter .date-range i { font-style: normal; color: #98a2b3; }
+.filter-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; }
+.query-btn, .reset-btn { height: 36px; padding: 0 18px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.query-btn { color: #fff; border: 1px solid #0b6ff0; background: #0b6ff0; }
+.reset-btn { color: #475467; border: 1px solid #d0d5dd; background: #fff; }
+.my-demand-table { width: 100%; border-collapse: collapse; table-layout: fixed; color: #101828; font-size: 13px; }
+.my-demand-table th, .my-demand-table td { height: 52px; padding: 0 10px; border: 1px solid #e4e7ec; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.my-demand-table th { height: 48px; color: #475467; background: #fafafa; font-weight: 500; }
+.demand-status { padding: 3px 8px; border-radius: 2px; font-size: 12px; }
+.demand-status.已上报 { color: #0b6ff0; background: #e9f3ff; }.demand-status.已响应 { color: #d97706; background: #fff5df; }.demand-status.意向达成 { color: #039855; background: #e9f9ef; }
+.view-btn { padding: 0; color: #0b6ff0; border: 0; background: transparent; cursor: pointer; }
+.empty { height: 120px !important; color: #98a2b3; text-align: center !important; }
+.my-demand-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 20px; color: #667085; font-size: 13px; }
+.my-demand-pagination select, .my-demand-pagination input { height: 30px; border: 1px solid #d0d5dd; border-radius: 4px; background: #fff; }.my-demand-pagination button, .my-demand-pagination b { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #d0d5dd; border-radius: 4px; background: #fff; color: #0b6ff0; }.my-demand-pagination b { color: #fff; background: #0b6ff0; border-color: #0b6ff0; }.my-demand-pagination input { width: 32px; text-align: center; }
+.demand-view-overlay { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(16,24,40,.45); }.demand-view-modal { width: 620px; max-width: calc(100vw - 40px); background: #fff; box-shadow: 0 12px 30px rgba(16,24,40,.2); }.demand-view-modal header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid #eaecf0; }.demand-view-modal header h3 { margin: 0; font-size: 17px; }.demand-view-modal header button { border: 0; background: transparent; color: #667085; font-size: 20px; cursor: pointer; }.demand-view-body { display: grid; grid-template-columns: 1fr 1fr; padding: 24px; }.demand-view-body p { display: grid; grid-template-columns: 110px 1fr; gap: 10px; margin: 0; padding: 12px 0; border-bottom: 1px solid #f2f4f7; color: #344054; font-size: 13px; }.demand-view-body strong { color: #667085; font-weight: 500; }
+@media (max-width: 900px) { .my-demand-main { padding: 20px; }.my-demand-shell { grid-template-columns: 180px 1fr; }.demand-filter { grid-template-columns: 1fr 1fr; } }

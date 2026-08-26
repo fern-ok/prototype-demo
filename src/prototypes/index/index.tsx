@@ -7,17 +7,23 @@
  */
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, ExternalLink, LayoutDashboard, Monitor, Shield } from 'lucide-react';
-import v20260928 from './versions/20260928.md?raw';
+import { ChevronDown, ChevronUp, Database, ExternalLink, LayoutDashboard, Monitor, Shield } from 'lucide-react';
+import v20260824 from './versions/20260824.md?raw';
 import v20260904 from './versions/20260904.md?raw';
+import v20260924 from './versions/20260924.md?raw';
 import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
 
 const versions = [
   {
-    version: '20260928',
-    title: '20260928版本',
-    content: v20260928,
+    version: '20260924',
+    title: '20260924版本',
+    content: v20260924,
+  },
+  {
+    version: '20260824',
+    title: '20260824版本',
+    content: v20260824,
   },
   {
     version: '20260904',

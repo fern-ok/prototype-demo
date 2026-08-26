@@ -72,7 +72,7 @@ const OriginalComponent = () => {
   const handleCityChange = (cityId: string) => {
     setSelectedCity(cityId);
     setSelectedDistrict('');
-    setShowDistrictPanel(cityId && cities.find(c => c.id === cityId)?.districts.length > 0);
+    setShowDistrictPanel(Boolean(cityId && cities.find(c => c.id === cityId)?.districts.length > 0));
   };
 
   const handleDistrictChange = (district: string) => {

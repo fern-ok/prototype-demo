@@ -5,7 +5,7 @@
  * 提供统一的侧边栏和顶部栏布局，供各业务页面复用
  */
 
-import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, FileSearch, FileCheck, KeyRound, X, Bell, LayoutDashboard } from 'lucide-react';
+import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, FileSearch, FileCheck, KeyRound, X, Bell, LayoutDashboard, ClipboardList, ListTree } from 'lucide-react';
 import { useState, ReactNode } from 'react';
 import messageTemplateTable from '../database/message-templates.json';
 import './layout.css';
@@ -35,7 +35,7 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplate[] = messageTemplateTa
 
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'implement-org-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'product-security-review' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'demand-management';
+  activeMenu: 'implement-org-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'demand-management';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;
@@ -96,6 +96,14 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
             <span className="nav-icon"><ShieldCheck aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">产品安全审查</span>}
           </a>
+          <a className={'nav-top-link' + (activeMenu === 'product-registration' ? ' active' : '')} href="/prototypes/product-registration.html" title="产品登记">
+            <span className="nav-icon"><ClipboardList aria-hidden="true" /></span>
+            {!sidebarCollapsed && <span className="nav-text">产品登记</span>}
+          </a>
+          <a className={'nav-top-link' + (activeMenu === 'data-resource-catalog' ? ' active' : '')} href="/prototypes/data-resource-catalog.html" title="数据资源目录">
+            <span className="nav-icon"><ListTree aria-hidden="true" /></span>
+            {!sidebarCollapsed && <span className="nav-text">数据资源目录</span>}
+          </a>
           <a className={'nav-top-link' + (activeMenu === 'data-resource-auth' ? ' active' : '')} href="/prototypes/data-resource-auth.html" title="数据资源授权">
             <span className="nav-icon"><KeyRound aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">数据资源授权</span>}
@@ -126,7 +134,7 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
           <div className="breadcrumb">
             <span>首页</span>
             <span className="separator">/</span>
-            <span>{(activeMenu === 'product-security-review' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理' : (activeMenu === 'implement-org-workbench' ? '工作台' : (activeMenu === 'demand-management' ? '需求管理' : '备案管理'))}</span>
+            <span>{(activeMenu === 'product-security-review' || activeMenu === 'product-registration' || activeMenu === 'data-resource-catalog' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理' : (activeMenu === 'implement-org-workbench' ? '工作台' : (activeMenu === 'demand-management' ? '需求管理' : '备案管理'))}</span>
             <span className="separator">/</span>
             <span className="current">{breadcrumb}</span>
           </div>

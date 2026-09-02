@@ -11,6 +11,7 @@ import PasswordGuard from '../../common/PasswordGuard';
 import specContent from './spec.md?raw';
 import changeLogContent from './change.md?raw';
 import './style.css';
+import '../../common/backend-list.css';
 
 interface ProductItem {
   id: number;
@@ -845,5 +846,4 @@ export default Component;
 if (typeof window !== 'undefined' && (window as any).__AXHUB_DEFINE_COMPONENT__) {
   (window as any).__AXHUB_DEFINE_COMPONENT__(Component);
 }
-
 

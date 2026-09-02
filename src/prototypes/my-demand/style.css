@@ -12,6 +12,9 @@
 .demand-filter .date-range input { min-width: 0; }
 .demand-filter .date-range i { font-style: normal; color: #98a2b3; }
 .filter-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; }
+.filter-actions .btn { height: 36px; min-width: 88px; padding: 0 18px; border-radius: 4px; font-size: 13px; line-height: 34px; cursor: pointer; }
+.filter-actions .btn-primary { color: #fff; background: #1268e8; border: 1px solid #1268e8; }
+.filter-actions .btn-default { color: #667085; background: #fff; border: 1px solid #d0d5dd; }
 .query-btn, .reset-btn { height: 36px; padding: 0 18px; border-radius: 4px; cursor: pointer; font-size: 13px; }
 .query-btn { color: #fff; border: 1px solid #0b6ff0; background: #0b6ff0; }
 .reset-btn { color: #475467; border: 1px solid #d0d5dd; background: #fff; }
@@ -21,6 +24,7 @@
 .demand-status { padding: 3px 8px; border-radius: 2px; font-size: 12px; }
 .demand-status.已上报 { color: #0b6ff0; background: #e9f3ff; }.demand-status.已响应 { color: #d97706; background: #fff5df; }.demand-status.意向达成 { color: #039855; background: #e9f9ef; }
 .view-btn { padding: 0; color: #0b6ff0; border: 0; background: transparent; cursor: pointer; }
+.view-btn + .view-btn { margin-left: 12px; }
 .empty { height: 120px !important; color: #98a2b3; text-align: center !important; }
 .my-demand-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 20px; color: #667085; font-size: 13px; }
 .my-demand-pagination select, .my-demand-pagination input { height: 30px; border: 1px solid #d0d5dd; border-radius: 4px; background: #fff; }.my-demand-pagination button, .my-demand-pagination b { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #d0d5dd; border-radius: 4px; background: #fff; color: #0b6ff0; }.my-demand-pagination b { color: #fff; background: #0b6ff0; border-color: #0b6ff0; }.my-demand-pagination input { width: 32px; text-align: center; }

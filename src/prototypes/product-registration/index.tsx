@@ -10,6 +10,7 @@ import PasswordGuard from '../../common/PasswordGuard';
 import specContent from './spec.md?raw';
 import changeLogContent from './change.md?raw';
 import './style.css';
+import '../../common/backend-list.css';
 
 type ProductRecord = { id: number; applyNo: string; code: string; name: string; type: string; industry: string; updated: string; status: string };
 const statuses = ['待提交', '提交待审核', '变更待审核', '撤销待审核', '提交未通过', '变更未通过', '撤销未通过', '已通过', '已撤销'];
@@ -51,7 +52,7 @@ const OriginalComponent = () => {
           <div className="filter-item date-range"><label>更新时间</label><div className="date-inputs"><input type="date" value={query.start} onChange={e => setQuery({ ...query, start: e.target.value })} /><span>-</span><input type="date" value={query.end} onChange={e => setQuery({ ...query, end: e.target.value })} /></div></div>
           <div className="filter-item filter-item-select"><label>审核状态</label><select value={query.status} onChange={e => setQuery({ ...query, status: e.target.value })}><option value="">请选择</option>{statuses.map(s => <option key={s}>{s}</option>)}</select></div>
         </div>
-        <div className="filter-actions"><button className="btn btn-primary btn-sm" onClick={() => { setSubmitted(query); setPage(1); }}>查询</button><button className="btn btn-default btn-sm" onClick={reset}>重置</button></div>
+        <div className="filter-actions"><div className="filter-actions-left"><button className="btn btn-primary btn-sm" onClick={() => { setSubmitted(query); setPage(1); }}>查询</button><button className="btn btn-default btn-sm" onClick={reset}>重置</button></div></div>
       </div>
       <div className="table-section">
         <div className="table-wrapper">

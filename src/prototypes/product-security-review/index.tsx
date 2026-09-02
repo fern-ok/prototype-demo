@@ -11,6 +11,7 @@ import specContent from './spec.md?raw';
 import changeLogContent from './change.md?raw';
 import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
+import '../../common/backend-list.css';
 
 interface ReviewRecord {
   id: number;

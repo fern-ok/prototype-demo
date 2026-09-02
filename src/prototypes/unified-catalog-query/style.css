@@ -1,0 +1,325 @@
+/* 统一目录查询 - 页面专属样式
+ * 列表/筛选/分页等基础样式复用 ../../common/backend-list.css
+ * 这里只放本页面特有的样式：统计卡片、表格列宽、查看弹窗、日期校验提示
+ */
+
+/* 筛选区 - "更新时间"格内：label 不要被 min-width/max-width 撑太宽，
+   让后面两个日期 input + 分隔符都能放下，整体仍占 4 列栅格中的 1 列 */
+.ucq-date-range {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #cfd6e3;
+  border-radius: 3px;
+  background: #fff;
+  height: 32px;
+  min-width: 0;
+}
+.ucq-date-range:focus-within {
+  border-color: #3d8bff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
+}
+.ucq-date-range > label {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 0 0 10px;
+  color: #1f2329;
+  font-size: 13px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.ucq-date-range > label::after {
+  content: ":";
+  margin-left: 2px;
+}
+.ucq-date-range .date-inputs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 30px;
+}
+.ucq-date-range .date-input {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+}
+.ucq-date-range .date-input input[type="date"] {
+  width: 100%;
+  height: 30px;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 30px;
+  color: #4b5563;
+  border: 0;
+  background: transparent;
+  outline: none;
+  box-shadow: none;
+  min-width: 0;
+}
+.ucq-date-range .date-input input[type="date"]::-webkit-calendar-picker-indicator {
+  display: block;
+  width: 12px;
+  height: 12px;
+  cursor: pointer;
+  opacity: 0.5;
+  margin: 0 auto;
+}
+.ucq-date-range .date-input input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+.ucq-date-range .date-separator {
+  flex: 0 0 auto;
+  width: 18px;
+  text-align: center;
+  color: #8b95a5;
+  font-size: 12px;
+  line-height: 30px;
+  user-select: none;
+}
+
+.ucq-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 14px 18px 10px;
+}
+
+.ucq-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid #dfe5ef;
+  border-radius: 4px;
+  box-shadow: var(--layout-shadow);
+  min-height: 76px;
+}
+
+.ucq-stat-icon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #0f63f4;
+}
+
+.ucq-stat-icon-provider {
+  background: #e9f1ff;
+  color: #0f63f4;
+}
+
+.ucq-stat-icon-catalog {
+  background: #fff5e6;
+  color: #ed7b2f;
+}
+
+.ucq-stat-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ucq-stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ucq-stat-label {
+  font-size: 13px;
+  color: #606a78;
+  line-height: 18px;
+}
+
+.ucq-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2329;
+  line-height: 32px;
+  letter-spacing: 0.4px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 表格列宽 - 序号/资源名称/资源持有方/目录来源/更新时间/操作 */
+.ucq-table { min-width: 1080px; table-layout: fixed; }
+.ucq-col-index { width: 68px; }
+.ucq-col-name { width: 280px; }
+.ucq-col-provider { width: 260px; }
+.ucq-col-source { width: 140px; }
+.ucq-col-time { width: 170px; }
+.ucq-col-action { width: 100px; }
+.ucq-cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ucq-cell-multiline {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.6;
+}
+
+.ucq-empty-row td {
+  height: 120px;
+  text-align: center;
+  color: #8a95a6;
+  font-size: 13px;
+}
+
+/* 时间范围横排（与公共筛选样式协同） */
+.ucq-stats .filter-actions { padding-top: 0; }
+
+.ucq-filter-buttons {
+  margin-left: 0;
+}
+
+/* 日期范围错误提示 */
+.ucq-error-tip {
+  margin: -4px 18px 10px;
+  padding: 6px 12px;
+  border-radius: 3px;
+  background: #fff1f0;
+  border: 1px solid #ffd3d3;
+  color: #d83a3a;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+/* 分页省略号 */
+.page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  color: #9aa4b2;
+  font-size: 13px;
+}
+
+/* 查看详情弹窗 */
+.ucq-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 9vh 20px 32px;
+  background: rgba(0, 0, 0, .42);
+}
+
+.ucq-modal {
+  width: 640px;
+  max-width: calc(100vw - 48px);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .18);
+  overflow: hidden;
+}
+
+.ucq-modal-head {
+  min-height: 54px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.ucq-modal-head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+.ucq-modal-close {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 2px;
+  color: #9097a3;
+  cursor: pointer;
+}
+
+.ucq-modal-close:hover {
+  background: #f3f6fb;
+  color: #4b5563;
+}
+
+.ucq-modal-body {
+  flex: 1;
+  min-height: 0;
+  padding: 22px 24px;
+  overflow: auto;
+  background: #fff;
+}
+
+.ucq-info-grid {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  border: 1px solid #dfe5ef;
+}
+
+.ucq-info-grid > span,
+.ucq-info-grid > b {
+  padding: 12px 14px;
+  border-bottom: 1px solid #edf0f5;
+  font-size: 13px;
+  line-height: 22px;
+  min-height: 46px;
+}
+
+.ucq-info-grid > span {
+  color: #4b5563;
+  background: #f5f7fb;
+  border-right: 1px solid #dfe5ef;
+  font-weight: 600;
+}
+
+.ucq-info-grid > b {
+  color: #1f2329;
+  font-weight: 400;
+  word-break: break-word;
+}
+
+.ucq-info-grid > span:last-of-type,
+.ucq-info-grid > b:last-of-type,
+.ucq-info-grid > span:nth-last-child(-n+2),
+.ucq-info-grid > b:nth-last-child(-n+2) {
+  border-bottom: 0;
+}
+
+.ucq-modal-foot {
+  min-height: 56px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 20px 14px;
+  border-top: 1px solid #edf0f5;
+  background: #fff;
+}
+
+@media (max-width: 900px) {
+  .ucq-stats {
+    grid-template-columns: 1fr;
+  }
+}

@@ -12,6 +12,7 @@
 import { useState } from 'react';
 import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
+import '../../common/backend-list.css';
 
 const OriginalComponent = () => {
   const [searchText, setSearchText] = useState('');

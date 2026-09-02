@@ -2,7 +2,7 @@
  * @name 运营协议备案
  * @mode axure
  *
- * 运营协议备案页面，支持运营机构、实施机构、数据管理部门三种角色视图
+ * 运营协议备案页面，支持实施机构、数据管理部门两种角色视图
  */
 
 import { useMemo, useState } from 'react';
@@ -11,6 +11,7 @@ import PasswordGuard from '../../common/PasswordGuard';
 import specContent from './spec.md?raw';
 import changeLogContent from './change.md?raw';
 import './style.css';
+import '../../common/backend-list.css';
 
 interface AuditHistoryItem {
   id: number;
@@ -209,6 +210,22 @@ const buildAuditHistory = (record: OperationAgreement): AuditHistoryItem[] => {
   return base;
 };
 
+/** 将日期统一裁剪为 YYYY-MM-DD（兼容 YYYY-MM-DD HH:mm:ss 等带时间的取值） */
+const formatDateOnly = (value?: string) => {
+  const trimmed = (value || '').trim();
+  if (!trimmed) return '';
+  const matched = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  return matched ? matched[1] : trimmed;
+};
+
+/** 授权期限展示格式：YYYY-MM-DD 至 YYYY-MM-DD */
+const formatAuthPeriod = (startDate?: string, endDate?: string) => {
+  const start = formatDateOnly(startDate);
+  const end = formatDateOnly(endDate);
+  if (!start && !end) return '-';
+  return `${start || '-'} 至 ${end || '-'}`;
+};
+
 const createEmptyForm = (): AgreementFormData => ({
   opOrg: OP_ORG_NAME,
   agreement: '',
@@ -285,7 +302,6 @@ const OriginalComponent = () => {
 
   // 操作按钮权限规则
   // 实施机构：已备案→查看、查看存证、变更；待省级确认→查看；省级退回→查看、编辑（拥有运营协议备案功能）
-  // 运营机构：仅查看
   // 数据管理部门：待省级确认→查看、确认；已备案→查看、查看存证；省级退回→查看
   const hasViewEvidence = (record: OperationAgreement) => record.status === '已备案';
   const hasChange = (record: OperationAgreement) => isImplRole && record.status === '已备案';
@@ -522,7 +538,7 @@ const OriginalComponent = () => {
                 <div className="info-cell"><span className="info-label">运营机构</span><span className="info-value">{currentRecord.opOrg}</span></div>
                 <div className="info-cell"><span className="info-label">统一社会信用代码</span><span className="info-value">{currentRecord.creditCode}</span></div>
                 <div className="info-cell"><span className="info-label">运营协议</span><span className="info-value"><a href="#" onClick={(e) => { e.preventDefault(); alert('下载：' + currentRecord.agreement); }} className="agreement-link">{currentRecord.agreement}</a></span></div>
-                <div className="info-cell"><span className="info-label">授权期限</span><span className="info-value">{currentRecord.startDate} 至 {currentRecord.endDate}</span></div>
+                <div className="info-cell"><span className="info-label">授权期限</span><span className="info-value">{formatAuthPeriod(currentRecord.startDate, currentRecord.endDate)}</span></div>
                 <div className="info-cell"><span className="info-label">法人经办人姓名</span><span className="info-value">{currentRecord.legalHandler}</span></div>
                 <div className="info-cell"><span className="info-label">创建时间</span><span className="info-value">{currentRecord.createTime}</span></div>
                 <div className="info-cell"><span className="info-label">备案状态</span><span className="info-value"><span className={'status-tag ' + getStatusClass(currentRecord.status)}>{currentRecord.status}</span></span></div>
@@ -590,7 +606,7 @@ const OriginalComponent = () => {
               <div className="evidence-row"><span className="evidence-label">授权运营类型：</span><span className="evidence-value">{currentRecord.authType}</span></div>
               <div className="evidence-row"><span className="evidence-label">领域名称：</span><span className="evidence-value">{currentRecord.domain}</span></div>
               <div className="evidence-row"><span className="evidence-label">运营协议：</span><span className="evidence-value">{currentRecord.agreement}</span></div>
-              <div className="evidence-row"><span className="evidence-label">授权期限：</span><span className="evidence-value">{currentRecord.startDate} 至 {currentRecord.endDate}</span></div>
+              <div className="evidence-row"><span className="evidence-label">授权期限：</span><span className="evidence-value">{formatAuthPeriod(currentRecord.startDate, currentRecord.endDate)}</span></div>
               {currentRecord.status === '已备案' && (
                 <div className="evidence-row"><span className="evidence-label">备案时间：</span><span className="evidence-value">{currentRecord.filingTime}</span></div>
               )}
@@ -627,6 +643,12 @@ const OriginalComponent = () => {
               <span className="confirm-info-label">统一社会信用代码：</span>
               <span className="confirm-info-value">{currentRecord.creditCode}</span>
             </div>
+            {isDeptRole && (
+              <div className="confirm-info-row">
+                <span className="confirm-info-label">授权期限：</span>
+                <span className="confirm-info-value">{formatAuthPeriod(currentRecord.startDate, currentRecord.endDate)}</span>
+              </div>
+            )}
             <div className="confirm-info-row">
               <span className="confirm-info-label">情况说明：</span>
               <span className="confirm-info-value">{currentRecord.remark || '-'}</span>
@@ -730,8 +752,8 @@ const OriginalComponent = () => {
           </div>
           <div className="filter-actions">
             <div className="filter-actions-left">
-              <button className="btn btn-primary btn-sm" onClick={() => setCurrentPage(1)}>搜索</button>
-              <button className="btn btn-default btn-sm" onClick={handleReset}>清空</button>
+              <button className="btn btn-primary btn-sm" onClick={() => setCurrentPage(1)}>查询</button>
+              <button className="btn btn-default btn-sm" onClick={handleReset}>重置</button>
             </div>
           </div>
         </div>
@@ -742,8 +764,10 @@ const OriginalComponent = () => {
       <div className="filter-section">
 
         <div className="filter-actions">
-          <div className="filter-actions-left">
-          </div>
+          {!isImplRole && <div className="filter-actions-left">
+            <button className="btn btn-primary btn-sm" onClick={() => setCurrentPage(1)}>查询</button>
+            <button className="btn btn-default btn-sm" onClick={handleReset}>重置</button>
+          </div>}
           <div className="filter-actions-right">
             <div className="page-actions">
               {canAdd && <button className="btn btn-primary" onClick={handleAdd}>+ 运营协议备案</button>}

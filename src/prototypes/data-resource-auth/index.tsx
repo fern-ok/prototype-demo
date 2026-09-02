@@ -11,6 +11,7 @@ import specContent from './spec.md?raw';
 import changeLogContent from './change.md?raw';
 import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
+import '../../common/backend-list.css';
 
 interface AuthRecord {
   id: number;
@@ -412,8 +413,8 @@ const OriginalComponent = () => {
       </div>
       <div className="filter-actions" style={{ justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button className="btn btn-primary btn-sm" onClick={() => setCurrentPage(1)}>搜索</button>
-          <button className="btn btn-default btn-sm" onClick={handleReset}>清空</button>
+          <button className="btn btn-primary btn-sm" onClick={() => setCurrentPage(1)}>查询</button>
+          <button className="btn btn-default btn-sm" onClick={handleReset}>重置</button>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button className="btn btn-default btn-sm" onClick={() => setShowRecordModal(true)}>授权记录</button>

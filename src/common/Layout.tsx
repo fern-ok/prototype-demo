@@ -5,7 +5,7 @@
  * 提供统一的侧边栏和顶部栏布局，供各业务页面复用
  */
 
-import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, FileSearch, FileCheck, KeyRound, X, Bell, LayoutDashboard, ClipboardList, ListTree } from 'lucide-react';
+import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, FileSearch, FileCheck, KeyRound, X, Bell, LayoutDashboard, ClipboardList, ListTree, Settings2, Search } from 'lucide-react';
 import { useState, ReactNode } from 'react';
 import messageTemplateTable from '../database/message-templates.json';
 import './layout.css';
@@ -35,7 +35,7 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplate[] = messageTemplateTa
 
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'implement-org-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'demand-management';
+  activeMenu: 'implement-org-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'demand-management' | 'domain-management' | 'unified-catalog-query';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;
@@ -57,6 +57,15 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
   const [showChangeLogModal, setShowChangeLogModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
 
+  // 一级菜单（如统一目录查询）没有父级分类，面包屑直接展示 首页 / 当前页
+  const parentMenu = activeMenu === 'unified-catalog-query'
+    ? ''
+    : activeMenu === 'domain-management' ? '系统管理'
+      : (activeMenu === 'product-security-review' || activeMenu === 'product-registration' || activeMenu === 'data-resource-catalog' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理'
+        : activeMenu === 'implement-org-workbench' ? '工作台'
+          : activeMenu === 'demand-management' ? '需求管理'
+            : '备案管理';
+
   const toggleGroup = (groupName: string) => {
     if (sidebarCollapsed) return;
     setCollapsedGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }));
@@ -73,6 +82,10 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
           <a className={'nav-top-link' + (activeMenu === 'implement-org-workbench' ? ' active' : '')} href="/prototypes/implement-org-workbench.html" title="工作台">
             <span className="nav-icon"><LayoutDashboard aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">工作台</span>}
+          </a>
+          <a className={'nav-top-link' + (activeMenu === 'unified-catalog-query' ? ' active' : '')} href="/prototypes/unified-catalog-query.html" title="统一目录查询">
+            <span className="nav-icon"><Search aria-hidden="true" /></span>
+            {!sidebarCollapsed && <span className="nav-text">统一目录查询</span>}
           </a>
           <div className="nav-group">
             <div className={'nav-group-title ' + (collapsedGroups['备案管理'] ? 'collapsed' : '')} onClick={() => toggleGroup('备案管理')}>
@@ -120,6 +133,20 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
             <span className="nav-icon"><FileText aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">需求管理</span>}
           </a>
+          <div className="nav-group">
+            <div className={'nav-group-title ' + (collapsedGroups['系统管理'] ? 'collapsed' : '')} onClick={() => toggleGroup('系统管理')}>
+              <span className="nav-label">
+                <span className="nav-icon"><Settings2 aria-hidden="true" /></span>
+                {!sidebarCollapsed && <span>系统管理</span>}
+              </span>
+              {!sidebarCollapsed && <svg className="nav-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>}
+            </div>
+            {!sidebarCollapsed && !collapsedGroups['系统管理'] && (
+              <div className="nav-items">
+                <a className={'nav-item nav-item-link' + (activeMenu === 'domain-management' ? ' active' : '')} href="/prototypes/domain-management.html"><span className="nav-text">领域管理</span></a>
+              </div>
+            )}
+          </div>
         </nav>
         <div className="sidebar-footer">
           <button className="sidebar-toggle-btn" onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
@@ -134,8 +161,12 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
           <div className="breadcrumb">
             <span>首页</span>
             <span className="separator">/</span>
-            <span>{(activeMenu === 'product-security-review' || activeMenu === 'product-registration' || activeMenu === 'data-resource-catalog' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理' : (activeMenu === 'implement-org-workbench' ? '工作台' : (activeMenu === 'demand-management' ? '需求管理' : '备案管理'))}</span>
-            <span className="separator">/</span>
+            {parentMenu && (
+              <>
+                <span>{parentMenu}</span>
+                <span className="separator">/</span>
+              </>
+            )}
             <span className="current">{breadcrumb}</span>
           </div>
           <div className="header-right">

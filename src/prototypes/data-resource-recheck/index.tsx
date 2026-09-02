@@ -12,6 +12,7 @@ import changeLogContent from './change.md?raw';
 import messageTemplateTable from '../../database/message-templates.json';
 import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
+import '../../common/backend-list.css';
 
 
 const notificationTemplates = messageTemplateTable.records.map(item => ({
@@ -392,8 +393,10 @@ const OriginalComponent = () => {
         </div>
       </div>
       <div className="filter-actions">
-        <button className="btn btn-primary btn-sm" onClick={() => setCurrentPage(1)}>搜索</button>
-        <button className="btn btn-default btn-sm" onClick={handlePendingReset}>清空</button>
+        <div className="filter-actions-left">
+          <button className="btn btn-primary btn-sm" onClick={() => setCurrentPage(1)}>查询</button>
+          <button className="btn btn-default btn-sm" onClick={handlePendingReset}>重置</button>
+        </div>
       </div>
     </div>
   );
@@ -443,8 +446,10 @@ const OriginalComponent = () => {
         </div>
       </div>
       <div className="filter-actions">
-        <button className="btn btn-primary btn-sm" onClick={() => setCurrentPage(1)}>搜索</button>
-        <button className="btn btn-default btn-sm" onClick={handleProcessedReset}>清空</button>
+        <div className="filter-actions-left">
+          <button className="btn btn-primary btn-sm" onClick={() => setCurrentPage(1)}>查询</button>
+          <button className="btn btn-default btn-sm" onClick={handleProcessedReset}>重置</button>
+        </div>
       </div>
     </div>
   );

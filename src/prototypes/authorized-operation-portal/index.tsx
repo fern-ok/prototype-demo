@@ -70,7 +70,7 @@ const products = [
 ];
 
 const services = [
-  { title: '主体认证', desc: '注册成功后进行主体身份认证', icon: UserCheck },
+  { title: '主体备案', desc: '注册成功后进行主体身份备案', icon: UserCheck },
   { title: '协议签订', desc: '签订运营协议或者再开发协议', icon: FileText },
   { title: '数据开发', desc: '应用平台工具完成数据开发', icon: Database },
   { title: '产品上架', desc: '在授权运营平台上架数据产品', icon: Building2 },

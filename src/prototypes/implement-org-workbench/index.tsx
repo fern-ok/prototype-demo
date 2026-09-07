@@ -17,6 +17,8 @@ import {
   Trash2,
 } from 'lucide-react';
 import Layout from '../../common/Layout';
+import specContent from './spec.md?raw';
+import changeLogContent from './change.md?raw';
 import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
 
@@ -192,6 +194,8 @@ const OriginalComponent = () => {
       onRoleChange={(nextRole) => setRole(nextRole as WorkbenchRole)}
       roleOptions={[...roleOptions]}
       title={`${role}工作台`}
+      specContent={specContent}
+      changeLogContent={changeLogContent}
     >
       <div className="implement-org-workbench-body">
         <div className="workbench-main-content">

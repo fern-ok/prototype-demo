@@ -10,6 +10,7 @@ import { Plus, Search, Trash2, X } from 'lucide-react';
 import Layout from '../../common/Layout';
 import PasswordGuard from '../../common/PasswordGuard';
 import specContent from './spec.md?raw';
+import changeLogContent from './change.md?raw';
 import './style.css';
 import '../../common/backend-list.css';
 
@@ -68,7 +69,16 @@ const OriginalComponent = () => {
   };
 
   return <>
-    <Layout activeMenu="domain-management" breadcrumb="领域管理" title="领域管理" role={role} onRoleChange={setRole} roleOptions={['数据基础设施运营方']} specContent={specContent}>
+    <Layout
+      activeMenu="domain-management"
+      breadcrumb="领域管理"
+      title="领域管理"
+      role={role}
+      onRoleChange={setRole}
+      roleOptions={['数据基础设施运营方']}
+      specContent={specContent}
+      changeLogContent={changeLogContent}
+    >
     <div className="domain-page">
         <section className="filter-section domain-filter-section">
           <div className="filter-row"><div className="filter-item"><label htmlFor="domain-search">领域名称</label><input id="domain-search" value={keyword} placeholder="请输入" onChange={(event) => setKeyword(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runQuery()} /></div></div>
@@ -83,9 +93,9 @@ const OriginalComponent = () => {
     </div>
     </Layout>
     {modal && <div className="modal-mask" role="presentation" onMouseDown={() => setModal(null)}><section className="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" onMouseDown={(event) => event.stopPropagation()}>
-      <header><h2 id="modal-title">{modal === 'create' ? '新增领域' : modal === 'edit' ? '编辑领域' : '删除领域'}</h2><button className="icon-button" onClick={() => setModal(null)} title="关闭"><X size={19} /></button></header>
-      {modal === 'delete' ? <div className="delete-content"><Trash2 size={30} /><p>确定要删除领域“<b>{editing?.name}</b>”吗？</p><span>删除后无法恢复，请谨慎操作。</span></div> : <div className="form-content"><label>领域名称 <em>*</em><input autoFocus value={form.name} maxLength={30} placeholder="请输入领域名称" onChange={(event) => { setForm({ ...form, name: event.target.value }); setError(''); }} /></label><label>排序 <em>*</em><input type="number" min="1" value={form.sort} placeholder="请输入排序号" onChange={(event) => { setForm({ ...form, sort: event.target.value }); setError(''); }} /></label>{error && <p className="form-error">{error}</p>}</div>}
-      <footer><button className="btn btn-default" onClick={() => setModal(null)}>取消</button><button className={'btn ' + (modal === 'delete' ? 'btn-danger' : 'btn-primary')} onClick={modal === 'delete' ? removeRecord : saveForm}>{modal === 'delete' ? '确认删除' : '保存'}</button></footer>
+      <header><h2 id="modal-title">{modal === 'create' ? '新增领域' : modal === 'edit' ? '编辑领域' : '提示'}</h2><button className="icon-button" onClick={() => setModal(null)} title="关闭"><X size={19} /></button></header>
+      {modal === 'delete' ? <div className="delete-content"><p>确定要删除“<b>{editing?.name}</b>”领域吗？</p></div> : <div className="form-content"><label>领域名称 <em>*</em><input autoFocus value={form.name} maxLength={30} placeholder="请输入领域名称" onChange={(event) => { setForm({ ...form, name: event.target.value }); setError(''); }} /></label><label>排序 <em>*</em><input type="number" min="1" value={form.sort} placeholder="请输入排序号" onChange={(event) => { setForm({ ...form, sort: event.target.value }); setError(''); }} /></label>{error && <p className="form-error">{error}</p>}</div>}
+      <footer><button className="btn btn-default" onClick={() => setModal(null)}>取消</button><button className={'btn ' + (modal === 'delete' ? 'btn-danger' : 'btn-primary')} onClick={modal === 'delete' ? removeRecord : saveForm}>{modal === 'delete' ? '确定' : '保存'}</button></footer>
     </section></div>}
   </>;
 };

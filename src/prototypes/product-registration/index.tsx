@@ -13,15 +13,15 @@ import './style.css';
 import '../../common/backend-list.css';
 
 type ProductRecord = { id: number; applyNo: string; code: string; name: string; type: string; industry: string; updated: string; status: string };
-const statuses = ['待提交', '提交待审核', '变更待审核', '撤销待审核', '提交未通过', '变更未通过', '撤销未通过', '已通过', '已撤销'];
+const statuses = [' 待登记', ' 首次登记待审核', '变更登记待审核', '撤销登记待审核', '首次登记未通过', '变更登记未通过', '撤销登记未通过', '已通过', '已撤销'];
 const seed: ProductRecord[] = [
-  { id: 1, applyNo: 'CPDJ2026080600000006', code: '', name: '撤销未通过产品', type: '数据集', industry: '公共服务', updated: '2026-08-06 13:27:51', status: '待提交' },
-  { id: 2, applyNo: 'CPDJ2026081200000008', code: '', name: '省级医疗就诊记录查询', type: 'API产品', industry: '医疗健康', updated: '2026-08-12 10:05:22', status: '提交待审核' },
-  { id: 3, applyNo: 'CPDJ2026081000000003', code: '', name: '公共卫生监测数据集', type: '数据集', industry: '医疗健康', updated: '2026-08-10 15:18:02', status: '提交未通过' },
-  { id: 4, applyNo: 'CPDJ2026080800000012', code: '691430105750602924H4301G1ET8FIIG', name: '道路交通流量分析 API', type: 'API产品', industry: '交通运输', updated: '2026-08-08 09:13:01', status: '变更待审核' },
-  { id: 5, applyNo: 'CPDJ2026072800000006', code: '691430105750602924H43019DMXAGDEH', name: '省级教育统计数据集', type: '数据集', industry: '教育', updated: '2026-07-28 17:42:26', status: '变更未通过' },
-  { id: 6, applyNo: 'CPDJ2026071500000007', code: '691430105750602924H4301UCA5CBPCK', name: '居民健康档案数据', type: '数据集', industry: '医疗健康', updated: '2026-07-15 14:30:02', status: '撤销待审核' },
-  { id: 7, applyNo: 'CPDJ2026081300000001', code: '691430105750602924H4301A1REG001', name: '省级公共数据登记', type: 'API产品', industry: '公共服务', updated: '2026-08-13 09:20:11', status: '撤销未通过' },
+  { id: 1, applyNo: 'CPDJ2026080600000006', code: '', name: '撤销登记未通过产品', type: '数据集', industry: '公共服务', updated: '2026-08-06 13:27:51', status: ' 待登记' },
+  { id: 2, applyNo: 'CPDJ2026081200000008', code: '', name: '省级医疗就诊记录查询', type: 'API产品', industry: '医疗健康', updated: '2026-08-12 10:05:22', status: ' 首次登记待审核' },
+  { id: 3, applyNo: 'CPDJ2026081000000003', code: '', name: '公共卫生监测数据集', type: '数据集', industry: '医疗健康', updated: '2026-08-10 15:18:02', status: '首次登记未通过' },
+  { id: 4, applyNo: 'CPDJ2026080800000012', code: '691430105750602924H4301G1ET8FIIG', name: '道路交通流量分析 API', type: 'API产品', industry: '交通运输', updated: '2026-08-08 09:13:01', status: '变更登记待审核' },
+  { id: 5, applyNo: 'CPDJ2026072800000006', code: '691430105750602924H43019DMXAGDEH', name: '省级教育统计数据集', type: '数据集', industry: '教育', updated: '2026-07-28 17:42:26', status: '变更登记未通过' },
+  { id: 6, applyNo: 'CPDJ2026071500000007', code: '691430105750602924H4301UCA5CBPCK', name: '居民健康档案数据', type: '数据集', industry: '医疗健康', updated: '2026-07-15 14:30:02', status: '撤销登记待审核' },
+  { id: 7, applyNo: 'CPDJ2026081300000001', code: '691430105750602924H4301A1REG001', name: '省级公共数据登记', type: 'API产品', industry: '公共服务', updated: '2026-08-13 09:20:11', status: '撤销登记未通过' },
   { id: 8, applyNo: 'CPDJ2026081200000002', code: '691430105750602924H4301A1REG002', name: '产品变更申请', type: '数据集', industry: '医疗健康', updated: '2026-08-12 16:42:08', status: '已撤销' },
   { id: 9, applyNo: 'CPDJ2026081100000003', code: '691430105750602924H4301A1REG003', name: '产品撤销申请', type: 'API产品', industry: '交通运输', updated: '2026-08-11 11:18:44', status: '已通过' }
 ];
@@ -62,11 +62,11 @@ const OriginalComponent = () => {
             <td className="ellipsis" title={r.code}>{r.code}</td><td className="ellipsis" title={r.name}>{r.name}</td>
             <td>{r.type}</td><td>{r.industry}</td><td>{r.updated}</td><td><span className={'status-tag ' + statusClass(r.status)}>{r.status}</span></td>
             <td className="action-cell"><button className="action-btn" onClick={() => setDialog({ title: '产品登记详情', record: r })}>查看</button>
-            {canApply && ['已通过', '变更未通过', '撤销未通过'].includes(r.status) && <button className="action-btn" onClick={() => action(r, '变更')}>变更</button>}
-            {canApply && ['已通过', '变更未通过', '撤销未通过'].includes(r.status) && <button className="action-btn" onClick={() => action(r, '撤销')}>撤销</button>}
-            {canApply && ['待提交'].includes(r.status) && <button className="action-btn" onClick={() => action(r, '登记')}>登记</button>}
-            {canApply && ['提交未通过'].includes(r.status) && <button className="action-btn" onClick={() => action(r, '编辑')}>编辑</button>}
-            {['已通过', '变更未通过', '撤销未通过'].includes(r.status) && <button className="action-btn" onClick={() => setDialog({ title: '存证信息', record: r })}>查看存证</button>}
+            {canApply && ['已通过', '变更登记未通过', '撤销登记未通过'].includes(r.status) && <button className="action-btn" onClick={() => action(r, '变更')}>变更</button>}
+            {canApply && ['已通过', '变更登记未通过', '撤销登记未通过'].includes(r.status) && <button className="action-btn" onClick={() => action(r, '撤销')}>撤销</button>}
+            {canApply && [' 待登记'].includes(r.status) && <button className="action-btn" onClick={() => action(r, '登记')}>登记</button>}
+            {canApply && ['首次登记未通过'].includes(r.status) && <button className="action-btn" onClick={() => action(r, '编辑')}>编辑</button>}
+            {['已通过', '变更登记未通过', '撤销登记未通过'].includes(r.status) && <button className="action-btn" onClick={() => setDialog({ title: '存证信息', record: r })}>查看存证</button>}
             </td></tr>)}</tbody></table></div>
         <div className="pagination"><div className="pagination-info">共 {rows.length} 条记录</div><div className="pagination-controls"><button className="page-btn" disabled={page === 1} onClick={() => setPage(page - 1)}>上一页</button><button className="page-number active">{page}</button><button className="page-btn" disabled={page * pageSize >= rows.length} onClick={() => setPage(page + 1)}>下一页</button><select className="page-size-select" value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}><option value={10}>10 条/页</option><option value={20}>20 条/页</option></select><span className="jump-to">跳至</span><input className="page-input" value={page} onChange={e => setPage(Math.max(1, Number(e.target.value) || 1))} /><span className="jump-to">页</span></div></div>
       </div>

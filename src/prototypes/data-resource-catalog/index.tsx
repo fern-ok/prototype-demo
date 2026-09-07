@@ -6,9 +6,11 @@
  * 目录列表、详情与存证查看。
  */
 
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ChevronDown, ChevronRight, Download, Info, Plus, RefreshCw, Search, SlidersHorizontal, Upload, X } from 'lucide-react';
 import Layout from '../../common/Layout';
+import specContent from './spec.md?raw';
+import changeLogContent from './change.md?raw';
 import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
 
@@ -20,6 +22,42 @@ type ChangeRecord = {
   newValue: string;
   operator: string;
   opinion?: string;
+  snapshot?: ChangeSnapshot;
+};
+
+// 变更前/后 全量字段对比快照：全量字段并排展示，差异以三色高亮
+//   KV 段：  status ∈ same/modified/added/deleted 描述整字段的差异
+//           - same     两值一致
+//           - modified 两值不同
+//           - added    仅变更后有值（前留空，后高亮并标「新增」）
+//           - deleted  仅变更前有值（前高亮并标「删除」，后留空）
+//   表格段：rowStatus 描述整行的差异，每侧独立呈现；行内单元格再做细粒度 diff
+type ChangeKvDiff = {
+  label: string;
+  status: 'same' | 'modified' | 'added' | 'deleted';
+  before: string;
+  after: string;
+};
+
+type ChangeInfoItemValues = { name: string; type: string; length: string; desc: string };
+
+type ChangeInfoItemRow = {
+  english: string;
+  rowStatus: 'same' | 'modified' | 'added' | 'deleted';
+  before: ChangeInfoItemValues;
+  after: ChangeInfoItemValues;
+};
+
+type ChangeSection =
+  | { kind: 'kv'; title: string; rows: ChangeKvDiff[]; }
+  | { kind: 'table'; title: string; rows: ChangeInfoItemRow[]; };
+
+type ChangeSnapshot = {
+  status: '变更中' | '变更通过' | '变更不通过';
+  time: string;
+  operator: string;
+  opinion?: string;
+  sections: ChangeSection[];
 };
 
 type Resource = {
@@ -36,13 +74,13 @@ type Resource = {
 };
 
 const reviewStatuses = [
-  '待提交',
-  '提交待审核',
-  '变更待审核',
-  '撤销待审核',
-  '提交未通过',
-  '变更未通过',
-  '撤销未通过',
+  '待登记',
+  '首次登记待审核',
+  '变更登记待审核',
+  '撤销登记待审核',
+  '首次登记未通过',
+  '变更登记未通过',
+  '撤销登记未通过',
   '已通过',
   '已撤销',
 ] as const;
@@ -51,28 +89,177 @@ type ReviewStatus = typeof reviewStatuses[number];
 
 const industries = ['农、林、牧、渔业', '采矿业', '制造业', '电力、热力、燃气及水生产和供应业', '建筑业', '批发和零售业', '交通运输、仓储和邮政业', '住宿和餐饮业', '信息传输、软件和信息技术服务业', '金融业', '房地产业', '科学研究和技术服务业', '租赁和商务服务业', '水利、环境和公共设施管理业', '居民服务、修理和其他服务业', '教育', '卫生和社会工作', '文化、体育和娱乐业', '公共管理、社会保障和社会组织', '国际组织'];
 
+// 变更详情演示数据：覆盖 modified / added / deleted 三类差异
+// 资源 #10 共 4 条变更记录，每条都挂一个全量字段快照
+// 共用的基础字段（所有快照都展示，便于逐行比对）
+const baseBasicFields: { label: string; value: string }[] = [
+  { label: '数据资源标识码', value: '712430000MB0L04692743002W3CAD81M' },
+  { label: '资源名称', value: '地域分类为长沙市的数据资源' },
+  { label: '行业分类', value: '稻谷种植' },
+  { label: '是否涉及个人信息', value: '否' },
+  { label: '资源格式', value: 'xls' },
+  { label: '数据来源', value: '原始取得' },
+  { label: '更新频率', value: '每日' },
+  { label: '覆盖时间范围', value: '2026-05-24 ~ 至今' },
+  { label: '地域分类', value: '长沙市' },
+  { label: '扩展码', value: 'HC-2026-046927' },
+  { label: '资源摘要', value: '基础数据资源，用于支撑农业农村相关业务分析，覆盖长沙市内稻谷种植情况。' },
+];
+
+const baseHolderFields: { label: string; value: string }[] = [
+  { label: '资源持有方', value: '湖南省农业农村厅' },
+  { label: '统一社会信用代码', value: '12430000MB0L046927' },
+  { label: '联系人', value: '李四' },
+  { label: '联系方式', value: '13654785566' },
+];
+
+const baseInfoItems: { english: string; values: ChangeInfoItemValues }[] = [
+  { english: 'hname', values: { name: '医院名称', type: '字符型', length: '50', desc: '医院名称' } },
+  { english: 'menzhen', values: { name: '门诊号', type: '字符型', length: '50', desc: '门诊号编号' } },
+  { english: 'shengao', values: { name: '身高', type: '数值型', length: '6', desc: '身高（cm）' } },
+  { english: 'nianling', values: { name: '年龄', type: '数值型', length: '3', desc: '患者年龄' } },
+  { english: 'hzname', values: { name: '户主姓名', type: '字符型', length: '50', desc: '户主姓名' } },
+];
+
+// 在共享字段上叠加若干差异，返回全量字段快照所需的 ChangeKvDiff[]
+const buildKvDiff = (
+  base: { label: string; value: string }[],
+  diffs: Record<string, { status: 'modified' | 'deleted' | 'added'; before: string; after: string }>,
+): ChangeKvDiff[] =>
+  base.map(field => {
+    const override = diffs[field.label];
+    if (!override) return { label: field.label, status: 'same', before: field.value, after: field.value };
+    return { label: field.label, status: override.status, before: override.before, after: override.after };
+  });
+
+// 在共享信息项上叠加若干差异
+const buildInfoItemDiff = (
+  base: { english: string; values: ChangeInfoItemValues }[],
+  diffs: Record<string, { rowStatus: 'modified' | 'deleted' | 'added'; before: ChangeInfoItemValues; after: ChangeInfoItemValues }>,
+): ChangeInfoItemRow[] =>
+  base.map(item => {
+    const override = diffs[item.english];
+    if (!override) return { english: item.english, rowStatus: 'same', before: item.values, after: item.values };
+    return { english: item.english, rowStatus: override.rowStatus, before: override.before, after: override.after };
+  });
+
+// 4 条变更记录的快照：首条覆盖全部三类差异，其余每条各展示一类
+const changeSnapshots: ChangeSnapshot[] = [
+  // 1. 地域分类（变更通过）—— 综合示例：含 modified / added / deleted
+  {
+    status: '变更通过',
+    time: '2026-08-06 11:27:24',
+    operator: '湖南省农业农村厅',
+    opinion: '变更内容符合要求，同意本次变更登记。',
+    sections: [
+      {
+        kind: 'kv',
+        title: '基本信息',
+        rows: buildKvDiff(baseBasicFields, {
+          '资源名称': { status: 'modified', before: '地域分类为湖南省的数据资源', after: '地域分类为长沙市的数据资源' },
+          '覆盖时间范围': { status: 'modified', before: '2026-01-01 ~ 至今', after: '2026-05-24 ~ 至今' },
+          '地域分类': { status: 'modified', before: '湖南省', after: '长沙市' },
+          '扩展码': { status: 'deleted', before: 'HC-2025-046927', after: '' },
+          '资源摘要': { status: 'modified', before: '基础数据资源，覆盖湖南省域内稻谷种植相关业务分析。', after: '基础数据资源，用于支撑农业农村相关业务分析，覆盖长沙市内稻谷种植情况。' },
+          '数据来源': { status: 'added', before: '', after: '收集取得' },
+        }),
+      },
+      {
+        kind: 'kv',
+        title: '资源持有方信息',
+        rows: buildKvDiff(baseHolderFields, {
+          '联系人': { status: 'modified', before: '张三', after: '李四' },
+        }),
+      },
+      {
+        kind: 'table',
+        title: '信息项',
+        rows: buildInfoItemDiff(baseInfoItems, {
+          'menzhen': { rowStatus: 'modified', before: { name: '门诊编号', type: '字符型', length: '100', desc: '门诊编号（医院内部唯一）' }, after: { name: '门诊号', type: '字符型', length: '50', desc: '门诊号编号' } },
+          'nianling': { rowStatus: 'deleted', before: { name: '年龄', type: '数值型', length: '3', desc: '患者年龄' }, after: { name: '', type: '', length: '', desc: '' } },
+          'hzname': { rowStatus: 'added', before: { name: '', type: '', length: '', desc: '' }, after: { name: '户主姓名', type: '字符型', length: '50', desc: '户主姓名' } },
+        }),
+      },
+    ],
+  },
+  // 2. 行业分类（变更通过）—— 仅一个 modified
+  {
+    status: '变更通过',
+    time: '2026-08-06 11:25:10',
+    operator: '湖南省农业农村厅',
+    opinion: '分类调整通过，目录行业归类已与最新国民经济行业分类对齐。',
+    sections: [
+      {
+        kind: 'kv',
+        title: '基本信息',
+        rows: buildKvDiff(baseBasicFields, {
+          '行业分类': { status: 'modified', before: '稻谷种植,小麦种植', after: '稻谷种植' },
+        }),
+      },
+      { kind: 'kv', title: '资源持有方信息', rows: buildKvDiff(baseHolderFields, {}) },
+      { kind: 'table', title: '信息项', rows: buildInfoItemDiff(baseInfoItems, {}) },
+    ],
+  },
+  // 3. 资源摘要（变更不通过）—— 仅一个 modified
+  {
+    status: '变更不通过',
+    time: '2026-08-06 11:20:33',
+    operator: '湖南省农业农村厅',
+    opinion: '请补充覆盖范围说明，避免使用「全国」等模糊表述。',
+    sections: [
+      {
+        kind: 'kv',
+        title: '基本信息',
+        rows: buildKvDiff(baseBasicFields, {
+          '资源摘要': { status: 'modified', before: '湖南省域内稻谷种植相关数据。', after: '全国稻谷种植相关数据，覆盖各省份。' },
+        }),
+      },
+      { kind: 'kv', title: '资源持有方信息', rows: buildKvDiff(baseHolderFields, {}) },
+      { kind: 'table', title: '信息项', rows: buildInfoItemDiff(baseInfoItems, {}) },
+    ],
+  },
+  // 4. 更新频率（变更中）—— 仅一个 modified
+  {
+    status: '变更中',
+    time: '2026-08-06 11:18:06',
+    operator: '湖南省农业农村厅',
+    opinion: '',
+    sections: [
+      {
+        kind: 'kv',
+        title: '基本信息',
+        rows: buildKvDiff(baseBasicFields, {
+          '更新频率': { status: 'modified', before: '每月', after: '每日' },
+        }),
+      },
+      { kind: 'kv', title: '资源持有方信息', rows: buildKvDiff(baseHolderFields, {}) },
+      { kind: 'table', title: '信息项', rows: buildInfoItemDiff(baseInfoItems, {}) },
+    ],
+  },
+];
+
 const seedResources: Resource[] = [
-  { id: 1, name: '待提交-农业生产数据', industry: '稻谷种植,小麦种植,玉米种植', reviewStatus: '待提交', mountStatus: '待挂载', createdAt: '2026-08-24 18:36:42', updatedAt: '2026-08-24 18:38:02', provider: '湖南省农业农村厅' },
-  { id: 2, name: '提交待审核-耕地资源数据', industry: '稻谷种植', reviewStatus: '提交待审核', mountStatus: '待挂载', createdAt: '2026-06-25 10:55:59', updatedAt: '2026-08-24 10:17:13', provider: '长沙市农业农村局' },
-  { id: 3, name: '变更待审核-农作物分类数据', industry: '稻谷种植,小麦种植', reviewStatus: '变更待审核', mountStatus: '待挂载', createdAt: '2026-06-26 16:12:07', updatedAt: '2026-08-24 10:17:11', provider: '株洲市农业农村局' },
-  { id: 4, name: '撤销待审核-农业监测数据', industry: '稻谷种植', reviewStatus: '撤销待审核', mountStatus: '待挂载', createdAt: '2026-06-08 14:53:03', updatedAt: '2026-08-24 10:17:03', provider: '湘潭市农业农村局' },
-  { id: 5, name: '提交未通过-能源资源数据', industry: '烟煤和无烟煤开采洗选', reviewStatus: '提交未通过', mountStatus: '待挂载', createdAt: '2026-08-21 15:06:54', updatedAt: '2026-08-21 15:08:00', provider: '湖南省能源局' },
-  { id: 6, name: '变更未通过-豆类种植数据', industry: '豆类种植', reviewStatus: '变更未通过', mountStatus: '待挂载', createdAt: '2026-08-21 14:29:15', updatedAt: '2026-08-21 14:30:00', provider: '益阳市农业农村局' },
-  { id: 7, name: '撤销未通过-农产品流通数据', industry: '稻谷种植,小麦种植', reviewStatus: '撤销未通过', mountStatus: '待挂载', createdAt: '2026-08-17 14:20:04', updatedAt: '2026-08-18 16:52:01', provider: '岳阳市农业农村局' },
+  { id: 1, name: '待登记-农业生产数据', industry: '稻谷种植,小麦种植,玉米种植', reviewStatus: '待登记', mountStatus: '待挂载', createdAt: '2026-08-24 18:36:42', updatedAt: '2026-08-24 18:38:02', provider: '湖南省农业农村厅' },
+  { id: 2, name: '首次登记待审核-耕地资源数据', industry: '稻谷种植', reviewStatus: '首次登记待审核', mountStatus: '待挂载', createdAt: '2026-06-25 10:55:59', updatedAt: '2026-08-24 10:17:13', provider: '长沙市农业农村局' },
+  { id: 3, name: '变更登记待审核-农作物分类数据', industry: '稻谷种植,小麦种植', reviewStatus: '变更登记待审核', mountStatus: '待挂载', createdAt: '2026-06-26 16:12:07', updatedAt: '2026-08-24 10:17:11', provider: '株洲市农业农村局' },
+  { id: 4, name: '撤销登记待审核-农业监测数据', industry: '稻谷种植', reviewStatus: '撤销登记待审核', mountStatus: '待挂载', createdAt: '2026-06-08 14:53:03', updatedAt: '2026-08-24 10:17:03', provider: '湘潭市农业农村局' },
+  { id: 5, name: '首次登记未通过-能源资源数据', industry: '烟煤和无烟煤开采洗选', reviewStatus: '首次登记未通过', mountStatus: '待挂载', createdAt: '2026-08-21 15:06:54', updatedAt: '2026-08-21 15:08:00', provider: '湖南省能源局' },
+  { id: 6, name: '变更登记未通过-豆类种植数据', industry: '豆类种植', reviewStatus: '变更登记未通过', mountStatus: '待挂载', createdAt: '2026-08-21 14:29:15', updatedAt: '2026-08-21 14:30:00', provider: '益阳市农业农村局' },
+  { id: 7, name: '撤销登记未通过-农产品流通数据', industry: '稻谷种植,小麦种植', reviewStatus: '撤销登记未通过', mountStatus: '待挂载', createdAt: '2026-08-17 14:20:04', updatedAt: '2026-08-18 16:52:01', provider: '岳阳市农业农村局' },
   { id: 8, name: '已通过-医疗就诊数据资源', industry: '综合医院,中医医院,中西医结合医院', reviewStatus: '已通过', mountStatus: '已挂载', createdAt: '2026-08-11 15:23:32', updatedAt: '2026-08-11 15:28:15', provider: '湖南省卫生健康委' },
   { id: 9, name: '已撤销-林木育苗数据', industry: '林木育苗', reviewStatus: '已撤销', mountStatus: '已挂载', createdAt: '2026-08-10 10:39:50', updatedAt: '2026-08-10 17:28:01', provider: '湖南省林业局' },
-  { id: 10, name: '地域分类为全国的数据资源', industry: '稻谷种植', reviewStatus: '已通过', mountStatus: '已挂载', createdAt: '2026-07-28 09:21:45', updatedAt: '2026-08-06 11:27:24', provider: '湖南省农业农村厅', changed: true, changeRecords: [
-    { status: '变更通过', time: '2026-08-06 11:27:24', field: '地域分类', oldValue: '湖南省', newValue: '全国', operator: '湖南省农业农村厅', opinion: '变更内容符合要求' },
-    { status: '变更通过', time: '2026-08-06 11:25:10', field: '行业分类', oldValue: '稻谷种植,小麦种植', newValue: '稻谷种植', operator: '湖南省农业农村厅', opinion: '分类调整通过' },
-    { status: '变更不通过', time: '2026-08-06 11:20:33', field: '资源摘要', oldValue: '湖南省域内稻谷种植相关数据。', newValue: '全国稻谷种植相关数据，覆盖各省份。', operator: '湖南省农业农村厅', opinion: '请补充覆盖范围说明' },
-    { status: '变更中', time: '2026-08-06 11:18:06', field: '更新频率', oldValue: '每月', newValue: '每日', operator: '湖南省农业农村厅', opinion: '' },
+  { id: 10, name: '地域分类为长沙市的数据资源', industry: '稻谷种植', reviewStatus: '已通过', mountStatus: '已挂载', createdAt: '2026-07-28 09:21:45', updatedAt: '2026-08-06 11:27:24', provider: '湖南省农业农村厅', changed: true, changeRecords: [
+    { status: '变更通过', time: '2026-08-06 11:27:24', field: '地域分类', oldValue: '湖南省', newValue: '长沙市', operator: '湖南省农业农村厅', opinion: '变更内容符合要求', snapshot: changeSnapshots[0] },
+    { status: '变更通过', time: '2026-08-06 11:25:10', field: '行业分类', oldValue: '稻谷种植,小麦种植', newValue: '稻谷种植', operator: '湖南省农业农村厅', opinion: '分类调整通过', snapshot: changeSnapshots[1] },
+    { status: '变更不通过', time: '2026-08-06 11:20:33', field: '资源摘要', oldValue: '湖南省域内稻谷种植相关数据。', newValue: '全国稻谷种植相关数据，覆盖各省份。', operator: '湖南省农业农村厅', opinion: '请补充覆盖范围说明', snapshot: changeSnapshots[2] },
+    { status: '变更中', time: '2026-08-06 11:18:06', field: '更新频率', oldValue: '每月', newValue: '每日', operator: '湖南省农业农村厅', opinion: '', snapshot: changeSnapshots[3] },
   ] },
 ];
 
 const statusClass = (status: Resource['reviewStatus'] | Resource['mountStatus']) => {
   if (status === '已通过' || status === '已挂载') return 'status success';
-  if (status === '提交待审核' || status === '变更待审核' || status === '撤销待审核' || status === '待挂载') return 'status info';
-  if (status === '提交未通过' || status === '变更未通过' || status === '撤销未通过') return 'status danger';
+  if (status === '首次登记待审核' || status === '变更登记待审核' || status === '撤销登记待审核' || status === '待挂载') return 'status info';
+  if (status === '首次登记未通过' || status === '变更登记未通过' || status === '撤销登记未通过') return 'status danger';
   return 'status warning';
 };
 
@@ -84,18 +271,18 @@ type ActionDef = { key: ActionType; label: string; danger?: boolean; show: (s: R
 const ALL_ACTIONS: ActionDef[] = [
   { key: 'relate', label: '关联', show: s => s !== '已撤销' },
   { key: 'view', label: '查看', show: () => true },
-  { key: 'edit', label: '编辑', show: s => ['待提交', '提交未通过'].includes(s) },
-  { key: 'delete', label: '删除', show: s => ['待提交', '提交未通过'].includes(s) },
-  { key: 'change', label: '变更', show: s => ['变更未通过', '撤销未通过', '已通过'].includes(s) },
-  { key: 'revoke', label: '撤销', show: s => ['变更未通过', '撤销未通过', '已通过'].includes(s) },
+  { key: 'edit', label: '编辑', show: s => ['待登记', '首次登记未通过'].includes(s) },
+  { key: 'delete', label: '删除', show: s => ['待登记', '首次登记未通过'].includes(s) },
+  { key: 'change', label: '变更', show: s => ['变更登记未通过', '撤销登记未通过', '已通过'].includes(s) },
+  { key: 'revoke', label: '撤销', show: s => ['变更登记未通过', '撤销登记未通过', '已通过'].includes(s) },
   { key: 'changeRecord', label: '变更记录', show: (s, item) => s === '已通过' && !!item?.changed },
-  { key: 'proof', label: '查看存证', show: s => ['变更未通过', '撤销未通过', '已通过'].includes(s) },
+  { key: 'proof', label: '查看存证', show: s => ['变更登记未通过', '撤销登记未通过', '已通过'].includes(s) },
 ];
 
 const auditTrail = (item: Resource) => {
-  const steps = [{ time: item.createdAt, node: '资源创建', operator: item.provider, result: '待提交' as ReviewStatus }];
-  if (item.reviewStatus !== '待提交') {
-    steps.push({ time: item.createdAt, node: '提交审核', operator: item.provider, result: '提交待审核' as ReviewStatus });
+  const steps = [{ time: item.createdAt, node: '资源创建', operator: item.provider, result: '待登记' as ReviewStatus }];
+  if (item.reviewStatus !== '待登记') {
+    steps.push({ time: item.createdAt, node: '提交审核', operator: item.provider, result: '首次登记待审核' as ReviewStatus });
     steps.push({ time: item.updatedAt, node: '审核结论', operator: '平台审核员', result: item.reviewStatus });
   }
   return steps;
@@ -134,7 +321,16 @@ const OriginalComponent = () => {
   const toggleIndustry = (item: string) => setExpanded(prev => prev.includes(item) ? prev.filter(x => x !== item) : [...prev, item]);
 
   return (
-    <Layout activeMenu="data-resource-catalog" breadcrumb="数据资源目录" role="实施机构" onRoleChange={() => undefined} roleOptions={['实施机构']} title="数据资源目录">
+    <Layout
+      activeMenu="data-resource-catalog"
+      breadcrumb="数据资源目录"
+      role="实施机构"
+      onRoleChange={() => undefined}
+      roleOptions={['实施机构']}
+      title="数据资源目录"
+      specContent={specContent}
+      changeLogContent={changeLogContent}
+    >
       <div className="catalog-page">
         <div className="catalog-content">
           <aside className="industry-panel">
@@ -185,7 +381,7 @@ const OriginalComponent = () => {
         <div className="modal-overlay" onClick={() => setAction(null)}>
           <div className={'catalog-modal' + (action.type === 'changeRecord' ? ' change-record-modal' : '')} onClick={e => e.stopPropagation()}>
             {action.type === 'delete' && <ConfirmModal title="删除资源" danger confirmText="删除" message={`确认删除「${action.item.name}」？删除后不可恢复。`} onClose={() => setAction(null)} onConfirm={() => setAction(null)} />}
-            {action.type === 'revoke' && <ConfirmModal title="撤销资源" message={`确认撤销「${action.item.name}」？撤销后将进入“撤销待审核”。`} onClose={() => setAction(null)} onConfirm={() => setAction(null)} />}
+            {action.type === 'revoke' && <ConfirmModal title="撤销资源" message={`确认撤销「${action.item.name}」？撤销后将进入"撤销登记待审核"。`} onClose={() => setAction(null)} onConfirm={() => setAction(null)} />}
             {action.type === 'changeRecord' && <ChangeRecordModal item={action.item} onClose={() => setAction(null)} />}
           </div>
         </div>
@@ -287,7 +483,7 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
                 <Field label="数据来源" required><select value={source} onChange={e => setSource(e.target.value)}><option>请选择</option><option>原始取得</option><option>收集取得</option><option>交易取得</option><option>其他</option></select></Field>
                 <Field label="更新频率" required><div className="joined-input"><input value={freqNum} onChange={e => setFreqNum(e.target.value)} placeholder="请输入" /><select value={freqUnit} onChange={e => setFreqUnit(e.target.value)}><option>次/天</option><option>次/周</option><option>次/月</option><option>次/年</option></select></div></Field>
                 <Field label="覆盖时间范围" required><div className="date-range"><input type="date" value={coverStart} onChange={e => setCoverStart(e.target.value)} /><span>~</span><input type="date" value={coverEnd} disabled={untilNow} onChange={e => setCoverEnd(e.target.value)} /><label><input type="checkbox" checked={untilNow} onChange={e => setUntilNow(e.target.checked)} />至今</label></div></Field>
-                <Field label="地域分类" required><select value={region} onChange={e => setRegion(e.target.value)}><option>请选择</option><option>全国</option><option>湖南省</option><option>长沙市</option></select></Field>
+                <Field label="地域分类" required><select value={region} onChange={e => setRegion(e.target.value)}><option>请选择</option><option>湖南省</option><option>长沙市</option><option>株洲市</option></select></Field>
                 <Field label="扩展码"><input value={extCode} onChange={e => setExtCode(e.target.value)} placeholder="请输入" /></Field>
                 <Field label="资源摘要" required full><textarea rows={3} value={summary} onChange={e => setSummary(e.target.value)} placeholder="请输入" /></Field>
               </div>
@@ -302,7 +498,7 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
           ) : (
             <>
               <Field label="信息项数据类型" required><select value={infoType} onChange={e => setInfoType(e.target.value)}><option>结构化数据</option><option>文本类信息</option></select></Field>
-              <div className="info-toolbar"><b>信息项</b><button className="btn success"><Download size={15} />下载模板</button><button className="btn primary"><Upload size={15} />导入文件</button><button className="btn primary" onClick={addRow}><Plus size={15} />新增</button></div>
+              <div className="info-toolbar"><b>信息项</b><button className="btn success"><Download size={15} />下载模板</button><button className="btn primary"><Upload size={15} />导入文件</button><button className="btn primary" onClick={addRow}><Plus size={15} />新增</button><span className="info-tip">信息项英文名须与挂载的数据源字段名完全一致（区分大小写）</span></div>
               <div className="info-table-wrap">
                 <table className="info-table">
                   <thead><tr><th>序号</th><th><em className="req-star">*</em> 信息项英文名 <Info size={13} /></th><th><em className="req-star">*</em> 信息项名称 <Info size={13} /></th><th><em className="req-star">*</em> 数据类型</th><th><em className="req-star">*</em> 数据长度</th><th>信息项说明</th><th>操作</th></tr></thead>
@@ -342,8 +538,19 @@ const AddResourceModal = ({ onClose }: { onClose: () => void }) => <ResourceForm
 const EditResourceModal = ({ item, onClose }: { item: Resource; onClose: () => void }) => <ResourceForm title="编辑" mode="edit" initial={buildInitial(item)} onClose={onClose} />;
 const ChangeResourceModal = ({ item, onClose }: { item: Resource; onClose: () => void }) => <ResourceForm title="变更" mode="change" initial={buildInitial(item)} onClose={onClose} />;
 
+// 审核信息页签：登记 → 审核 → 变更 → 撤销 全流程演示数据（纯展示，无行内操作）
+const auditFlowRows = [
+  { node: '首次登记', nodeStatus: '已完成', org: '湖南省数据产业集团', operator: '张三', time: '2026-07-07 15:30:25', result: '', opinion: '' },
+  { node: '审核', nodeStatus: '已完成', org: '区域节点', operator: '管理员', time: '2026-07-07 15:42:10', result: '审核通过', opinion: '' },
+  { node: '变更登记', nodeStatus: '已完成', org: '湖南省数据产业集团', operator: '张三', time: '2026-07-07 15:45:33', result: '', opinion: '' },
+  { node: '审核', nodeStatus: '已完成', org: '区域节点', operator: '管理员', time: '2026-07-07 15:48:02', result: '审核通过', opinion: '1' },
+  { node: '撤销登记', nodeStatus: '已完成', org: '湖南省数据产业集团', operator: '张三', time: '2026-07-07 15:51:47', result: '', opinion: '' },
+  { node: '审核', nodeStatus: '已完成', org: '区域节点', operator: '管理员', time: '2026-07-07 15:53:19', result: '审核通过', opinion: '1' },
+];
+
 const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void }) => {
-  const [activeTab, setActiveTab] = useState<'basic' | 'items'>('basic');
+  const [activeTab, setActiveTab] = useState<'basic' | 'items' | 'audit'>('basic');
+  const [showProof, setShowProof] = useState(false);
   const infoItems: InfoItem[] = [
     { english: 'menzhen', name: '门诊号', type: '字符型', length: '100', desc: '' },
     { english: 'shengao', name: '身高', type: '数值型', length: '100', desc: '' },
@@ -357,6 +564,10 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
         <div className="detail-tabs" role="tablist" aria-label="数据资源详情页签">
           <button type="button" role="tab" aria-selected={activeTab === 'basic'} className={activeTab === 'basic' ? 'active' : ''} onClick={() => setActiveTab('basic')}>基本信息</button>
           <button type="button" role="tab" aria-selected={activeTab === 'items'} className={activeTab === 'items' ? 'active' : ''} onClick={() => setActiveTab('items')}>信息项</button>
+          <button type="button" role="tab" aria-selected={activeTab === 'audit'} className={activeTab === 'audit' ? 'active' : ''} onClick={() => setActiveTab('audit')}>审核信息</button>
+          <div className="detail-tabs-actions">
+            <button type="button" className="btn primary" onClick={() => setShowProof(true)}>查看存证</button>
+          </div>
         </div>
         <div className="modal-body resource-detail-body">
           {activeTab === 'basic' ? (
@@ -382,7 +593,7 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
                 </tbody></table>
               </section>
             </>
-          ) : (
+          ) : activeTab === 'items' ? (
             <section className="detail-section" aria-labelledby="info-item-title">
               <h4 id="info-item-title">信息项</h4>
               <table className="detail-readonly-table detail-info-type"><tbody><tr><th>信息项数据类型</th><td>结构化数据</td></tr></tbody></table>
@@ -394,26 +605,295 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
               </div>
               <div className="detail-pagination" aria-label="信息项分页预留区"><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
             </section>
+          ) : (
+            <section className="detail-section" aria-labelledby="audit-info-title">
+              <h4 id="audit-info-title">审核流程</h4>
+              <div className="detail-audit-table-wrap">
+                <table className="detail-info-table detail-audit-table">
+                  <thead><tr><th>序号</th><th>流程节点</th><th>节点状态</th><th>单位名称</th><th>法人经办人姓名</th><th>操作时间</th><th>审核结果</th><th>审核意见</th></tr></thead>
+                  <tbody>{auditFlowRows.map((row, idx) => (
+                    <tr key={idx}>
+                      <td>{idx + 1}</td>
+                      <td>{row.node}</td>
+                      <td><span className="status info">{row.nodeStatus}</span></td>
+                      <td>{row.org}</td>
+                      <td>{row.operator}</td>
+                      <td>{row.time}</td>
+                      <td>{row.result ? <span className="status success">{row.result}</span> : '—'}</td>
+                      <td>{row.opinion || '—'}</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            </section>
           )}
         </div>
         <div className="modal-foot"><button type="button" className="btn" onClick={onClose}>关闭</button></div>
+        {showProof && <ProofModal item={item} onClose={() => setShowProof(false)} />}
       </div>
     </div>
   );
 };
 
 const ProofModal = ({ item, onClose }: { item: Resource; onClose: () => void }) => (
-  <>
-    <div className="modal-head"><h3>区块链存证</h3><button onClick={onClose}><X size={18} /></button></div>
-    <div className="modal-body">
-      <div className="proof-box">
-        <div><b>存证编号</b><span>BC-20260824-000128</span></div>
-        <div><b>上链时间</b><span>{item.updatedAt}</span></div>
-        <div><b>区块高度</b><span>18,426,901</span></div>
-        <div><b>交易哈希</b><span className="hash">0x9f0d...e82a</span></div>
+  <div className="modal-overlay nested-overlay" onClick={onClose}>
+    <div className="catalog-modal proof-modal" onClick={e => e.stopPropagation()}>
+      <div className="modal-head"><h3>区块链存证</h3><button onClick={onClose} aria-label="关闭"><X size={18} /></button></div>
+      <div className="modal-body">
+        <div className="proof-box">
+          <div><b>存证编号</b><span>BC-20260824-000128</span></div>
+          <div><b>上链时间</b><span>{item.updatedAt}</span></div>
+          <div><b>区块高度</b><span>18,426,901</span></div>
+          <div><b>交易哈希</b><span className="hash">0x9f0d...e82a</span></div>
+        </div>
+      </div>
+      <div className="modal-foot"><button className="btn" onClick={onClose}>关闭</button></div>
+    </div>
+  </div>
+);
+
+// 「变更详情」左右双栏全量字段对比弹窗
+//   - 左侧「变更前信息」/ 右侧「变更后信息」严格并排展示
+//   - 左右两侧通过双 ref + scrollTop 同步滚动，行高一致
+//   - modified 字段：两侧均红字
+//   - added   字段：仅变更后侧显示 + 「新增」红标
+//   - deleted 字段：仅变更前侧显示 + 「删除」红标
+const ChangeDetailModal = ({ detail, onClose }: { detail: ChangeRecord; onClose: () => void }) => {
+  const leftRef = useRef<HTMLDivElement>(null);
+  const rightRef = useRef<HTMLDivElement>(null);
+  // 用 ref 自旋锁防止两侧 scroll 事件互相触发死循环
+  const syncing = useRef(false);
+
+  useEffect(() => {
+    const left = leftRef.current;
+    const right = rightRef.current;
+    if (!left || !right) return;
+    const makeHandler = (src: HTMLDivElement, dst: HTMLDivElement) => () => {
+      if (syncing.current) {
+        syncing.current = false;
+        return;
+      }
+      syncing.current = true;
+      dst.scrollTop = src.scrollTop;
+    };
+    const onLeft = makeHandler(left, right);
+    const onRight = makeHandler(right, left);
+    left.addEventListener('scroll', onLeft, { passive: true });
+    right.addEventListener('scroll', onRight, { passive: true });
+    return () => {
+      left.removeEventListener('scroll', onLeft);
+      right.removeEventListener('scroll', onRight);
+    };
+  }, []);
+
+  // 同步左右两栏「对应行」的高度：长文本换行数不一致时取较高的一侧，
+  // 保证两栏同一行的 y 坐标相同，逐行比对不会错位。
+  useEffect(() => {
+    const left = leftRef.current;
+    const right = rightRef.current;
+    if (!left || !right) return;
+
+    const syncRowHeights = () => {
+      left.querySelectorAll<HTMLElement>('[data-diff-section]').forEach(sectionEl => {
+        const secIdx = sectionEl.getAttribute('data-diff-section');
+        sectionEl.querySelectorAll<HTMLElement>('[data-diff-row]').forEach(rowEl => {
+          const rowIdx = rowEl.getAttribute('data-diff-row');
+          const rightRow = right.querySelector<HTMLElement>(
+            `[data-diff-section="${secIdx}"] [data-diff-row="${rowIdx}"]`,
+          );
+          if (!rightRow) return;
+          // 先解除上一轮锁定的高度再测量，避免多轮同步产生累计误差
+          rowEl.style.height = '';
+          rightRow.style.height = '';
+          const maxH = Math.max(rowEl.offsetHeight, rightRow.offsetHeight);
+          if (maxH > 0) {
+            rowEl.style.height = `${maxH}px`;
+            rightRow.style.height = `${maxH}px`;
+          }
+        });
+      });
+    };
+
+    syncRowHeights();
+    // 字体加载 / 换行重排可能影响高度，首帧后再兜底同步一次
+    const raf = requestAnimationFrame(syncRowHeights);
+    const timer = setTimeout(syncRowHeights, 150);
+    window.addEventListener('resize', syncRowHeights);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(timer);
+      window.removeEventListener('resize', syncRowHeights);
+    };
+  }, []);
+
+  const snapshot = detail.snapshot;
+  const statusClass = snapshot
+    ? (snapshot.status === '变更通过' ? 'success' : snapshot.status === '变更不通过' ? 'danger' : 'info')
+    : '';
+
+  return (
+    <div className="modal-overlay nested-overlay" onClick={onClose}>
+      <div className="catalog-modal change-detail-full-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-head">
+          <h3>查看详情</h3>
+          <button onClick={onClose} aria-label="关闭"><X size={18} /></button>
+        </div>
+        <div className="modal-body change-detail-full-body">
+          {snapshot ? (
+            <>
+              <div className="change-detail-compare">
+                <ChangeDetailSide title="变更前信息" sections={snapshot.sections} side="before" scrollRef={leftRef} />
+                <ChangeDetailSide title="变更后信息" sections={snapshot.sections} side="after" scrollRef={rightRef} />
+              </div>
+             
+            </>
+          ) : (
+            <FallbackChangeDetail detail={detail} />
+          )}
+        </div>
+        <div className="modal-foot">
+          <button className="btn" onClick={onClose}>关闭</button>
+        </div>
       </div>
     </div>
-    <div className="modal-foot"><button className="btn" onClick={onClose}>关闭</button></div>
+  );
+};
+
+const ChangeDetailSide = ({ title, sections, side, scrollRef }: {
+  title: string;
+  sections: ChangeSection[];
+  side: 'before' | 'after';
+  scrollRef: RefObject<HTMLDivElement | null>;
+}) => (
+  <div className="change-detail-side">
+    <h5 className="change-detail-side-title">{title}</h5>
+    <div className="change-detail-scroll" ref={scrollRef}>
+      {sections.map((section, idx) => (
+        <section key={idx} className="change-detail-section" data-diff-section={idx}>
+          <h6 className="change-detail-section-title">{section.title}</h6>
+          {section.kind === 'kv' ? (
+            <ChangeDetailKvGrid rows={section.rows} side={side} />
+          ) : (
+            <ChangeDetailInfoTable rows={section.rows} side={side} />
+          )}
+        </section>
+      ))}
+    </div>
+  </div>
+);
+
+// KV 区段：每行 2 个字段（label + value）成对展示；
+// 「资源摘要」等长文本字段独占整行；奇数末尾补空位以保证左右两栏行数一致
+const FULL_WIDTH_KV_LABELS = new Set(['资源摘要']);
+
+const ChangeDetailKvGrid = ({ rows, side }: { rows: ChangeKvDiff[]; side: 'before' | 'after' }) => {
+  const elements: ReactNode[] = [];
+  let rowIdx = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const field = rows[i];
+    if (FULL_WIDTH_KV_LABELS.has(field.label)) {
+      elements.push(
+        <div key={rowIdx} className="change-detail-kv-row is-full-width" data-diff-row={rowIdx}>
+          <ChangeDetailKvCell field={field} side={side} />
+        </div>
+      );
+      rowIdx++;
+      continue;
+    }
+    const next = rows[i + 1];
+    const nextIsFull = next ? FULL_WIDTH_KV_LABELS.has(next.label) : false;
+    const pair: (ChangeKvDiff | null)[] = [field, nextIsFull ? null : (next || null)];
+    if (!nextIsFull && next) i++;
+    elements.push(
+      <div key={rowIdx} className="change-detail-kv-row" data-diff-row={rowIdx}>
+        {pair.map((f, fIdx) => f ? (
+          <ChangeDetailKvCell key={fIdx} field={f} side={side} />
+        ) : (
+          <div key={fIdx} className="change-detail-kv-cell empty">
+            <div className="change-detail-kv-label" />
+            <div className="change-detail-kv-value" />
+          </div>
+        ))}
+      </div>
+    );
+    rowIdx++;
+  }
+  return <div className="change-detail-kv-grid">{elements}</div>;
+};
+
+const ChangeDetailKvCell = ({ field, side }: { field: ChangeKvDiff; side: 'before' | 'after' }) => {
+  const value = side === 'before' ? field.before : field.after;
+  // added 字段在变更前为空、deleted 字段在变更后为空 —— 空侧仅显示占位
+  const isEmptySide = (field.status === 'added' && side === 'before') || (field.status === 'deleted' && side === 'after');
+  const isHighlight = field.status === 'modified' || (side === 'before' && field.status === 'deleted') || (side === 'after' && field.status === 'added');
+  const valueCls = `change-detail-kv-value${isHighlight ? ' is-highlight' : ''}${isEmptySide ? ' is-empty' : ''}`;
+  return (
+    <div className="change-detail-kv-cell">
+      <div className="change-detail-kv-label">{field.label}</div>
+      <div className={valueCls}>
+        {isEmptySide ? <span className="empty-placeholder">—</span> : (<span className="diff-text">{value}</span>)}
+      </div>
+    </div>
+  );
+};
+
+// 信息项表格区段：以英文名对齐左右两栏同位置的行；modified 行做单元格级 diff
+const ChangeDetailInfoTable = ({ rows, side }: { rows: ChangeInfoItemRow[]; side: 'before' | 'after' }) => {
+  return (
+    <div className="change-detail-info-table-wrap">
+      <table className="change-detail-info-table">
+        <thead>
+          <tr>
+            <th>信息项英文名</th>
+            <th>信息项名称</th>
+            <th>数据类型</th>
+            <th>数据长度</th>
+            <th>信息项说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, rowIdx) => {
+            const vals = side === 'before' ? row.before : row.after;
+            const isEmptySide = (row.rowStatus === 'added' && side === 'before') || (row.rowStatus === 'deleted' && side === 'after');
+            const rowCls = `change-detail-info-row${row.rowStatus !== 'same' ? ' is-highlight' : ''}${row.rowStatus === 'modified' ? ' is-modified' : ''}${isEmptySide ? ' is-empty-side' : ''}`;
+            const cellMod = (col: keyof ChangeInfoItemValues) =>
+              row.rowStatus === 'modified' && row.before[col] !== row.after[col] ? 'cell-modified' : '';
+            return (
+              <tr key={row.english} className={rowCls} data-diff-row={rowIdx}>
+                <td className="info-col-english">
+                  <span className="diff-text">{row.english}</span>
+                </td>
+                {isEmptySide ? (
+                  <td colSpan={4}><span className="empty-placeholder">—</span></td>
+                ) : (
+                  <>
+                    <td className={cellMod('name')}>{vals.name}</td>
+                    <td className={cellMod('type')}>{vals.type}</td>
+                    <td className={cellMod('length')}>{vals.length}</td>
+                    <td className={cellMod('desc')}>{vals.desc}</td>
+                  </>
+                )}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+// 无快照时的兜底视图（保留旧版 3 列简单对比）
+const FallbackChangeDetail = ({ detail }: { detail: ChangeRecord }) => (
+  <>
+    <div className="detail-change-meta">
+      <span>变更状态：{detail.status}</span>
+      <span>更新时间：{detail.time}</span>
+    </div>
+    <table className="change-detail-table">
+      <thead><tr><th>变更项</th><th>变更前</th><th>变更后</th></tr></thead>
+      <tbody><tr><td>{detail.field}</td><td className="old-val">{detail.oldValue}</td><td className="new-val">{detail.newValue}</td></tr></tbody>
+    </table>
+    <p className="change-opinion">审核意见：{detail.opinion || '-'}</p>
   </>
 );
 
@@ -427,7 +907,7 @@ const ChangeRecordModal = ({ item, onClose }: { item: Resource; onClose: () => v
   return <>
     <div className="modal-head"><h3>变更记录</h3><button onClick={onClose}><X size={18} /></button></div>
     <div className="modal-body change-record-body"><div className="change-record-filters"><label>变更状态<select value={status} onChange={e => setStatus(e.target.value)}><option value="">请选择</option><option>变更中</option><option>变更通过</option><option>变更不通过</option></select></label><label>更新时间<div className="date-range"><input type="date" value={start} onChange={e => setStart(e.target.value)} /><span>-</span><input type="date" value={end} onChange={e => setEnd(e.target.value)} /></div></label><div className="change-filter-actions"><button className="btn primary" onClick={() => undefined}>查询</button><button className="btn" onClick={reset}>重置</button></div></div><div className="table-wrap change-record-wrap"><table className="catalog-table change-record-table"><thead><tr><th>序号</th><th>变更状态</th><th>更新时间</th><th>变更审核意见</th><th>操作</th></tr></thead><tbody>{records.map((r, i) => <tr key={i}><td>{i + 1}</td><td><span className={'status ' + (r.status === '变更通过' ? 'success' : r.status === '变更不通过' ? 'danger' : 'info')}>{r.status}</span></td><td>{r.time}</td><td>{r.opinion || '-'}</td><td><button className="link-button" onClick={() => setDetail(r)}>查看</button></td></tr>)}{!records.length && <tr><td colSpan={5} className="empty-row">暂无变更记录</td></tr>}</tbody></table></div><div className="pagination change-record-pagination"><span>共{records.length}条记录</span><span>‹　<b>1</b>　›　<select><option>10条/页</option></select>　跳至 <input value="1" readOnly /> 页</span></div></div><div className="modal-foot"><button className="btn" onClick={onClose}>关闭</button></div>
-    {detail && <div className="modal-overlay nested-overlay" onClick={() => setDetail(null)}><div className="catalog-modal change-detail-modal" onClick={e => e.stopPropagation()}><div className="modal-head"><h3>变更详情</h3><button onClick={() => setDetail(null)}><X size={18} /></button></div><div className="modal-body"><div className="detail-change-meta"><span>变更状态：{detail.status}</span><span>更新时间：{detail.time}</span></div><table className="change-detail-table"><thead><tr><th>变更项</th><th>变更前</th><th>变更后</th></tr></thead><tbody><tr><td>{detail.field}</td><td className="old-val">{detail.oldValue}</td><td className="new-val">{detail.newValue}</td></tr></tbody></table><p className="change-opinion">审核意见：{detail.opinion || '-'}</p></div><div className="modal-foot"><button className="btn" onClick={() => setDetail(null)}>关闭</button></div></div></div>}
+    {detail && <ChangeDetailModal detail={detail} onClose={() => setDetail(null)} />}
   </>;
 };
 

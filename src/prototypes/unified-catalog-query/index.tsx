@@ -10,6 +10,7 @@ import { X } from 'lucide-react';
 import Layout from '../../common/Layout';
 import PasswordGuard from '../../common/PasswordGuard';
 import specContent from './spec.md?raw';
+import changeLogContent from './change.md?raw';
 import './style.css';
 import '../../common/backend-list.css';
 
@@ -110,6 +111,7 @@ const OriginalComponent = () => {
       roleOptions={['数据管理部门']}
       title="统一目录查询"
       specContent={specContent}
+      changeLogContent={changeLogContent}
     >
       <section className="ucq-stats">
         <div className="ucq-stat-card">

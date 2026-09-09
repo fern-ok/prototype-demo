@@ -1599,14 +1599,21 @@
     background: transparent
 }
 
-.change-detail-kv-value.is-highlight {
-    background: #fff5f5;
-    color: #d83535
+/* 变更后：修改 / 新增 —— 文字标红，背景不标红 */
+.change-detail-kv-value.is-red-text {
+    color: #d83535;
+    background: #fff
 }
 
 .change-detail-kv-value.is-empty {
     color: #c4cad4;
     background: #fbfbfd
+}
+
+/* 变更后：删除 —— 背景标红，文字不标红（该侧值为空） */
+.change-detail-kv-value.is-red-bg {
+    background: #ffe9e9;
+    color: #30343b
 }
 
 .empty-placeholder {
@@ -1711,21 +1718,20 @@
     color: #30343b
 }
 
-.change-detail-info-row.is-highlight {
-    background: #fff8f8
-}
-
 .change-detail-info-row.is-empty-side {
     background: #fbfbfd
 }
 
-.change-detail-info-row.is-modified .info-col-english {
+.change-detail-info-row.is-modified .info-col-english,
+.change-detail-info-row.is-added .info-col-english {
     color: #d83535
 }
 
-.change-detail-info-row .cell-modified {
+/* 变更后：修改 / 新增 —— 变更单元格文字标红，背景不标红 */
+.change-detail-info-row .cell-modified,
+.change-detail-info-row .cell-added {
     color: #d83535;
-    background: #fff0f0
+    background: #fff
 }
 
 /* 审核意见 */
@@ -1776,4 +1782,9 @@
     .change-detail-kv-value {
         padding: 8px 10px
     }
+}
+
+/* 原型修改记录弹窗：减小数据资源目录页面的内容行间隔 */
+[data-active-menu="data-resource-catalog"] .change-log-content {
+    line-height: 1.5
 }

@@ -825,8 +825,14 @@ const ChangeDetailKvCell = ({ field, side }: { field: ChangeKvDiff; side: 'befor
   const value = side === 'before' ? field.before : field.after;
   // added 字段在变更前为空、deleted 字段在变更后为空 —— 空侧仅显示占位
   const isEmptySide = (field.status === 'added' && side === 'before') || (field.status === 'deleted' && side === 'after');
-  const isHighlight = field.status === 'modified' || (side === 'before' && field.status === 'deleted') || (side === 'after' && field.status === 'added');
-  const valueCls = `change-detail-kv-value${isHighlight ? ' is-highlight' : ''}${isEmptySide ? ' is-empty' : ''}`;
+  // 变更前：文字与背景均不标红（纯展示）
+  // 变更后：modified / added → 文字标红、背景不标红；deleted → 背景标红、文字不标红（该侧为空）
+  let valueCls = 'change-detail-kv-value';
+  if (side === 'after') {
+    if (field.status === 'modified' || field.status === 'added') valueCls += ' is-red-text';
+    else if (field.status === 'deleted') valueCls += ' is-red-bg';
+  }
+  if (isEmptySide) valueCls += ' is-empty';
   return (
     <div className="change-detail-kv-cell">
       <div className="change-detail-kv-label">{field.label}</div>
@@ -855,9 +861,19 @@ const ChangeDetailInfoTable = ({ rows, side }: { rows: ChangeInfoItemRow[]; side
           {rows.map((row, rowIdx) => {
             const vals = side === 'before' ? row.before : row.after;
             const isEmptySide = (row.rowStatus === 'added' && side === 'before') || (row.rowStatus === 'deleted' && side === 'after');
-            const rowCls = `change-detail-info-row${row.rowStatus !== 'same' ? ' is-highlight' : ''}${row.rowStatus === 'modified' ? ' is-modified' : ''}${isEmptySide ? ' is-empty-side' : ''}`;
-            const cellMod = (col: keyof ChangeInfoItemValues) =>
-              row.rowStatus === 'modified' && row.before[col] !== row.after[col] ? 'cell-modified' : '';
+            // 变更前：不标红；变更后：modified / added 文字标红，deleted 信息项删除不标红
+            let rowCls = 'change-detail-info-row';
+            if (side === 'after') {
+              if (row.rowStatus === 'modified') rowCls += ' is-modified';
+              else if (row.rowStatus === 'added') rowCls += ' is-added';
+            }
+            if (isEmptySide) rowCls += ' is-empty-side';
+            const cellMod = (col: keyof ChangeInfoItemValues) => {
+              if (side !== 'after') return '';
+              if (row.rowStatus === 'modified' && row.before[col] !== row.after[col]) return 'cell-modified';
+              if (row.rowStatus === 'added') return 'cell-added';
+              return '';
+            };
             return (
               <tr key={row.english} className={rowCls} data-diff-row={rowIdx}>
                 <td className="info-col-english">

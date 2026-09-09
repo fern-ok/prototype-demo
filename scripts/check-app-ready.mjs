@@ -44,7 +44,7 @@ import process from 'node:process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { decodeOutput, getPreferredNpmCommand, getPreferredNpxCommand } from './utils/command-runtime.mjs'
+import { decodeOutput, getPreferredNpmCommand, getPreferredNpxCommand, getSpawnCommandSpec } from './utils/command-runtime.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -181,10 +181,11 @@ let errorCache = new Set() // 用于去重错误信息
 function startOrAttachVite() {
   logs.push('Checking Vite server...')
   const npmCommand = getPreferredNpmCommand()
-  const child = spawn(npmCommand, CONFIG.devCommand, {
+  const npmSpawnSpec = getSpawnCommandSpec(npmCommand, CONFIG.devCommand)
+  const child = spawn(npmSpawnSpec.command, npmSpawnSpec.args, {
     stdio: ['ignore', 'pipe', 'pipe'],
     cwd: APP_ROOT,
-    shell: false,
+    windowsHide: npmSpawnSpec.windowsHide,
   })
 
   child.stdout.on('data', (data) => {
@@ -405,10 +406,12 @@ async function runCommandCheck({ label, command, args = [], env = {}, logTag }) 
         ? getPreferredNpxCommand()
         : command
 
-    const proc = spawn(resolvedCommand, args, {
+    const procSpec = getSpawnCommandSpec(resolvedCommand, args)
+    const proc = spawn(procSpec.command, procSpec.args, {
       cwd: APP_ROOT,
       env: { ...process.env, ...env },
-      stdio: ['ignore', 'pipe', 'pipe']
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: procSpec.windowsHide,
     })
 
     const appendLog = (line, isError = false) => {
@@ -593,12 +596,14 @@ async function runBuildCheck(entryKey) {
     const buildErrors = []
     const buildLogs = []
     const npxCommand = getPreferredNpxCommand()
-    
+    const buildSpec = getSpawnCommandSpec(npxCommand, ['vite', 'build'])
+
     // 使用 ENTRY_KEY 环境变量触发单独构建
-    const buildProcess = spawn(npxCommand, ['vite', 'build'], {
+    const buildProcess = spawn(buildSpec.command, buildSpec.args, {
       cwd: APP_ROOT,
       env: { ...process.env, ENTRY_KEY: resolvedEntryKey },
-      stdio: ['ignore', 'pipe', 'pipe']
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: buildSpec.windowsHide,
     })
     
     buildProcess.stdout.on('data', (data) => {

@@ -5,7 +5,7 @@
  * 提供统一的侧边栏和顶部栏布局，供各业务页面复用
  */
 
-import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, FileSearch, FileCheck, KeyRound, X, Bell, LayoutDashboard, ClipboardList, ListTree, Settings2, Search } from 'lucide-react';
+import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, Shield, FileSearch, FileCheck, KeyRound, X, Bell, LayoutDashboard, ClipboardList, ListTree, Settings2, Search, Monitor } from 'lucide-react';
 import { useState, ReactNode } from 'react';
 import messageTemplateTable from '../database/message-templates.json';
 import './layout.css';
@@ -35,7 +35,7 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplate[] = messageTemplateTa
 
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'implement-org-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'demand-management' | 'domain-management' | 'unified-catalog-query';
+  activeMenu: 'implement-org-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'demand-management' | 'domain-management' | 'unified-catalog-query' | 'monitoring-dashboard';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;
@@ -62,9 +62,10 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
     ? ''
     : activeMenu === 'domain-management' ? '系统管理'
       : (activeMenu === 'product-security-review' || activeMenu === 'product-registration' || activeMenu === 'data-resource-catalog' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理'
-        : activeMenu === 'implement-org-workbench' ? '工作台'
-          : activeMenu === 'demand-management' ? '需求管理'
-            : '备案管理';
+    : activeMenu === 'implement-org-workbench' ? '工作台'
+      : (activeMenu === 'product-subscription-supervision' || activeMenu === 'subscription-order-supervision') ? '授权监管'
+        : activeMenu === 'demand-management' ? '需求管理'
+          : '备案管理';
 
   const toggleGroup = (groupName: string) => {
     if (sidebarCollapsed) return;
@@ -82,6 +83,10 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
           <a className={'nav-top-link' + (activeMenu === 'implement-org-workbench' ? ' active' : '')} href="/prototypes/implement-org-workbench.html" title="工作台">
             <span className="nav-icon"><LayoutDashboard aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">工作台</span>}
+          </a>
+          <a className={'nav-top-link' + (activeMenu === 'monitoring-dashboard' ? ' active' : '')} href="/prototypes/monitoring-dashboard.html" title="监控大屏" target="_blank" rel="noopener noreferrer">
+            <span className="nav-icon"><Monitor aria-hidden="true" /></span>
+            {!sidebarCollapsed && <span className="nav-text">监控大屏</span>}
           </a>
           <a className={'nav-top-link' + (activeMenu === 'unified-catalog-query' ? ' active' : '')} href="/prototypes/unified-catalog-query.html" title="统一目录查询">
             <span className="nav-icon"><Search aria-hidden="true" /></span>
@@ -129,6 +134,21 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
             <span className="nav-icon"><FileCheck aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">数据资源复审</span>}
           </a>
+          <div className="nav-group">
+            <div className={'nav-group-title ' + (collapsedGroups['授权监管'] ? 'collapsed' : '')} onClick={() => toggleGroup('授权监管')}>
+              <span className="nav-label">
+                <span className="nav-icon"><Shield aria-hidden="true" /></span>
+                {!sidebarCollapsed && <span>授权监管</span>}
+              </span>
+              {!sidebarCollapsed && <svg className="nav-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>}
+            </div>
+            {!sidebarCollapsed && !collapsedGroups['授权监管'] && (
+              <div className="nav-items">
+                <a className={'nav-item nav-item-link' + (activeMenu === 'product-subscription-supervision' ? ' active' : '')} href="/prototypes/product-subscription-supervision.html"><span className="nav-text">产品订阅监管</span></a>
+                <a className={'nav-item nav-item-link' + (activeMenu === 'subscription-order-supervision' ? ' active' : '')} href="/prototypes/subscription-order-supervision.html"><span className="nav-text">订阅订单监管</span></a>
+              </div>
+            )}
+          </div>
           <a className={'nav-top-link' + (activeMenu === 'demand-management' ? ' active' : '')} href="/prototypes/demand-management.html" title="需求管理">
             <span className="nav-icon"><FileText aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">需求管理</span>}
@@ -236,7 +256,7 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
       )}
 
       {showChangeLogModal && changeLogContent && (
-        <div className="spec-modal-overlay" onClick={() => setShowChangeLogModal(false)}>
+        <div className="spec-modal-overlay" data-active-menu={activeMenu} onClick={() => setShowChangeLogModal(false)}>
           <div className="spec-modal" onClick={(e) => e.stopPropagation()}>
             <div className="spec-modal-header">
               <h3>原型修改记录</h3>

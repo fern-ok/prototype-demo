@@ -8,7 +8,7 @@
       "recipient": "数据基础设施运营方",
       "template": "【主体认证】您有新的企业主体认证待审核，请及时处理！",
       "triggerAction": "企业提交主体认证申请单",
-      "updateTime": ""
+      "updateTime": "【2026-09-08】0924版本删除"
     },
     {
       "id": 2,
@@ -17,7 +17,7 @@
       "recipient": "申请人",
       "template": "【主体认证】您申请的企业主体认证审核通过，请及时查看！",
       "triggerAction": "企业认证申请单审核通过",
-      "updateTime": ""
+      "updateTime": "【2026-09-08】0924版本删除"
     },
     {
       "id": 3,
@@ -26,7 +26,7 @@
       "recipient": "申请人",
       "template": "【主体认证】您申请的企业主体认证审核不通过，请及时查看！",
       "triggerAction": "企业认证申请单审核不通过",
-      "updateTime": ""
+      "updateTime": "【2026-09-08】0924版本删除"
     },
     {
       "id": 4,
@@ -66,6 +66,42 @@
     },
     {
       "id": 8,
+      "businessStage": "资源目录管理",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【资源目录】您提交的资源目录“$资源名称$”变更登记申请审核通过，请及时查看！",
+      "triggerAction": "用户提交资源变更登记申请审核通过，审核状态变为“已通过”",
+      "updateTime": "【2026-09-08】0924版本新增"
+    },
+    {
+      "id": 9,
+      "businessStage": "资源目录管理",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【资源目录】您提交的资源目录“$资源名称$”变更登记申请审核不通过，请及时查看！",
+      "triggerAction": "用户提交资源变更登记申请审核不通过，审核状态为“变更未通过”",
+      "updateTime": "【2026-09-08】0924版本新增"
+    },
+    {
+      "id": 10,
+      "businessStage": "资源目录管理",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【资源目录】您提交的资源目录“$资源名称$”撤销登记申请审核通过，请及时查看！",
+      "triggerAction": "用户提交资源撤销登记申请审核通过，审核状态变为“已撤销”",
+      "updateTime": "【2026-09-08】0924版本新增"
+    },
+    {
+      "id": 11,
+      "businessStage": "资源目录管理",
+      "messageType": "系统消息",
+      "recipient": "申请人",
+      "template": "【资源目录】您提交的资源目录“$资源名称$”撤销登记申请审核不通过，请及时查看！",
+      "triggerAction": "用户提交资源撤销登记申请审核不通过，审核状态为“撤销未通过”",
+      "updateTime": "【2026-09-08】0924版本新增"
+    },
+    {
+      "id": 12,
       "businessStage": "数据资源授权/申请",
       "messageType": "系统消息",
       "recipient": "实施机构 / 运营机构",
@@ -74,7 +110,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 9,
+      "id": 13,
       "businessStage": "数据资源授权/申请",
       "messageType": "系统消息",
       "recipient": "实施机构 / 运营机构",
@@ -83,7 +119,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 10,
+      "id": 14,
       "businessStage": "数据资源授权/申请",
       "messageType": "系统消息",
       "recipient": "运营机构",
@@ -92,7 +128,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 11,
+      "id": 15,
       "businessStage": "数据资源授权/申请",
       "messageType": "待办消息",
       "recipient": "实施机构",
@@ -101,7 +137,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 12,
+      "id": 16,
       "businessStage": "数据资源授权/申请",
       "messageType": "待办消息",
       "recipient": "实施机构",
@@ -110,7 +146,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 13,
+      "id": 17,
       "businessStage": "场景申请管理",
       "messageType": "待办消息",
       "recipient": "运营机构",
@@ -119,7 +155,7 @@
       "updateTime": ""
     },
     {
-      "id": 14,
+      "id": 18,
       "businessStage": "场景申请管理",
       "messageType": "待办消息",
       "recipient": "实施机构",
@@ -128,7 +164,7 @@
       "updateTime": ""
     },
     {
-      "id": 15,
+      "id": 19,
       "businessStage": "场景申请管理",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -137,7 +173,7 @@
       "updateTime": ""
     },
     {
-      "id": 16,
+      "id": 20,
       "businessStage": "场景申请管理",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -146,7 +182,7 @@
       "updateTime": ""
     },
     {
-      "id": 17,
+      "id": 21,
       "businessStage": "数据探查",
       "messageType": "待办消息",
       "recipient": "运营机构",
@@ -155,7 +191,7 @@
       "updateTime": ""
     },
     {
-      "id": 18,
+      "id": 22,
       "businessStage": "数据探查",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -164,7 +200,7 @@
       "updateTime": ""
     },
     {
-      "id": 19,
+      "id": 23,
       "businessStage": "数据探查",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -173,7 +209,7 @@
       "updateTime": ""
     },
     {
-      "id": 20,
+      "id": 24,
       "businessStage": "平台资源管理",
       "messageType": "待办消息",
       "recipient": "数据基础设施运营方",
@@ -182,7 +218,7 @@
       "updateTime": ""
     },
     {
-      "id": 21,
+      "id": 25,
       "businessStage": "平台资源管理",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -191,7 +227,7 @@
       "updateTime": ""
     },
     {
-      "id": 22,
+      "id": 26,
       "businessStage": "平台资源管理",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -200,7 +236,7 @@
       "updateTime": ""
     },
     {
-      "id": 23,
+      "id": 27,
       "businessStage": "产品安全审查",
       "messageType": "待办消息",
       "recipient": "实施机构 / 运营机构",
@@ -209,7 +245,7 @@
       "updateTime": ""
     },
     {
-      "id": 24,
+      "id": 28,
       "businessStage": "产品安全审查",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -218,7 +254,7 @@
       "updateTime": ""
     },
     {
-      "id": 25,
+      "id": 29,
       "businessStage": "产品安全审查",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -227,7 +263,7 @@
       "updateTime": ""
     },
     {
-      "id": 26,
+      "id": 30,
       "businessStage": "产品登记",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -236,7 +272,7 @@
       "updateTime": "【2026-08-06】0904版本修改了消息模板"
     },
     {
-      "id": 27,
+      "id": 31,
       "businessStage": "产品登记",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -245,7 +281,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 28,
+      "id": 32,
       "businessStage": "产品登记",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -254,7 +290,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 29,
+      "id": 33,
       "businessStage": "产品登记",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -263,7 +299,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 30,
+      "id": 34,
       "businessStage": "产品登记",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -272,7 +308,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 31,
+      "id": 35,
       "businessStage": "产品登记",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -281,7 +317,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 32,
+      "id": 36,
       "businessStage": "产品上架",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -290,7 +326,7 @@
       "updateTime": "【2026-08-06】0904版本修改了消息模板"
     },
     {
-      "id": 33,
+      "id": 37,
       "businessStage": "产品上架",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -299,7 +335,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 34,
+      "id": 38,
       "businessStage": "产品上架",
       "messageType": "待办消息",
       "recipient": "运营机构",
@@ -308,7 +344,7 @@
       "updateTime": "【2026-04-30】安全审查通过时还没有产品标识码，站内信息只展示产品名称\n【2026-08-06】修改了消息模板和更新时间，由之前安全审查通过触发变为产品登记通过后触发"
     },
     {
-      "id": 35,
+      "id": 39,
       "businessStage": "产品上架",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -317,7 +353,7 @@
       "updateTime": "【2026-08-06】0904版本修改了消息模板"
     },
     {
-      "id": 36,
+      "id": 40,
       "businessStage": "产品上架",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -326,7 +362,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 37,
+      "id": 41,
       "businessStage": "实施机构备案",
       "messageType": "待办消息",
       "recipient": "对应地域的数据局",
@@ -335,7 +371,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 38,
+      "id": 42,
       "businessStage": "实施机构备案",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -344,7 +380,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 39,
+      "id": 43,
       "businessStage": "实施机构备案",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -353,7 +389,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 40,
+      "id": 44,
       "businessStage": "实施方案联审",
       "messageType": "待办消息",
       "recipient": "对应地域的数据局",
@@ -362,7 +398,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 41,
+      "id": 45,
       "businessStage": "实施方案联审",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -371,7 +407,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 42,
+      "id": 46,
       "businessStage": "实施方案联审",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -380,7 +416,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 43,
+      "id": 47,
       "businessStage": "实施方案备案",
       "messageType": "待办消息",
       "recipient": "对应地域的数据局",
@@ -389,7 +425,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 44,
+      "id": 48,
       "businessStage": "实施方案备案",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -398,7 +434,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 45,
+      "id": 49,
       "businessStage": "实施方案备案",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -407,7 +443,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 46,
+      "id": 50,
       "businessStage": "运营机构备案",
       "messageType": "待办消息",
       "recipient": "对应地域的数据局",
@@ -416,7 +452,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 47,
+      "id": 51,
       "businessStage": "运营机构备案",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -425,7 +461,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 48,
+      "id": 52,
       "businessStage": "运营机构备案",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -434,7 +470,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 49,
+      "id": 53,
       "businessStage": "运营协议备案",
       "messageType": "待办消息",
       "recipient": "对应地域的数据局",
@@ -443,7 +479,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 50,
+      "id": 54,
       "businessStage": "运营协议备案",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -452,7 +488,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 51,
+      "id": 55,
       "businessStage": "运营协议备案",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -461,7 +497,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 52,
+      "id": 56,
       "businessStage": "产品和服务清单备案",
       "messageType": "待办消息",
       "recipient": "对应地域的实施机构 / 数据局",
@@ -470,7 +506,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 53,
+      "id": 57,
       "businessStage": "产品和服务清单备案",
       "messageType": "系统消息",
       "recipient": "申请人",
@@ -479,7 +515,7 @@
       "updateTime": "【2026-08-06】0904版本新增"
     },
     {
-      "id": 54,
+      "id": 58,
       "businessStage": "产品和服务清单备案",
       "messageType": "系统消息",
       "recipient": "申请人",

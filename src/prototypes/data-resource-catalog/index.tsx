@@ -260,6 +260,7 @@ const statusClass = (status: Resource['reviewStatus'] | Resource['mountStatus'])
   if (status === '已通过' || status === '已挂载') return 'status success';
   if (status === '首次登记待审核' || status === '变更登记待审核' || status === '撤销登记待审核' || status === '待挂载') return 'status info';
   if (status === '首次登记未通过' || status === '变更登记未通过' || status === '撤销登记未通过') return 'status danger';
+  if (status === '已撤销') return 'status muted';
   return 'status warning';
 };
 

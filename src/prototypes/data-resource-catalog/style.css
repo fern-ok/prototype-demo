@@ -833,6 +833,12 @@
     border-color: #ffd3d3
 }
 
+.status.muted {
+    color: #8b95a5;
+    background: #f5f6f8;
+    border-color: #eef0f3
+}
+
 .add-resource-modal {
     width: 1040px;
     max-height: 90vh;

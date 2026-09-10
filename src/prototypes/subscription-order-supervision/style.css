@@ -14,11 +14,12 @@
 .col-product-type { width: 100px; }
 .col-demander { width: 190px; }
 .col-status { width: 110px; }
+.col-amount { width: 130px; text-align: right; font-variant-numeric: tabular-nums; }
 .col-update-time { width: 155px; }
 .col-action { width: 174px; }
 
 .data-table {
-  min-width: 1440px;
+  min-width: 1620px;
 }
 
 /* Product type cell */
@@ -33,6 +34,10 @@
   color: #0052d9;
   font-size: 12px;
 }
+
+/* Order status tags（补充后端列表契约未覆盖的两种状态色） */
+.status-processing { color: #b26a00; background: #fff6e8; border-color: #ffdfae; }
+.status-frozen { color: #6b7280; background: #f3f4f6; border-color: #e2e5ea; }
 
 /* Modal */
 .modal-overlay {
@@ -233,6 +238,38 @@
   height: 58px;
   padding: 0 12px;
 }
+
+/* Call detail modal */
+.call-tip {
+  margin: 0 0 12px;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.call-tip .link-btn {
+  margin: 0 3px;
+  color: #0052d9;
+  cursor: pointer;
+}
+
+.call-tip .link-btn:hover { text-decoration: underline; }
+
+.call-stats-grid { margin-bottom: 14px; }
+
+/* 筛选区复用 backend-list.css 契约，弹窗内收缩为两列并去掉外间距（提高特异性以覆盖后加载的契约样式） */
+.filter-section.call-filter-section {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 12px;
+}
+
+/* 调用状态：失败红色高亮，成功普通黑色文字 */
+.call-status-fail {
+  color: #d54941;
+  font-weight: 600;
+}
+
+.call-log-table { min-width: 640px; }
 
 /* Empty state */
 .empty-state {

@@ -4,6 +4,79 @@
   box-sizing: border-box;
 }
 
+/* 顶部统计概览：与列表区域同一套卡片外壳（白底 / 细边框 / 同源阴影） */
+.list-overview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 18px 10px;
+  padding: 16px 19px;
+  background: #fff;
+  border: 1px solid #dfe5ef;
+  border-radius: 4px;
+  box-shadow: var(--layout-shadow);
+}
+
+.list-overview-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 18px;
+  border-right: 1px solid #eef1f6;
+}
+
+.list-overview-item:first-child {
+  padding-left: 0;
+}
+
+.list-overview-item:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.list-overview-label {
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-overview-value {
+  color: #1f2329;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1024px) {
+  .list-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 14px;
+    column-gap: 18px;
+  }
+
+  .list-overview-item {
+    padding: 0;
+  }
+
+  .list-overview-item:nth-child(2n) {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .list-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .list-overview-item {
+    border-right: 0;
+  }
+}
+
 /* Column widths */
 .col-index { width: 60px; text-align: left; }
 .col-region { width: 110px; }
@@ -14,6 +87,15 @@
 .col-provider { width: 200px; }
 .col-subscribe-count { width: 90px; }
 .col-action { width: 160px; }
+
+/* 金额列：整数（单位：分）千分位展示，右对齐、不换行 */
+.data-table .col-sales-amount,
+.data-table .col-order-amount {
+  width: 150px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
 
 /* Product type cell */
 .type-tag {
@@ -27,6 +109,10 @@
   color: #0052d9;
   font-size: 12px;
 }
+
+/* Order status tags（补充后端列表契约未覆盖的两种状态色） */
+.status-processing { color: #b26a00; background: #fff6e8; border-color: #ffdfae; }
+.status-frozen { color: #6b7280; background: #f3f4f6; border-color: #e2e5ea; }
 
 /* Modal */
 .modal-overlay {
@@ -188,16 +274,223 @@
   word-break: break-all;
 }
 
-/* Subscription detail table */
-.detail-product-tip {
+/* Subscription detail summary (6 fields from order detail API) */
+.detail-summary {
   margin: 0 0 12px;
-  padding: 8px 12px;
-  border: 1px solid #bfdbfe;
+  padding: 14px 18px;
+  background: #fafbfc;
+  border: 1px solid #edf0f5;
   border-radius: 4px;
-  background: #f5f9ff;
-  color: #1e40af;
+}
+
+.detail-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  row-gap: 12px;
+  column-gap: 24px;
+}
+
+.detail-summary-item {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+}
+
+.detail-summary-label {
+  flex: 0 0 auto;
+  min-width: 0;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 22px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.detail-summary-label::after {
+  content: ":";
+  margin-left: 2px;
+}
+
+.detail-summary-value {
+  flex: 1;
+  min-width: 0;
+  color: #1f2329;
+  font-size: 13px;
+  line-height: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detail-summary-skeleton {
+  flex: 1;
+  height: 18px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #eef1f6 0%, #f5f7fb 50%, #eef1f6 100%);
+  background-size: 200% 100%;
+  animation: detail-summary-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes detail-summary-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (max-width: 1024px) {
+  .detail-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .detail-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .detail-summary-label {
+    min-width: 84px;
+  }
+}
+
+/* Subscription detail filter (image-style: inline label + input, 3-col grid) */
+.detail-filter {
+  margin: 0 0 12px;
+}
+
+.detail-filter-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 18px;
+  margin-bottom: 10px;
+}
+
+.detail-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.detail-filter-item label {
+  flex: 0 0 auto;
+  min-width: 0;
+  color: #1f2329;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.detail-filter-item label::after {
+  content: ":";
+  margin-left: 2px;
+}
+
+.detail-filter-item input[type="text"],
+.detail-filter-item select {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid #d7dce6;
+  border-radius: 3px;
+  background: #fff;
+  color: #4b5563;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.detail-filter-item input[type="text"]::placeholder {
+  color: #a8b1c1;
+}
+
+.detail-filter-item input[type="text"]:focus,
+.detail-filter-item select:focus {
+  border-color: #3d8bff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
+}
+
+.detail-filter-item select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 22px;
+}
+
+.detail-filter-item-select {
+  position: relative;
+}
+
+.detail-filter-item-select::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid #4b5563;
+  border-bottom: 1px solid #4b5563;
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
+}
+
+.detail-filter-item-date {
+  align-items: center;
+}
+
+.detail-date-inputs {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+}
+
+.detail-date-input {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.detail-date-input input[type="date"] {
+  width: 100%;
+  height: 30px;
+  padding: 0 4px;
+  border: 1px solid #d7dce6;
+  border-radius: 3px;
+  background: #fff;
+  color: #4b5563;
+  font: inherit;
   font-size: 12px;
-  line-height: 1.6;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.detail-date-input input[type="date"]:focus {
+  border-color: #3d8bff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
+}
+
+.detail-date-sep {
+  flex: 0 0 auto;
+  width: 14px;
+  text-align: center;
+  color: #8b95a5;
+  font-size: 12px;
+  user-select: none;
+}
+
+.detail-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.detail-filter-actions .btn {
+  min-width: 62px;
 }
 
 .detail-table-section {
@@ -222,6 +515,44 @@
 .detail-table-section .pagination {
   height: 58px;
   padding: 0 12px;
+}
+
+/* Call detail modal（与订单交付监管页保持一致的调用明细样式） */
+.call-tip {
+  margin: 0 0 12px;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.call-tip .link-btn {
+  margin: 0 3px;
+  color: #0052d9;
+  cursor: pointer;
+}
+
+.call-tip .link-btn:hover {
+  text-decoration: underline;
+}
+
+.call-stats-grid {
+  margin-bottom: 14px;
+}
+
+/* 筛选区复用 backend-list.css 契约，弹窗内收缩为两列并去掉外间距（提高特异性以覆盖后加载的契约样式） */
+.filter-section.call-filter-section {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 12px;
+}
+
+/* 调用状态：失败红色高亮，成功普通黑色文字 */
+.call-status-fail {
+  color: #d54941;
+  font-weight: 600;
+}
+
+.call-log-table {
+  min-width: 640px;
 }
 
 /* Empty state */

@@ -1,8 +1,8 @@
 /**
- * @name 订阅订单监管
+ * @name 订单交付监管
  * @mode axure
  *
- * 订阅订单监管列表（数据管理部门视角），归属「授权监管」菜单组
+ * 订单交付监管列表（数据管理部门视角），归属「授权监管」菜单组
  */
 
 import { useMemo, useState } from 'react';
@@ -38,13 +38,14 @@ interface SubscriptionOrder {
   subscribeTime: string;
   updateTime: string;
   status: string;
+  amount: number;
 }
 
 const REGION_OPTIONS = ['省本级', '长沙市', '株洲市', '湘潭市', '衡阳市', '邵阳市', '岳阳市', '常德市', '张家界市', '益阳市', '郴州市', '永州市', '怀化市', '娄底市', '湘西土家族苗族自治州'];
 const AUTH_TYPE_OPTIONS = ['整体授权运营', '分领域授权运营'];
 const DOMAIN_OPTIONS = ['医疗健康', '交通运输', '教育', '文化旅游', '自然资源', '城市治理', '金融服务', '工业制造', '智慧农业', '应急管理'];
 const PRODUCT_TYPE_OPTIONS = ['数据集', 'API产品'];
-const ORDER_STATUS_LIST = ['待审核', '审核通过', '审核不通过'];
+const ORDER_STATUS_LIST = ['已下单', '交付中', '已完成', '已终止', '已冻结'];
 
 const DEMANDERS = [
   '湖南天河国云科技有限公司',
@@ -66,7 +67,7 @@ const seedData: Product[] = [
     productName: '湖南省医疗就诊数据再开发产品',
     productType: 'API产品',
     provider: '湖南天河国云科技有限公司',
-    subscribeCount: 26,
+    subscribeCount: 8,
     productDesc: '基于省本级医疗就诊数据加工形成的标准化查询服务，支撑商业保险核保与理赔场景。'
   },
   {
@@ -77,7 +78,7 @@ const seedData: Product[] = [
     productName: '湖南省医保结算个人画像数据集',
     productType: '数据集',
     provider: '湖南数据产业集团有限公司',
-    subscribeCount: 18,
+    subscribeCount: 6,
     productDesc: '面向医保精细化管理场景，提供结算层级的结构化个人画像标签数据。'
   },
   {
@@ -88,7 +89,7 @@ const seedData: Product[] = [
     productName: '长沙市城市交通流量监测API',
     productType: 'API产品',
     provider: '长沙数字科技有限公司',
-    subscribeCount: 15,
+    subscribeCount: 5,
     productDesc: '汇聚城区主干道卡口与地磁数据，输出实时路况与拥堵指数。'
   },
   {
@@ -99,7 +100,7 @@ const seedData: Product[] = [
     productName: '长沙市企业信用信息核验API',
     productType: 'API产品',
     provider: '湖南天河国云科技有限公司',
-    subscribeCount: 12,
+    subscribeCount: 4,
     productDesc: '整合工商登记与行政处罚数据，为金融机构提供企业信用核验服务。'
   },
   {
@@ -110,7 +111,7 @@ const seedData: Product[] = [
     productName: '株洲市产业链供应链数据集',
     productType: '数据集',
     provider: '株洲国投数据服务有限公司',
-    subscribeCount: 9,
+    subscribeCount: 4,
     productDesc: '覆盖轨道交通、航空动力等产业链上下游企业产能与配套关系数据。'
   },
   {
@@ -121,7 +122,7 @@ const seedData: Product[] = [
     productName: '湘潭市教育质量评估数据集',
     productType: '数据集',
     provider: '湘潭大数据运营有限公司',
-    subscribeCount: 7,
+    subscribeCount: 2,
     productDesc: '整合学业水平与教师评估数据，支撑区域教育质量监测。'
   },
   {
@@ -132,7 +133,7 @@ const seedData: Product[] = [
     productName: '衡阳市黄花菜产业空间矢量产品',
     productType: '数据集',
     provider: '衡阳智慧城市科技有限公司',
-    subscribeCount: 6,
+    subscribeCount: 1,
     productDesc: '基于遥感与地块矢量数据，提供特色农产品种植面积与长势监测。'
   },
   {
@@ -143,52 +144,8 @@ const seedData: Product[] = [
     productName: '岳阳市水文气象预警API',
     productType: 'API产品',
     provider: '湖南数据产业集团有限公司',
-    subscribeCount: 5,
+    subscribeCount: 1,
     productDesc: '接入洞庭湖流域水文站与气象观测数据，提供洪涝风险分级预警。'
-  },
-  {
-    id: 9,
-    region: '常德市',
-    authType: '整体授权运营',
-    domain: '自然资源',
-    productName: '常德市土地权属核查数据集',
-    productType: '数据集',
-    provider: '常德市医保集团有限公司',
-    subscribeCount: 4,
-    productDesc: '提供宗地权属、用途与抵押状态的批量核验数据。'
-  },
-  {
-    id: 10,
-    region: '郴州市',
-    authType: '分领域授权运营',
-    domain: '文化旅游',
-    productName: '郴州市文旅客流分析API',
-    productType: 'API产品',
-    provider: '杭州趣链科技股份有限公司',
-    subscribeCount: 3,
-    productDesc: '融合景区票务与运营商信令数据，输出客流画像与滞留时长分析。'
-  },
-  {
-    id: 11,
-    region: '怀化市',
-    authType: '整体授权运营',
-    domain: '交通运输',
-    productName: '怀化市物流运力调度数据集',
-    productType: '数据集',
-    provider: '湖南天河国云科技有限公司',
-    subscribeCount: 2,
-    productDesc: '汇聚货运车辆与仓储资源数据，支撑区域物流运力匹配。'
-  },
-  {
-    id: 12,
-    region: '湘西土家族苗族自治州',
-    authType: '分领域授权运营',
-    domain: '医疗健康',
-    productName: '湘西州基层卫生服务数据集',
-    productType: '数据集',
-    provider: '湖南数据产业集团有限公司',
-    subscribeCount: 0,
-    productDesc: '覆盖乡镇卫生院诊疗与公共卫生服务记录，暂无机构订阅。'
   }
 ];
 
@@ -201,7 +158,7 @@ const orderSeed: SubscriptionOrder[] = (function buildOrders() {
   seedData.forEach(function (product) {
     const total = Math.min(product.subscribeCount, 10);
     for (let i = 0; i < total; i++) {
-      const status = ORDER_STATUS_LIST[(product.id + i) % 3];
+      const status = ORDER_STATUS_LIST[(product.id + i) % ORDER_STATUS_LIST.length];
       const day = pad(((product.id * 3 + i) % 27) + 1);
       const hour = pad(9 + ((i * 2) % 9));
       const minute = pad((i * 7) % 60);
@@ -219,7 +176,8 @@ const orderSeed: SubscriptionOrder[] = (function buildOrders() {
         demander: DEMANDERS[(product.id + i) % DEMANDERS.length],
         subscribeTime: '2026-08-' + day + ' ' + hour + ':' + minute + ':00',
         updateTime: '2026-08-' + day + ' ' + updateHour + ':' + updateMinute + ':00',
-        status: status
+        status: status,
+        amount: 500000 + ((product.id * 123457 + seq * 7919) % 9945000)
       });
       seq += 1;
     }
@@ -228,10 +186,159 @@ const orderSeed: SubscriptionOrder[] = (function buildOrders() {
 })();
 
 const getOrderStatusClass = (status: string) => {
-  if (status === '待审核') return 'status-pending';
-  if (status === '审核通过') return 'status-approved';
-  return 'status-rejected';
+  if (status === '已下单') return 'status-pending';
+  if (status === '交付中') return 'status-processing';
+  if (status === '已完成') return 'status-approved';
+  if (status === '已终止') return 'status-rejected';
+  return 'status-frozen';
 };
+
+interface CallLog {
+  id: number;
+  orderId: string;
+  apiName: string;
+  status: '成功' | '失败';
+  duration: number;
+  callTime: string;
+  errorCode: string;
+  errorMessage: string;
+}
+
+const CALL_STATUS_OPTIONS = ['成功', '失败'];
+const TIME_RANGE_OPTIONS = [
+  { value: '3m', label: '近三个月' },
+  { value: '6m', label: '近半年' },
+  { value: '1y', label: '近一年' }
+];
+/** 各时间范围起点（演示基准时间 2026-09-09） */
+const TIME_RANGE_CUTOFF: Record<string, string> = { '3m': '2026-06-09', '6m': '2026-03-09', '1y': '2025-09-09' };
+
+const CALL_ERRORS = [
+  { code: '500', message: '服务内部异常，调用链路中断，请稍后重试' },
+  { code: '403', message: '访问凭证已过期，无接口调用权限' },
+  { code: '429', message: '请求超过接口调用频率限制，触发限流策略' },
+  { code: '504', message: '上游数据源响应超时，网关主动断开连接' },
+  { code: '400', message: '请求参数校验失败，缺少必填字段' }
+];
+
+/** 依据订单生成 API 调用日志（演示数据，稳定可复现） */
+const callLogsByOrder: Record<string, CallLog[]> = (function buildCallLogs() {
+  const map: Record<string, CallLog[]> = {};
+  let seq = 1;
+  orderSeed.forEach(function (order) {
+    if (order.productType !== 'API产品') return;
+    const count = 26 + ((order.id * 7 + seq) % 30);
+    const logs: CallLog[] = [];
+    for (let i = 0; i < count; i++) {
+      const failed = (order.id * 13 + i * 5) % 9 === 0;
+      const err = CALL_ERRORS[(order.id + i) % CALL_ERRORS.length];
+      const absMonth = 2026 * 12 + 8 - ((order.id * 5 + i * 3) % 12);
+      const year = Math.floor(absMonth / 12);
+      const month = (absMonth % 12) + 1;
+      const day = pad(((order.id * 11 + i * 13) % 28) + 1);
+      const hour = pad(8 + ((i * 3) % 14));
+      const minute = pad((i * 17) % 60);
+      logs.push({
+        id: seq,
+        orderId: order.orderNo,
+        apiName: order.productName,
+        status: failed ? '失败' : '成功',
+        duration: failed ? 1200 + ((order.id * 97 + i * 53) % 3800) : 60 + ((order.id * 37 + i * 29) % 840),
+        callTime: year + '-' + pad(month) + '-' + day + ' ' + hour + ':' + minute,
+        errorCode: failed ? err.code : '',
+        errorMessage: failed ? err.message : ''
+      });
+      seq += 1;
+    }
+    map[order.orderNo] = logs;
+  });
+  return map;
+})();
+
+/** 顶部汇总统计基准值（演示数据，稳定可复现） */
+const callStatsByOrder: Record<string, { total: number; success: number; failed: number }> = (function buildCallStats() {
+  const map: Record<string, { total: number; success: number; failed: number }> = {};
+  orderSeed.forEach(function (order) {
+    if (order.productType !== 'API产品') return;
+    const total = 6000 + ((order.id * 937) % 9000);
+    const failed = Math.max(1, Math.round(total * (0.02 + (order.id % 5) * 0.01)));
+    map[order.orderNo] = { total: total, success: total - failed, failed: failed };
+  });
+  return map;
+})();
+
+interface DownloadLog {
+  id: number;
+  orderId: string;
+  tableName: string;
+  status: '成功' | '失败';
+  duration: number;
+  downloadTime: string;
+  errorCode: string;
+  errorMessage: string;
+}
+
+const DOWNLOAD_ERRORS = [
+  { code: '403', message: '访问凭证已过期，无数据下载权限' },
+  { code: '500', message: '文件服务内部异常，生成下载包失败' },
+  { code: '504', message: '数据集文件较大，生成下载包超时' },
+  { code: '400', message: '下载参数校验失败，缺少必填字段' },
+  { code: '429', message: '并发下载任务超限，触发限流策略' }
+];
+
+/** 数据集产品的表名（演示数据） */
+const DATASET_TABLE_NAMES: Record<number, string> = {
+  2: 'med_settle_profile_2026',
+  5: 'chain_supply_2026',
+  6: 'edu_quality_2026',
+  7: 'huanghuacai_2026'
+};
+
+/** 依据订单生成下载日志（演示数据，稳定可复现） */
+const downloadLogsByOrder: Record<string, DownloadLog[]> = (function buildDownloadLogs() {
+  const map: Record<string, DownloadLog[]> = {};
+  let seq = 1;
+  orderSeed.forEach(function (order) {
+    if (order.productType !== '数据集') return;
+    const count = 12 + ((order.id * 5 + seq) % 16);
+    const logs: DownloadLog[] = [];
+    for (let i = 0; i < count; i++) {
+      const failed = (order.id * 11 + i * 3) % 7 === 0;
+      const err = DOWNLOAD_ERRORS[(order.id + i) % DOWNLOAD_ERRORS.length];
+      const absMonth = 2026 * 12 + 8 - ((order.id * 7 + i * 5) % 12);
+      const year = Math.floor(absMonth / 12);
+      const month = (absMonth % 12) + 1;
+      const day = pad(((order.id * 13 + i * 7) % 28) + 1);
+      const hour = pad(8 + ((i * 5) % 14));
+      const minute = pad((i * 23) % 60);
+      logs.push({
+        id: seq,
+        orderId: order.orderNo,
+        tableName: DATASET_TABLE_NAMES[order.productId] || 'dataset_default_2026',
+        status: failed ? '失败' : '成功',
+        duration: failed ? 8000 + ((order.id * 211 + i * 89) % 22000) : 600 + ((order.id * 173 + i * 97) % 5400),
+        downloadTime: year + '-' + pad(month) + '-' + day + ' ' + hour + ':' + minute,
+        errorCode: failed ? err.code : '',
+        errorMessage: failed ? err.message : ''
+      });
+      seq += 1;
+    }
+    map[order.orderNo] = logs;
+  });
+  return map;
+})();
+
+/** 下载汇总统计基准值（演示数据，稳定可复现） */
+const downloadStatsByOrder: Record<string, { total: number; success: number; failed: number }> = (function buildDownloadStats() {
+  const map: Record<string, { total: number; success: number; failed: number }> = {};
+  orderSeed.forEach(function (order) {
+    if (order.productType !== '数据集') return;
+    const total = 24 + ((order.id * 53) % 90);
+    const failed = Math.max(1, Math.round(total * (0.1 + (order.id % 3) * 0.05)));
+    map[order.orderNo] = { total: total, success: total - failed, failed: failed };
+  });
+  return map;
+})();
 
 const OriginalComponent = () => {
   const [activeMenu] = useState<'subscription-order-supervision'>('subscription-order-supervision');
@@ -256,13 +363,35 @@ const OriginalComponent = () => {
 
   // 弹窗
   const [showViewModal, setShowViewModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showCallModal, setShowCallModal] = useState(false);
+  const [showFailModal, setShowFailModal] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [showDownloadFailModal, setShowDownloadFailModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<SubscriptionOrder | null>(null);
+  const [failLog, setFailLog] = useState<CallLog | null>(null);
+  const [downloadFailLog, setDownloadFailLog] = useState<DownloadLog | null>(null);
 
-  // 订单明细分页
-  const [detailPage, setDetailPage] = useState(1);
-  const [detailPageSize, setDetailPageSize] = useState(10);
+  // 调用明细：筛选 / 分页 / 加载
+  const [callStatus, setCallStatus] = useState('');
+  const [callTimeRange, setCallTimeRange] = useState('3m');
+  const [callPage, setCallPage] = useState(1);
+  const [callPageSize, setCallPageSize] = useState(10);
+  const [callLoading, setCallLoading] = useState(false);
+  const [callError, setCallError] = useState('');
 
+  // 顶部汇总统计（独立于表格刷新）
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsExtra, setStatsExtra] = useState(0);
+
+  // 下载明细：筛选 / 分页 / 加载
+  const [downloadStatus, setDownloadStatus] = useState('');
+  const [downloadTimeRange, setDownloadTimeRange] = useState('3m');
+  const [downloadPage, setDownloadPage] = useState(1);
+  const [downloadPageSize, setDownloadPageSize] = useState(10);
+  const [downloadLoading, setDownloadLoading] = useState(false);
+  const [downloadError, setDownloadError] = useState('');
+
+  /** 筛选后统一按「更新时间」倒序排列（最新在前） */
   const filteredList = useMemo(() => {
     return records.filter(function (r) {
       if (searchOrderNo && !r.orderNo.includes(searchOrderNo.trim())) return false;
@@ -275,6 +404,8 @@ const OriginalComponent = () => {
       if (searchStatus && r.status !== searchStatus) return false;
       if (searchUpdateTime && !r.updateTime.includes(searchUpdateTime.trim())) return false;
       return true;
+    }).sort(function (a, b) {
+      return b.updateTime.localeCompare(a.updateTime);
     });
   }, [records, searchOrderNo, searchRegion, searchAuthType, searchDomain, searchProductName, searchProductType, searchDemander, searchStatus, searchUpdateTime]);
 
@@ -304,33 +435,141 @@ const OriginalComponent = () => {
     return seedData.find(function (p) { return p.id === currentRecord.productId; }) || null;
   }, [currentRecord]);
 
-  const detailOrders = useMemo(() => {
+  const callLogs = useMemo(() => {
     if (!currentRecord) return [];
-    return records.filter(function (o) { return o.productId === currentRecord.productId; });
-  }, [records, currentRecord]);
+    const cutoff = TIME_RANGE_CUTOFF[callTimeRange] || TIME_RANGE_CUTOFF['3m'];
+    return (callLogsByOrder[currentRecord.orderNo] || []).filter(function (log) {
+      if (callStatus && log.status !== callStatus) return false;
+      if (log.callTime < cutoff) return false;
+      return true;
+    });
+  }, [currentRecord, callStatus, callTimeRange]);
 
-  const detailTotalPages = Math.max(1, Math.ceil(detailOrders.length / detailPageSize));
-  const safeDetailPage = Math.min(detailPage, detailTotalPages);
-  const paginatedOrders = detailOrders.slice((safeDetailPage - 1) * detailPageSize, safeDetailPage * detailPageSize);
+  const callTotalPages = Math.max(1, Math.ceil(callLogs.length / callPageSize));
+  const safeCallPage = Math.min(callPage, callTotalPages);
+  const paginatedCallLogs = callLogs.slice((safeCallPage - 1) * callPageSize, safeCallPage * callPageSize);
+
+  const callStats = useMemo(() => {
+    if (!currentRecord) return null;
+    const base = callStatsByOrder[currentRecord.orderNo] || { total: 0, success: 0, failed: 0 };
+    const extraFailed = Math.round(statsExtra * 0.05);
+    return {
+      total: base.total + statsExtra,
+      success: base.success + (statsExtra - extraFailed),
+      failed: base.failed + extraFailed
+    };
+  }, [currentRecord, statsExtra]);
 
   const handleView = (record: SubscriptionOrder) => {
     setCurrentRecord(record);
     setShowViewModal(true);
   };
 
-  const handleViewDetail = (record: SubscriptionOrder) => {
+  /** 模拟异步加载调用日志（含加载中与错误状态兜底） */
+  const loadCallLogs = (orderNo: string, delay?: number) => {
+    setCallLoading(true);
+    setCallError('');
+    window.setTimeout(function () {
+      if (!callLogsByOrder[orderNo]) setCallError('未获取到调用明细数据，请点击查询重试');
+      setCallLoading(false);
+    }, delay === undefined ? 400 : delay);
+  };
+
+  const handleShowCallModal = (record: SubscriptionOrder) => {
     setCurrentRecord(record);
-    setDetailPage(1);
-    setShowDetailModal(true);
+    setCallStatus('');
+    setCallTimeRange('3m');
+    setCallPage(1);
+    setCallPageSize(10);
+    setStatsExtra(0);
+    setShowCallModal(true);
+    loadCallLogs(record.orderNo);
+  };
+
+  const handleCallQuery = () => {
+    setCallPage(1);
+    if (currentRecord) loadCallLogs(currentRecord.orderNo);
+  };
+
+  const handleCallReset = () => {
+    setCallStatus('');
+    setCallTimeRange('3m');
+    setCallPage(1);
+    if (currentRecord) loadCallLogs(currentRecord.orderNo);
+  };
+
+  const handleRefreshStats = () => {
+    setStatsLoading(true);
+    window.setTimeout(function () {
+      setStatsExtra(function (e) { return e + 7 + (e % 4) * 3; });
+      setStatsLoading(false);
+    }, 500);
+  };
+
+  const handleViewFailReason = (log: CallLog) => {
+    setFailLog(log);
+    setShowFailModal(true);
+  };
+
+  const downloadLogs = useMemo(() => {
+    if (!currentRecord) return [];
+    const cutoff = TIME_RANGE_CUTOFF[downloadTimeRange] || TIME_RANGE_CUTOFF['3m'];
+    return (downloadLogsByOrder[currentRecord.orderNo] || []).filter(function (log) {
+      if (downloadStatus && log.status !== downloadStatus) return false;
+      if (log.downloadTime < cutoff) return false;
+      return true;
+    });
+  }, [currentRecord, downloadStatus, downloadTimeRange]);
+
+  const downloadTotalPages = Math.max(1, Math.ceil(downloadLogs.length / downloadPageSize));
+  const safeDownloadPage = Math.min(downloadPage, downloadTotalPages);
+  const paginatedDownloadLogs = downloadLogs.slice((safeDownloadPage - 1) * downloadPageSize, safeDownloadPage * downloadPageSize);
+
+  const downloadStats = useMemo(() => {
+    if (!currentRecord) return null;
+    return downloadStatsByOrder[currentRecord.orderNo] || { total: 0, success: 0, failed: 0 };
+  }, [currentRecord]);
+
+  /** 模拟异步加载下载日志（含加载中与错误状态兜底） */
+  const loadDownloadLogs = (orderNo: string, delay?: number) => {
+    setDownloadLoading(true);
+    setDownloadError('');
+    window.setTimeout(function () {
+      if (!downloadLogsByOrder[orderNo]) setDownloadError('未获取到下载明细数据，请点击查询重试');
+      setDownloadLoading(false);
+    }, delay === undefined ? 400 : delay);
+  };
+
+  const handleShowDownloadModal = (record: SubscriptionOrder) => {
+    setCurrentRecord(record);
+    setDownloadStatus('');
+    setDownloadTimeRange('3m');
+    setDownloadPage(1);
+    setDownloadPageSize(10);
+    setShowDownloadModal(true);
+    loadDownloadLogs(record.orderNo);
+  };
+
+  const handleDownloadQuery = () => {
+    setDownloadPage(1);
+    if (currentRecord) loadDownloadLogs(currentRecord.orderNo);
+  };
+
+  const handleDownloadReset = () => {
+    setDownloadStatus('');
+    setDownloadTimeRange('3m');
+    setDownloadPage(1);
+    if (currentRecord) loadDownloadLogs(currentRecord.orderNo);
+  };
+
+  const handleViewDownloadFailReason = (log: DownloadLog) => {
+    setDownloadFailLog(log);
+    setShowDownloadFailModal(true);
   };
 
   const renderFilter = () => (
     <div className="filter-section">
       <div className="filter-row">
-        <div className="filter-item">
-          <label>订单编号</label>
-          <input type="text" placeholder="请输入" value={searchOrderNo} onChange={(e) => setSearchOrderNo(e.target.value)} />
-        </div>
         <div className="filter-item filter-item-select">
           <label>所属地域</label>
           <select value={searchRegion} onChange={(e) => setSearchRegion(e.target.value)}>
@@ -406,8 +645,9 @@ const OriginalComponent = () => {
               <th className="col-product">产品名称</th>
               <th className="col-product-type">产品类型</th>
               <th className="col-demander">数据需求方</th>
-              <th className="col-status">订单状态</th>
-              <th className="col-update-time">更新时间</th>
+                  <th className="col-status">订单状态</th>
+                  <th className="col-amount">订单总额（元）</th>
+                  <th className="col-update-time">更新时间</th>
               <th className="col-action">操作</th>
             </tr>
           </thead>
@@ -431,11 +671,19 @@ const OriginalComponent = () => {
                   <td className="col-product-type"><span className="type-tag">{record.productType}</span></td>
                   <td className="col-demander" title={record.demander}>{record.demander}</td>
                   <td className="col-status"><span className={'status-tag ' + getOrderStatusClass(record.status)}>{record.status}</span></td>
+                  <td className="col-amount">{record.amount.toLocaleString('zh-CN')}</td>
                   <td className="col-update-time">{record.updateTime}</td>
                   <td className="col-action">
                     <div className="action-buttons">
                       <button className="action-btn" onClick={() => handleView(record)}>查看</button>
-                      <button className="action-btn" onClick={() => handleViewDetail(record)}>查看订单明细</button>
+                      {record.productType === 'API产品' && (
+                        <button className="action-btn" onClick={() => handleShowCallModal(record)}>调用明细</button>
+                      )}
+                      {/*
+                      {record.productType === '数据集' && (
+                        <button className="action-btn" onClick={() => handleShowDownloadModal(record)}>下载明细</button>
+                      )}
+                        */}
                     </div>
                   </td>
                 </tr>
@@ -506,47 +754,96 @@ const OriginalComponent = () => {
     </div>
   );
 
-  const renderDetailModal = () => (
-    <div className="modal-overlay" onClick={() => setShowDetailModal(false)}>
+  const renderCallModal = () => (
+    <div className="modal-overlay" onClick={() => setShowCallModal(false)}>
       <div className="modal-large" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>订单明细</h3>
-          <button className="modal-close" onClick={() => setShowDetailModal(false)}>×</button>
+          <h3>调用明细</h3>
+          <button className="modal-close" onClick={() => setShowCallModal(false)}>×</button>
         </div>
         <div className="modal-body">
-          <div className="detail-product-tip">
-            产品名称：{currentRecord?.productName}　|　产品类型：{currentRecord?.productType}　|　数据需求方：{currentRecord?.demander}
+          <div className="call-tip">
+            由于数据量较大导致调用次数统计存在延时，您可<span className="link-btn" onClick={handleRefreshStats}>{statsLoading ? '刷新中…' : '手动刷新'}</span>获取最新的调用次数
+          </div>
+          <div className="view-info-grid call-stats-grid">
+            <div className="info-label">API接口名称</div>
+            <div className="info-value" title={currentRecord?.productName}>{currentRecord?.productName}</div>
+            <div className="info-label">调用总次数</div>
+            <div className="info-value">{statsLoading ? '统计中…' : callStats?.total}</div>
+            <div className="info-label">调用成功次数</div>
+            <div className="info-value">{statsLoading ? '统计中…' : callStats?.success}</div>
+            <div className="info-label">调用失败次数</div>
+            <div className="info-value">{statsLoading ? '统计中…' : callStats?.failed}</div>
+          </div>
+          <div className="filter-section call-filter-section">
+            <div className="filter-row">
+              <div className="filter-item filter-item-select">
+                <label>调用状态</label>
+                <select value={callStatus} onChange={(e) => setCallStatus(e.target.value)}>
+                  <option value="">请选择</option>
+                  {CALL_STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="filter-item filter-item-select">
+                <label>调用时间</label>
+                <select value={callTimeRange} onChange={(e) => setCallTimeRange(e.target.value)}>
+                  {TIME_RANGE_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="filter-actions">
+              <div className="filter-actions-left">
+                <button className="btn btn-primary btn-sm" onClick={handleCallQuery}>查询</button>
+                <button className="btn btn-default btn-sm" onClick={handleCallReset}>重置</button>
+              </div>
+            </div>
           </div>
           <div className="detail-table-section">
             <div className="table-wrapper">
-              <table className="data-table">
+              <table className="data-table call-log-table">
                 <thead>
                   <tr>
                     <th className="col-index">序号</th>
-                    <th>订单编号</th>
-                    <th>数据需求方</th>
-                    <th>订阅时间</th>
-                    <th>订单状态</th>
-                    <th>更新时间</th>
+                    <th>调用状态</th>
+                    <th>响应时长(ms)</th>
+                    <th>调用时间</th>
+                    <th>操作</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedOrders.length === 0 ? (
+                  {callLoading ? (
                     <tr>
-                      <td colSpan={6} className="empty-state">
+                      <td colSpan={5} className="empty-state">
+                        <div className="empty-state-icon">⏳</div>
+                        加载中…
+                      </td>
+                    </tr>
+                  ) : callError ? (
+                    <tr>
+                      <td colSpan={5} className="empty-state">
+                        <div className="empty-state-icon">⚠️</div>
+                        {callError}
+                      </td>
+                    </tr>
+                  ) : paginatedCallLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="empty-state">
                         <div className="empty-state-icon">📭</div>
-                        暂无数据
+                        暂无调用记录
                       </td>
                     </tr>
                   ) : (
-                    paginatedOrders.map((order, index) => (
-                      <tr key={order.id}>
-                        <td className="col-index">{(safeDetailPage - 1) * detailPageSize + index + 1}</td>
-                        <td>{order.orderNo}</td>
-                        <td title={order.demander}>{order.demander}</td>
-                        <td>{order.subscribeTime}</td>
-                        <td><span className={'status-tag ' + getOrderStatusClass(order.status)}>{order.status}</span></td>
-                        <td>{order.updateTime}</td>
+                    paginatedCallLogs.map((log, index) => (
+                      <tr key={log.id}>
+                        <td className="col-index">{(safeCallPage - 1) * callPageSize + index + 1}</td>
+                        <td className={log.status === '失败' ? 'call-status-fail' : ''}>{log.status}</td>
+                        <td>{log.duration}</td>
+                        <td>{log.callTime}</td>
+                        <td>
+                          {log.status === '失败' && (
+                            <button className="action-btn" onClick={() => handleViewFailReason(log)}>查看失败原因</button>
+                          )}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -554,32 +851,223 @@ const OriginalComponent = () => {
               </table>
             </div>
             <div className="pagination">
-              <div className="pagination-info">共 {detailOrders.length} 条记录</div>
+              <div className="pagination-info">共 {callLogs.length} 条记录</div>
               <div className="pagination-controls">
-                <button className="page-btn" disabled={safeDetailPage <= 1} onClick={() => setDetailPage(Math.max(1, safeDetailPage - 1))}>上一页</button>
-                {Array.from({ length: detailTotalPages }, (_, i) => i + 1)
-                  .filter(p => p === 1 || p === detailTotalPages || Math.abs(p - safeDetailPage) <= 1)
+                <button className="page-btn" disabled={safeCallPage <= 1} onClick={() => setCallPage(Math.max(1, safeCallPage - 1))}>上一页</button>
+                {Array.from({ length: callTotalPages }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === callTotalPages || Math.abs(p - safeCallPage) <= 1)
                   .map((page, idx, arr) => (
                     <span key={page} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       {idx > 0 && arr[idx - 1] !== page - 1 && <span style={{ color: '#999' }}>...</span>}
-                      <button className={'page-number' + (page === safeDetailPage ? ' active' : '')} onClick={() => setDetailPage(page)}>{page}</button>
+                      <button className={'page-number' + (page === safeCallPage ? ' active' : '')} onClick={() => setCallPage(page)}>{page}</button>
                     </span>
                   ))}
-                <button className="page-btn" disabled={safeDetailPage >= detailTotalPages} onClick={() => setDetailPage(Math.min(detailTotalPages, safeDetailPage + 1))}>下一页</button>
-                <select className="page-size-select" value={detailPageSize} onChange={(e) => { setDetailPageSize(Number(e.target.value)); setDetailPage(1); }}>
+                <button className="page-btn" disabled={safeCallPage >= callTotalPages} onClick={() => setCallPage(Math.min(callTotalPages, safeCallPage + 1))}>下一页</button>
+                <select className="page-size-select" value={callPageSize} onChange={(e) => { setCallPageSize(Number(e.target.value)); setCallPage(1); }}>
                   <option value={10}>10 条/页</option>
                   <option value={20}>20 条/页</option>
                   <option value={50}>50 条/页</option>
                 </select>
                 <span className="jump-to">跳至</span>
-                <input className="page-input" type="number" min={1} max={detailTotalPages} value={safeDetailPage} onChange={(e) => { const v = Number(e.target.value); if (v >= 1 && v <= detailTotalPages) setDetailPage(v); }} />
+                <input className="page-input" type="number" min={1} max={callTotalPages} value={safeCallPage} onChange={(e) => { const v = Number(e.target.value); if (v >= 1 && v <= callTotalPages) setCallPage(v); }} />
                 <span className="jump-to">页</span>
               </div>
             </div>
           </div>
         </div>
         <div className="modal-footer">
-          <button className="btn btn-default" onClick={() => setShowDetailModal(false)}>关闭</button>
+          <button className="btn btn-default" onClick={() => setShowCallModal(false)}>关闭</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDownloadModal = () => (
+    <div className="modal-overlay" onClick={() => setShowDownloadModal(false)}>
+      <div className="modal-large" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>下载明细</h3>
+          <button className="modal-close" onClick={() => setShowDownloadModal(false)}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="view-info-grid call-stats-grid">
+            <div className="info-label">表名</div>
+            <div className="info-value" title={currentRecord ? (DATASET_TABLE_NAMES[currentRecord.productId] || 'dataset_default_2026') : ''}>
+              {currentRecord ? (DATASET_TABLE_NAMES[currentRecord.productId] || 'dataset_default_2026') : ''}
+            </div>
+            <div className="info-label">下载总次数</div>
+            <div className="info-value">{downloadStats?.total}</div>
+            <div className="info-label">下载成功次数</div>
+            <div className="info-value">{downloadStats?.success}</div>
+            <div className="info-label">下载失败次数</div>
+            <div className="info-value">{downloadStats?.failed}</div>
+          </div>
+          <div className="filter-section call-filter-section">
+            <div className="filter-row">
+              <div className="filter-item filter-item-select">
+                <label>下载状态</label>
+                <select value={downloadStatus} onChange={(e) => setDownloadStatus(e.target.value)}>
+                  <option value="">请选择</option>
+                  {CALL_STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="filter-item filter-item-select">
+                <label>下载时间</label>
+                <select value={downloadTimeRange} onChange={(e) => setDownloadTimeRange(e.target.value)}>
+                  {TIME_RANGE_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="filter-actions">
+              <div className="filter-actions-left">
+                <button className="btn btn-primary btn-sm" onClick={handleDownloadQuery}>查询</button>
+                <button className="btn btn-default btn-sm" onClick={handleDownloadReset}>重置</button>
+              </div>
+            </div>
+          </div>
+          <div className="detail-table-section">
+            <div className="table-wrapper">
+              <table className="data-table call-log-table">
+                <thead>
+                  <tr>
+                    <th className="col-index">序号</th>
+                    <th>下载状态</th>
+                    <th>下载耗时(ms)</th>
+                    <th>下载时间</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {downloadLoading ? (
+                    <tr>
+                      <td colSpan={5} className="empty-state">
+                        <div className="empty-state-icon">⏳</div>
+                        加载中…
+                      </td>
+                    </tr>
+                  ) : downloadError ? (
+                    <tr>
+                      <td colSpan={5} className="empty-state">
+                        <div className="empty-state-icon">⚠️</div>
+                        {downloadError}
+                      </td>
+                    </tr>
+                  ) : paginatedDownloadLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="empty-state">
+                        <div className="empty-state-icon">📭</div>
+                        暂无下载记录
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedDownloadLogs.map((log, index) => (
+                      <tr key={log.id}>
+                        <td className="col-index">{(safeDownloadPage - 1) * downloadPageSize + index + 1}</td>
+                        <td className={log.status === '失败' ? 'call-status-fail' : ''}>{log.status}</td>
+                        <td>{log.duration}</td>
+                        <td>{log.downloadTime}</td>
+                        <td>
+                          {log.status === '失败' && (
+                            <button className="action-btn" onClick={() => handleViewDownloadFailReason(log)}>查看失败原因</button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="pagination">
+              <div className="pagination-info">共 {downloadLogs.length} 条记录</div>
+              <div className="pagination-controls">
+                <button className="page-btn" disabled={safeDownloadPage <= 1} onClick={() => setDownloadPage(Math.max(1, safeDownloadPage - 1))}>上一页</button>
+                {Array.from({ length: downloadTotalPages }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === downloadTotalPages || Math.abs(p - safeDownloadPage) <= 1)
+                  .map((page, idx, arr) => (
+                    <span key={page} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      {idx > 0 && arr[idx - 1] !== page - 1 && <span style={{ color: '#999' }}>...</span>}
+                      <button className={'page-number' + (page === safeDownloadPage ? ' active' : '')} onClick={() => setDownloadPage(page)}>{page}</button>
+                    </span>
+                  ))}
+                <button className="page-btn" disabled={safeDownloadPage >= downloadTotalPages} onClick={() => setDownloadPage(Math.min(downloadTotalPages, safeDownloadPage + 1))}>下一页</button>
+                <select className="page-size-select" value={downloadPageSize} onChange={(e) => { setDownloadPageSize(Number(e.target.value)); setDownloadPage(1); }}>
+                  <option value={10}>10 条/页</option>
+                  <option value={20}>20 条/页</option>
+                  <option value={50}>50 条/页</option>
+                </select>
+                <span className="jump-to">跳至</span>
+                <input className="page-input" type="number" min={1} max={downloadTotalPages} value={safeDownloadPage} onChange={(e) => { const v = Number(e.target.value); if (v >= 1 && v <= downloadTotalPages) setDownloadPage(v); }} />
+                <span className="jump-to">页</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-default" onClick={() => setShowDownloadModal(false)}>关闭</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDownloadFailModal = () => (
+    <div className="modal-overlay" onClick={() => setShowDownloadFailModal(false)}>
+      <div className="modal-medium" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>失败原因</h3>
+          <button className="modal-close" onClick={() => setShowDownloadFailModal(false)}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="view-info-grid">
+            <div className="info-label">订单编号</div>
+            <div className="info-value-span">{downloadFailLog?.orderId}</div>
+            <div className="info-label">表名</div>
+            <div className="info-value-span">{downloadFailLog?.tableName}</div>
+            <div className="info-label">下载时间</div>
+            <div className="info-value">{downloadFailLog?.downloadTime}</div>
+            <div className="info-label">下载耗时(ms)</div>
+            <div className="info-value">{downloadFailLog?.duration}</div>
+            <div className="info-label">下载状态</div>
+            <div className="info-value"><span className="call-status-fail">{downloadFailLog?.status}</span></div>
+            <div className="info-label">错误码</div>
+            <div className="info-value"><span className="call-status-fail">{downloadFailLog?.errorCode}</span></div>
+            <div className="info-label">错误信息</div>
+            <div className="info-value-span">{downloadFailLog?.errorMessage}</div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-default" onClick={() => setShowDownloadFailModal(false)}>关闭</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderFailModal = () => (
+    <div className="modal-overlay" onClick={() => setShowFailModal(false)}>
+      <div className="modal-medium" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>失败原因</h3>
+          <button className="modal-close" onClick={() => setShowFailModal(false)}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="view-info-grid">
+            <div className="info-label">订单编号</div>
+            <div className="info-value-span">{failLog?.orderId}</div>
+            <div className="info-label">API接口名称</div>
+            <div className="info-value-span">{failLog?.apiName}</div>
+            <div className="info-label">调用时间</div>
+            <div className="info-value">{failLog?.callTime}</div>
+            <div className="info-label">响应时长(ms)</div>
+            <div className="info-value">{failLog?.duration}</div>
+            <div className="info-label">调用状态</div>
+            <div className="info-value"><span className="call-status-fail">{failLog?.status}</span></div>
+            <div className="info-label">错误码</div>
+            <div className="info-value"><span className="call-status-fail">{failLog?.errorCode}</span></div>
+            <div className="info-label">错误信息</div>
+            <div className="info-value-span">{failLog?.errorMessage}</div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-default" onClick={() => setShowFailModal(false)}>关闭</button>
         </div>
       </div>
     </div>
@@ -588,11 +1076,11 @@ const OriginalComponent = () => {
   return (
     <Layout
       activeMenu={activeMenu}
-      breadcrumb="订阅订单监管"
+      breadcrumb="订单交付监管"
       role={role}
       onRoleChange={setRole}
       roleOptions={['数据管理部门']}
-      title="订阅订单监管"
+      title="订单交付监管"
       specContent={specContent}
       changeLogContent={changeLogContent}
     >
@@ -600,7 +1088,10 @@ const OriginalComponent = () => {
       {renderTable()}
 
       {showViewModal && renderViewModal()}
-      {showDetailModal && renderDetailModal()}
+      {showCallModal && renderCallModal()}
+      {showFailModal && renderFailModal()}
+      {showDownloadModal && renderDownloadModal()}
+      {showDownloadFailModal && renderDownloadFailModal()}
     </Layout>
   );
 };

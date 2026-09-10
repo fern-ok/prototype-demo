@@ -144,8 +144,8 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
             </div>
             {!sidebarCollapsed && !collapsedGroups['授权监管'] && (
               <div className="nav-items">
-                <a className={'nav-item nav-item-link' + (activeMenu === 'product-subscription-supervision' ? ' active' : '')} href="/prototypes/product-subscription-supervision.html"><span className="nav-text">产品订阅监管</span></a>
-                <a className={'nav-item nav-item-link' + (activeMenu === 'subscription-order-supervision' ? ' active' : '')} href="/prototypes/subscription-order-supervision.html"><span className="nav-text">订阅订单监管</span></a>
+                <a className={'nav-item nav-item-link' + (activeMenu === 'product-subscription-supervision' ? ' active' : '')} href="/prototypes/product-subscription-supervision.html"><span className="nav-text">产品交易监管</span></a>
+                <a className={'nav-item nav-item-link' + (activeMenu === 'subscription-order-supervision' ? ' active' : '')} href="/prototypes/subscription-order-supervision.html"><span className="nav-text">订单交付监管</span></a>
               </div>
             )}
           </div>

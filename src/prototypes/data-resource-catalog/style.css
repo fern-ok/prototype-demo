@@ -982,7 +982,7 @@
 .info-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 820px
+    min-width: 900px
 }
 
 .info-table th {
@@ -1017,6 +1017,32 @@
 
 .delete-row:disabled {
     opacity: .35
+}
+
+/* 信息项操作栏：上移 / 下移 / 删除 */
+.info-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap
+}
+
+.move-row {
+    border: 0;
+    background: none;
+    padding: 0;
+    color: #2b6cf6;
+    font-size: 12px;
+    cursor: pointer
+}
+
+.move-row:hover:not(:disabled) {
+    text-decoration: underline
+}
+
+.move-row:disabled {
+    color: #b8bfcc;
+    cursor: not-allowed
 }
 
 .action-danger {
@@ -1332,6 +1358,49 @@
     font-size: 13px;
     text-align: right;
     padding: 10px 6px 0
+}
+
+/* ---- 撤销弹窗：资源名称禁用回显 + 撤销说明（必填，512 字符） ---- */
+.revoke-modal {
+    width: 620px
+}
+
+.revoke-body {
+    display: grid;
+    gap: 14px;
+    padding-top: 6px
+}
+
+.revoke-reason-box {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px
+}
+
+.revoke-reason-box textarea {
+    width: 100%;
+    resize: vertical
+}
+
+.revoke-reason-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    min-height: 18px
+}
+
+.revoke-counter {
+    color: #98a2b3;
+    font-size: 12px;
+    font-family: monospace
+}
+
+.revoke-error {
+    color: #d83535;
+    font-size: 13px
 }
 
 /* ---- 资源目录关联弹窗：头部"已关联"区域升级为芯片列表 ---- */
@@ -1737,6 +1806,13 @@
 .change-detail-info-row .cell-modified,
 .change-detail-info-row .cell-added {
     color: #d83535;
+    background: #fff
+}
+
+/* 第一条变更详情：删除的信息项 —— 右侧并排展示被删除的原始内容，红字 + 删除线 */
+.change-detail-info-row.is-deleted-strike td {
+    color: #d83535;
+    text-decoration: line-through;
     background: #fff
 }
 

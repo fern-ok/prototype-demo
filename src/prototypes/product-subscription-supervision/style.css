@@ -35,12 +35,87 @@
 }
 
 .list-overview-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
   color: #4b5563;
   font-size: 13px;
   line-height: 20px;
-  white-space: nowrap;
+  /* 取消裁剪，确保名称后的问号图标及其 tooltip 不被隐藏 */
+}
+
+.list-overview-label-text {
+  min-width: 0;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* 统计项名称后的问号图标：与标题保持合理间距、垂直居中，不破坏排版 */
+.stat-help-icon {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 2px;
+  border-radius: 50%;
+  background: #c3ccd9;
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+  font-style: normal;
+  cursor: help;
+  user-select: none;
+}
+
+.stat-help-icon:hover {
+  background: #9aa6b8;
+}
+
+/* 悬浮问号图标时显示的说明：悬浮展示、移出隐藏，自动换行，不被相邻卡片遮挡 */
+.stat-help-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  min-width: 168px;
+  max-width: 240px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: rgba(31, 35, 41, 0.92);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+  white-space: normal;
+  word-break: break-word;
+  text-align: left;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .15s ease;
+}
+
+.stat-help-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(31, 35, 41, 0.92);
+}
+
+.stat-help-icon:hover .stat-help-tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 .list-overview-value {

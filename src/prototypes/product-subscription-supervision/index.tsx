@@ -7,6 +7,7 @@
 
 import { useMemo, useState } from 'react';
 import Layout from '../../common/Layout';
+import RegionCascader from '../../common/RegionCascader';
 import specContent from './spec.md?raw';
 import changeLogContent from './change.md?raw';
 import PasswordGuard from '../../common/PasswordGuard';
@@ -77,7 +78,6 @@ function fetchOrderDetailProduct(record: ProductSubscription | null): Promise<Or
   });
 }
 
-const REGION_OPTIONS = ['省本级', '长沙市', '株洲市', '湘潭市', '衡阳市', '邵阳市', '岳阳市', '常德市', '张家界市', '益阳市', '郴州市', '永州市', '怀化市', '娄底市', '湘西土家族苗族自治州'];
 const AUTH_TYPE_OPTIONS = ['整体授权运营', '分领域授权运营'];
 const DOMAIN_OPTIONS = ['医疗健康', '交通运输', '教育', '文化旅游', '自然资源', '城市治理', '金融服务', '工业制造', '智慧农业', '应急管理'];
 const PRODUCT_TYPE_OPTIONS = ['数据集', 'API产品'];
@@ -121,7 +121,7 @@ const seedData: ProductSubscription[] = [
   },
   {
     id: 3,
-    region: '长沙市',
+    region: '芙蓉区',
     authType: '整体授权运营',
     domain: '城市治理',
     productName: '长沙市城市交通流量监测API',
@@ -201,15 +201,18 @@ const formatThousands = (value: number) => {
   return String(Math.trunc(value)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
-/** 金额格式化：单位为「分」的整数，仅添加千分位分隔符，不做任何单位换算 */
-const formatAmountInCents = (value: number) => formatThousands(value);
+/** 金额格式化：单位为「分」的整数，展示不做单位换算，千分位分隔并保留两位小数 */
+const formatAmountInCents = (value: number) => {
+  if (typeof value !== 'number' || !isFinite(value)) return '-';
+  return formatThousands(value) + '.00';
+};
 
-/** 顶部统计概览：全量统计口径，不随列表筛选条件联动 */
-const OVERVIEW_STATS: Array<{ key: string; label: string; value: number }> = [
-  { key: 'tradableProducts', label: '流通数据产品（个）', value: 1284 },
-  { key: 'totalOrders', label: '累计生成订单（条）', value: 86420 },
-  { key: 'deliveredOrders', label: '交付订单（条）', value: 79315 },
-  { key: 'totalCalls', label: '累计调用次数（次）', value: 12684500 }
+/** 顶部统计概览：全量统计口径，不随列表筛选条件联动；tip 为悬浮问号图标的说明文案 */
+const OVERVIEW_STATS: Array<{ key: string; label: string; tip: string; value: number }> = [
+  { key: 'tradableProducts', label: '流通数据产品（个）', tip: '当前处于可交易状态的数据产品', value: 1284 },
+  { key: 'validOrders', label: '有效订单数（个）', tip: '供需双方完成合同签订的订单', value: 86420 },
+  { key: 'successCalls', label: '成功调用数（次）', tip: 'API 产品的成功调用次数，数据累计至前一日 24:00', value: 12684500 },
+  { key: 'tradeAmount', label: '产品交易总额（元）', tip: '完成合同签订的数据产品订单总额', value: 45365700 }
 ];
 
 /** 依据产品订单总数生成订阅订单明细（演示数据，稳定可复现） */
@@ -553,7 +556,12 @@ const OriginalComponent = () => {
       {OVERVIEW_STATS.map(function (item) {
         return (
           <div key={item.key} className="list-overview-item">
-            <span className="list-overview-label" title={item.label}>{item.label}</span>
+            <span className="list-overview-label">
+              <span className="list-overview-label-text">{item.label}</span>
+              <span className="stat-help-icon" role="img" aria-label={item.tip}>?
+                <span className="stat-help-tooltip" role="tooltip">{item.tip}</span>
+              </span>
+            </span>
             <strong className="list-overview-value">{formatThousands(item.value)}</strong>
           </div>
         );
@@ -564,13 +572,7 @@ const OriginalComponent = () => {
   const renderFilter = () => (
     <div className="filter-section">
       <div className="filter-row">
-        <div className="filter-item filter-item-select">
-          <label>所属地域</label>
-          <select value={searchRegion} onChange={(e) => setSearchRegion(e.target.value)}>
-            <option value="">请选择</option>
-            {REGION_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
-        </div>
+        <RegionCascader value={searchRegion} onChange={setSearchRegion} />
         <div className="filter-item filter-item-select">
           <label>授权运营类型</label>
           <select value={searchAuthType} onChange={(e) => setSearchAuthType(e.target.value)}>

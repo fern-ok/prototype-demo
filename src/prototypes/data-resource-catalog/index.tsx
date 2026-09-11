@@ -102,7 +102,6 @@ const baseBasicFields: { label: string; value: string }[] = [
   { label: '更新频率', value: '每日' },
   { label: '覆盖时间范围', value: '2026-05-24 ~ 至今' },
   { label: '地域分类', value: '长沙市' },
-  { label: '扩展码', value: 'HC-2026-046927' },
   { label: '资源摘要', value: '基础数据资源，用于支撑农业农村相关业务分析，覆盖长沙市内稻谷种植情况。' },
 ];
 
@@ -159,7 +158,6 @@ const changeSnapshots: ChangeSnapshot[] = [
           '资源名称': { status: 'modified', before: '地域分类为湖南省的数据资源', after: '地域分类为长沙市的数据资源' },
           '覆盖时间范围': { status: 'modified', before: '2026-01-01 ~ 至今', after: '2026-05-24 ~ 至今' },
           '地域分类': { status: 'modified', before: '湖南省', after: '长沙市' },
-          '扩展码': { status: 'deleted', before: 'HC-2025-046927', after: '' },
           '资源摘要': { status: 'modified', before: '基础数据资源，覆盖湖南省域内稻谷种植相关业务分析。', after: '基础数据资源，用于支撑农业农村相关业务分析，覆盖长沙市内稻谷种植情况。' },
           '数据来源': { status: 'added', before: '', after: '收集取得' },
         }),
@@ -378,16 +376,16 @@ const OriginalComponent = () => {
       {showAdd && <AddResourceModal onClose={() => setShowAdd(false)} />}
       {showView && <DetailModal item={showView} onClose={() => setShowView(null)} />}
       {showProof && <ProofModal item={showProof} onClose={() => setShowProof(null)} />}
-      {action && action.type !== 'edit' && action.type !== 'change' && action.type !== 'relate' && (
+      {action && action.type !== 'edit' && action.type !== 'change' && action.type !== 'relate' && action.type !== 'revoke' && (
         <div className="modal-overlay" onClick={() => setAction(null)}>
           <div className={'catalog-modal' + (action.type === 'changeRecord' ? ' change-record-modal' : '')} onClick={e => e.stopPropagation()}>
             {action.type === 'delete' && <ConfirmModal title="删除资源" danger confirmText="删除" message={`确认删除「${action.item.name}」？删除后不可恢复。`} onClose={() => setAction(null)} onConfirm={() => setAction(null)} />}
-            {action.type === 'revoke' && <ConfirmModal title="撤销资源" message={`确认撤销「${action.item.name}」？撤销后将进入"撤销登记待审核"。`} onClose={() => setAction(null)} onConfirm={() => setAction(null)} />}
             {action.type === 'changeRecord' && <ChangeRecordModal item={action.item} onClose={() => setAction(null)} />}
           </div>
         </div>
       )}
       {action && action.type === 'edit' && <EditResourceModal item={action.item} onClose={() => setAction(null)} />}
+      {action && action.type === 'revoke' && <RevokeModal item={action.item} onClose={() => setAction(null)} />}
       {action && action.type === 'change' && <ChangeResourceModal item={action.item} onClose={() => setAction(null)} />}
       {action && action.type === 'relate' && <RelateCatalogModal initialSelected={[]} initialAssociated={[]} onClose={() => setAction(null)} onConfirm={(ids, items) => { setAction(null); }} />}
     </Layout>
@@ -453,6 +451,14 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
   // 变更说明：仅变更弹窗使用，位于信息项表格下方
   const [changeNote, setChangeNote] = useState(initial?.changeNote ?? '');
   const addRow = () => setRows(prev => [...prev, { english: '', name: '', type: '字符型', length: '20', desc: '' }]);
+  // 信息项排序：与相邻行交换位置，实时反映到当前弹窗的列表展示
+  const moveRow = (index: number, dir: 'up' | 'down') => setRows(prev => {
+    const target = dir === 'up' ? index - 1 : index + 1;
+    if (target < 0 || target >= prev.length) return prev;
+    const next = [...prev];
+    [next[index], next[target]] = [next[target], next[index]];
+    return next;
+  });
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="catalog-modal add-resource-modal" onClick={e => e.stopPropagation()}>
@@ -485,7 +491,8 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
                 <Field label="更新频率" required><div className="joined-input"><input value={freqNum} onChange={e => setFreqNum(e.target.value)} placeholder="请输入" /><select value={freqUnit} onChange={e => setFreqUnit(e.target.value)}><option>次/天</option><option>次/周</option><option>次/月</option><option>次/年</option></select></div></Field>
                 <Field label="覆盖时间范围" required><div className="date-range"><input type="date" value={coverStart} onChange={e => setCoverStart(e.target.value)} /><span>~</span><input type="date" value={coverEnd} disabled={untilNow} onChange={e => setCoverEnd(e.target.value)} /><label><input type="checkbox" checked={untilNow} onChange={e => setUntilNow(e.target.checked)} />至今</label></div></Field>
                 <Field label="地域分类" required><select value={region} onChange={e => setRegion(e.target.value)}><option>请选择</option><option>湖南省</option><option>长沙市</option><option>株洲市</option></select></Field>
-                <Field label="扩展码"><input value={extCode} onChange={e => setExtCode(e.target.value)} placeholder="请输入" /></Field>
+                {/* 变更弹窗不展示扩展码；新增／编辑弹窗仍保留该字段的输入与提交 */}
+                {mode !== 'change' && <Field label="扩展码"><input value={extCode} onChange={e => setExtCode(e.target.value)} placeholder="请输入" /></Field>}
                 <Field label="资源摘要" required full><textarea rows={3} value={summary} onChange={e => setSummary(e.target.value)} placeholder="请输入" /></Field>
               </div>
               <h4>资源持有方信息</h4>
@@ -512,7 +519,13 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
                         <td><select value={r.type} onChange={e => setRows(p => p.map((x, j) => j === i ? { ...x, type: e.target.value } : x))}><option>字符型</option><option>数值型</option><option>日期型</option></select></td>
                         <td><input value={r.length} disabled={r.type === '日期型'} onChange={e => setRows(p => p.map((x, j) => j === i ? { ...x, length: e.target.value } : x))} /></td>
                         <td><input value={r.desc} onChange={e => setRows(p => p.map((x, j) => j === i ? { ...x, desc: e.target.value } : x))} /></td>
-                        <td><button className="delete-row" disabled={rows.length === 1} onClick={() => setRows(p => p.filter((_, j) => j !== i))}>×</button></td>
+                        <td>
+                          <div className="info-row-actions">
+                            <button type="button" className="move-row" disabled={i === 0} onClick={() => moveRow(i, 'up')}>上移</button>
+                            <button type="button" className="move-row" disabled={i === rows.length - 1} onClick={() => moveRow(i, 'down')}>下移</button>
+                            <button type="button" className="delete-row" disabled={rows.length === 1} onClick={() => setRows(p => p.filter((_, j) => j !== i))}>×</button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -580,9 +593,9 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
                   <tr><th>行业分类</th><td>{blank(item.industry)}</td><th>是否涉及个人信息</th><td>否</td></tr>
                   <tr><th>资源格式</th><td>xls</td><th>数据来源</th><td>原始取得</td></tr>
                   <tr><th>更新频率</th><td>每日</td><th>覆盖时间范围</th><td>2026-5-24 — 至今</td></tr>
-                  <tr><th>地域分类</th><td>湖南省</td><th>扩展码</th><td>HC-2026-046927</td></tr>
-                  <tr><th>审核状态</th><td>{blank(item.reviewStatus)}</td><th>领域名称</th><td>医疗健康</td></tr>
-                  <tr><th>所属地域</th><td>省本级</td><th>数据源挂载状态</th><td>{blank(item.mountStatus)}</td></tr>
+                  <tr><th>地域分类</th><td>湖南省</td><th>审核状态</th><td>{blank(item.reviewStatus)}</td></tr>
+                  <tr><th>领域名称</th><td>医疗健康</td><th>所属地域</th><td>省本级</td></tr>
+                  <tr><th>数据源挂载状态</th><td colSpan={3}>{blank(item.mountStatus)}</td></tr>
                   <tr><th>资源摘要</th><td colSpan={3}>基础数据资源，用于支撑公共卫生服务、医疗机构管理及相关业务分析。</td></tr>
                 </tbody></table>
               </section>
@@ -659,7 +672,8 @@ const ProofModal = ({ item, onClose }: { item: Resource; onClose: () => void }) 
 //   - modified 字段：两侧均红字
 //   - added   字段：仅变更后侧显示 + 「新增」红标
 //   - deleted 字段：仅变更前侧显示 + 「删除」红标
-const ChangeDetailModal = ({ detail, onClose }: { detail: ChangeRecord; onClose: () => void }) => {
+//   - 第一条变更详情的 deleted 信息项：右侧并排展示被删除的原始内容（红字 + 删除线）
+const ChangeDetailModal = ({ detail, isFirstRecord, onClose }: { detail: ChangeRecord; isFirstRecord?: boolean; onClose: () => void }) => {
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
   // 用 ref 自旋锁防止两侧 scroll 事件互相触发死循环
@@ -744,7 +758,7 @@ const ChangeDetailModal = ({ detail, onClose }: { detail: ChangeRecord; onClose:
             <>
               <div className="change-detail-compare">
                 <ChangeDetailSide title="变更前信息" sections={snapshot.sections} side="before" scrollRef={leftRef} />
-                <ChangeDetailSide title="变更后信息" sections={snapshot.sections} side="after" scrollRef={rightRef} />
+                <ChangeDetailSide title="变更后信息" sections={snapshot.sections} side="after" scrollRef={rightRef} isFirstRecord={isFirstRecord} />
               </div>
              
             </>
@@ -760,11 +774,12 @@ const ChangeDetailModal = ({ detail, onClose }: { detail: ChangeRecord; onClose:
   );
 };
 
-const ChangeDetailSide = ({ title, sections, side, scrollRef }: {
+const ChangeDetailSide = ({ title, sections, side, scrollRef, isFirstRecord }: {
   title: string;
   sections: ChangeSection[];
   side: 'before' | 'after';
   scrollRef: RefObject<HTMLDivElement | null>;
+  isFirstRecord?: boolean;
 }) => (
   <div className="change-detail-side">
     <h5 className="change-detail-side-title">{title}</h5>
@@ -775,7 +790,7 @@ const ChangeDetailSide = ({ title, sections, side, scrollRef }: {
           {section.kind === 'kv' ? (
             <ChangeDetailKvGrid rows={section.rows} side={side} />
           ) : (
-            <ChangeDetailInfoTable rows={section.rows} side={side} />
+            <ChangeDetailInfoTable rows={section.rows} side={side} isFirstRecord={isFirstRecord} />
           )}
         </section>
       ))}
@@ -845,7 +860,7 @@ const ChangeDetailKvCell = ({ field, side }: { field: ChangeKvDiff; side: 'befor
 };
 
 // 信息项表格区段：以英文名对齐左右两栏同位置的行；modified 行做单元格级 diff
-const ChangeDetailInfoTable = ({ rows, side }: { rows: ChangeInfoItemRow[]; side: 'before' | 'after' }) => {
+const ChangeDetailInfoTable = ({ rows, side, isFirstRecord }: { rows: ChangeInfoItemRow[]; side: 'before' | 'after'; isFirstRecord?: boolean }) => {
   return (
     <div className="change-detail-info-table-wrap">
       <table className="change-detail-info-table">
@@ -860,11 +875,15 @@ const ChangeDetailInfoTable = ({ rows, side }: { rows: ChangeInfoItemRow[]; side
         </thead>
         <tbody>
           {rows.map((row, rowIdx) => {
-            const vals = side === 'before' ? row.before : row.after;
-            const isEmptySide = (row.rowStatus === 'added' && side === 'before') || (row.rowStatus === 'deleted' && side === 'after');
+            // 仅「第一条变更详情」的删除信息项：右侧不留空，改为展示被删除的原始内容（红字 + 删除线），
+            // 与左侧删除前内容并排对齐，形成删除前后差异对比；其余变更详情仍保持原空占位逻辑
+            const showDeletedStrike = !!isFirstRecord && side === 'after' && row.rowStatus === 'deleted';
+            const vals = showDeletedStrike ? row.before : (side === 'before' ? row.before : row.after);
+            const isEmptySide = !showDeletedStrike && ((row.rowStatus === 'added' && side === 'before') || (row.rowStatus === 'deleted' && side === 'after'));
             // 变更前：不标红；变更后：modified / added 文字标红，deleted 信息项删除不标红
             let rowCls = 'change-detail-info-row';
-            if (side === 'after') {
+            if (showDeletedStrike) rowCls += ' is-deleted-strike';
+            else if (side === 'after') {
               if (row.rowStatus === 'modified') rowCls += ' is-modified';
               else if (row.rowStatus === 'added') rowCls += ' is-added';
             }
@@ -919,13 +938,51 @@ const ChangeRecordModal = ({ item, onClose }: { item: Resource; onClose: () => v
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [detail, setDetail] = useState<ChangeRecord | null>(null);
+  // 标记当前打开的详情是否为变更记录列表的第一条：仅第一条的删除信息项启用「红字 + 删除线」并排对比
+  const [detailIsFirst, setDetailIsFirst] = useState(false);
   const records = (item.changeRecords || []).filter(r => (!status || r.status === status) && (!start || r.time.slice(0, 10) >= start) && (!end || r.time.slice(0, 10) <= end));
   const reset = () => { setStatus(''); setStart(''); setEnd(''); };
   return <>
     <div className="modal-head"><h3>变更记录</h3><button onClick={onClose}><X size={18} /></button></div>
-    <div className="modal-body change-record-body"><div className="change-record-filters"><label>变更状态<select value={status} onChange={e => setStatus(e.target.value)}><option value="">请选择</option><option>变更中</option><option>变更通过</option><option>变更不通过</option></select></label><label>更新时间<div className="date-range"><input type="date" value={start} onChange={e => setStart(e.target.value)} /><span>-</span><input type="date" value={end} onChange={e => setEnd(e.target.value)} /></div></label><div className="change-filter-actions"><button className="btn primary" onClick={() => undefined}>查询</button><button className="btn" onClick={reset}>重置</button></div></div><div className="table-wrap change-record-wrap"><table className="catalog-table change-record-table"><thead><tr><th>序号</th><th>变更状态</th><th>更新时间</th><th>变更审核意见</th><th>操作</th></tr></thead><tbody>{records.map((r, i) => <tr key={i}><td>{i + 1}</td><td><span className={'status ' + (r.status === '变更通过' ? 'success' : r.status === '变更不通过' ? 'danger' : 'info')}>{r.status}</span></td><td>{r.time}</td><td>{r.opinion || '-'}</td><td><button className="link-button" onClick={() => setDetail(r)}>查看</button></td></tr>)}{!records.length && <tr><td colSpan={5} className="empty-row">暂无变更记录</td></tr>}</tbody></table></div><div className="pagination change-record-pagination"><span>共{records.length}条记录</span><span>‹　<b>1</b>　›　<select><option>10条/页</option></select>　跳至 <input value="1" readOnly /> 页</span></div></div><div className="modal-foot"><button className="btn" onClick={onClose}>关闭</button></div>
-    {detail && <ChangeDetailModal detail={detail} onClose={() => setDetail(null)} />}
+    <div className="modal-body change-record-body"><div className="change-record-filters"><label>变更状态<select value={status} onChange={e => setStatus(e.target.value)}><option value="">请选择</option><option>变更中</option><option>变更通过</option><option>变更不通过</option></select></label><label>更新时间<div className="date-range"><input type="date" value={start} onChange={e => setStart(e.target.value)} /><span>-</span><input type="date" value={end} onChange={e => setEnd(e.target.value)} /></div></label><div className="change-filter-actions"><button className="btn primary" onClick={() => undefined}>查询</button><button className="btn" onClick={reset}>重置</button></div></div><div className="table-wrap change-record-wrap"><table className="catalog-table change-record-table"><thead><tr><th>序号</th><th>变更状态</th><th>更新时间</th><th>变更审核意见</th><th>操作</th></tr></thead><tbody>{records.map((r, i) => <tr key={i}><td>{i + 1}</td><td><span className={'status ' + (r.status === '变更通过' ? 'success' : r.status === '变更不通过' ? 'danger' : 'info')}>{r.status}</span></td><td>{r.time}</td><td>{r.opinion || '-'}</td><td><button className="link-button" onClick={() => { setDetail(r); setDetailIsFirst(i === 0); }}>查看</button></td></tr>)}{!records.length && <tr><td colSpan={5} className="empty-row">暂无变更记录</td></tr>}</tbody></table></div><div className="pagination change-record-pagination"><span>共{records.length}条记录</span><span>‹　<b>1</b>　›　<select><option>10条/页</option></select>　跳至 <input value="1" readOnly /> 页</span></div></div><div className="modal-foot"><button className="btn" onClick={onClose}>关闭</button></div>
+    {detail && <ChangeDetailModal detail={detail} isFirstRecord={detailIsFirst} onClose={() => setDetail(null)} />}
   </>;
+};
+
+// 撤销弹窗：资源名称禁用回显，撤销说明必填且不超过 512 字符
+const RevokeModal = ({ item, onClose }: { item: Resource; onClose: () => void }) => {
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState('');
+  const handleSubmit = () => {
+    if (!reason.trim()) {
+      setError('请输入撤销说明');
+      return;
+    }
+    onClose();
+  };
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="catalog-modal revoke-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-head"><h3>撤销资源</h3><button onClick={onClose} aria-label="关闭"><X size={18} /></button></div>
+        <div className="modal-body revoke-body">
+          <Field label="资源名称"><input value={item.name} disabled readOnly /></Field>
+          <Field label="撤销说明" required full>
+            <div className="revoke-reason-box">
+              <textarea rows={4} maxLength={512} value={reason} onChange={e => { setReason(e.target.value); if (error) setError(''); }} placeholder="请输入撤销说明" />
+              <div className="revoke-reason-meta">
+                {error ? <span className="revoke-error">{error}</span> : <span />}
+                <span className="revoke-counter">{reason.length}/512</span>
+              </div>
+            </div>
+          </Field>
+        </div>
+        <div className="modal-foot">
+          <button className="btn" onClick={onClose}>取消</button>
+          <button className="btn primary" onClick={handleSubmit}>确认</button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const ConfirmModal = ({ title, message, danger, confirmText, onClose, onConfirm }: { title: string; message: string; danger?: boolean; confirmText?: string; onClose: () => void; onConfirm: () => void }) => (

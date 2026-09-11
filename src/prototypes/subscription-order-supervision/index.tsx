@@ -7,6 +7,7 @@
 
 import { useMemo, useState } from 'react';
 import Layout from '../../common/Layout';
+import RegionCascader from '../../common/RegionCascader';
 import specContent from './spec.md?raw';
 import changeLogContent from './change.md?raw';
 import PasswordGuard from '../../common/PasswordGuard';
@@ -41,11 +42,16 @@ interface SubscriptionOrder {
   amount: number;
 }
 
-const REGION_OPTIONS = ['省本级', '长沙市', '株洲市', '湘潭市', '衡阳市', '邵阳市', '岳阳市', '常德市', '张家界市', '益阳市', '郴州市', '永州市', '怀化市', '娄底市', '湘西土家族苗族自治州'];
 const AUTH_TYPE_OPTIONS = ['整体授权运营', '分领域授权运营'];
 const DOMAIN_OPTIONS = ['医疗健康', '交通运输', '教育', '文化旅游', '自然资源', '城市治理', '金融服务', '工业制造', '智慧农业', '应急管理'];
 const PRODUCT_TYPE_OPTIONS = ['数据集', 'API产品'];
 const ORDER_STATUS_LIST = ['已下单', '交付中', '已完成', '已终止', '已冻结'];
+
+/** 金额格式化：千分位分隔并保留两位小数 */
+const formatAmount = (value: number) => {
+  if (typeof value !== 'number' || !isFinite(value)) return '-';
+  return value.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
 const DEMANDERS = [
   '湖南天河国云科技有限公司',
@@ -83,7 +89,7 @@ const seedData: Product[] = [
   },
   {
     id: 3,
-    region: '长沙市',
+    region: '天心区',
     authType: '整体授权运营',
     domain: '城市治理',
     productName: '长沙市城市交通流量监测API',
@@ -570,13 +576,7 @@ const OriginalComponent = () => {
   const renderFilter = () => (
     <div className="filter-section">
       <div className="filter-row">
-        <div className="filter-item filter-item-select">
-          <label>所属地域</label>
-          <select value={searchRegion} onChange={(e) => setSearchRegion(e.target.value)}>
-            <option value="">请选择</option>
-            {REGION_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
-        </div>
+        <RegionCascader value={searchRegion} onChange={setSearchRegion} />
         <div className="filter-item filter-item-select">
           <label>授权运营类型</label>
           <select value={searchAuthType} onChange={(e) => setSearchAuthType(e.target.value)}>
@@ -671,11 +671,10 @@ const OriginalComponent = () => {
                   <td className="col-product-type"><span className="type-tag">{record.productType}</span></td>
                   <td className="col-demander" title={record.demander}>{record.demander}</td>
                   <td className="col-status"><span className={'status-tag ' + getOrderStatusClass(record.status)}>{record.status}</span></td>
-                  <td className="col-amount">{record.amount.toLocaleString('zh-CN')}</td>
+                  <td className="col-amount">{formatAmount(record.amount)}</td>
                   <td className="col-update-time">{record.updateTime}</td>
                   <td className="col-action">
                     <div className="action-buttons">
-                      <button className="action-btn" onClick={() => handleView(record)}>查看</button>
                       {record.productType === 'API产品' && (
                         <button className="action-btn" onClick={() => handleShowCallModal(record)}>调用明细</button>
                       )}

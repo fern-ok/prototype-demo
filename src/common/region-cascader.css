@@ -1,0 +1,147 @@
+/* 所属地域级联选择器（RegionCascader） */
+
+.rc {
+  position: relative;
+  min-width: 0;
+}
+
+/* 触发框：复用 .filter-item 视觉契约 */
+.rc-trigger {
+  width: 100%;
+  height: 32px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 0;
+  border: 1px solid #cfd6e3;
+  border-radius: 3px;
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rc-trigger.open,
+.rc-trigger:hover { border-color: #3d8bff; }
+
+.rc-trigger:focus-visible {
+  outline: none;
+  border-color: #3d8bff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
+}
+
+.rc-trigger label {
+  height: 30px;
+  min-width: 76px;
+  max-width: 110px;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  color: #1f2329;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.rc-trigger label::after { content: ":"; margin-left: 2px; }
+
+.rc-value {
+  min-width: 0;
+  padding: 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #4b5563;
+  font-size: 12px;
+}
+
+.rc-trigger.empty .rc-value { color: #a8b1c1; }
+
+.rc-arrow {
+  margin-right: 9px;
+  color: #4b5563;
+  transition: transform .16s ease;
+}
+
+.rc-trigger.open .rc-arrow { transform: rotate(180deg); }
+
+/* 下拉：双面板 */
+.rc-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 1200;
+  display: flex;
+  border: 1px solid #dfe5ef;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(31, 35, 41, .12);
+}
+
+.rc-panel {
+  width: 168px;
+  max-height: 264px;
+  padding: 4px 0;
+  overflow-y: auto;
+}
+
+.rc-sub {
+  border-left: 1px solid #eef1f6;
+  background: #fafbfc;
+}
+
+.rc-option {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 0 12px;
+  cursor: pointer;
+}
+
+.rc-option:hover,
+.rc-option.active { background: #f0f6ff; }
+
+.rc-option.selected .rc-label { color: #0f63f4; font-weight: 500; }
+
+.rc-radio {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c3cad6;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.rc-radio.checked { border-color: #0f63f4; }
+
+.rc-radio i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #0f63f4;
+}
+
+.rc-radio-wrap {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.rc-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #1f2329;
+  font-size: 13px;
+}
+
+.rc-expand {
+  flex: none;
+  color: #98a2b3;
+}

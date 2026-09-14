@@ -1,10 +1,28 @@
 @import "tailwindcss";
 
 /* ========== 监控大屏全局 ========== */
+/* 视口容器：铺满浏览器窗口，舞台按比例缩放后居中，留边区域填充同款背景 */
+.screen-viewport {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(30, 136, 255, 0.14) 0%, rgba(10, 31, 68, 0) 60%),
+    linear-gradient(180deg, #0a1f44 0%, #0d3a6e 60%, #0a1f44 100%);
+}
+
+/* 舞台：按 1920×1080 设计稿固定布局，JS 等比缩放适配任意分辨率 */
 .data-screen {
   position: relative;
-  width: 100%;
-  min-height: 100vh;
+  width: 1920px;
+  height: 1080px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  transform-origin: center center;
   background:
     radial-gradient(ellipse at 50% 40%, rgba(30, 136, 255, 0.18) 0%, rgba(10, 31, 68, 0) 60%),
     linear-gradient(180deg, #0a1f44 0%, #0d3a6e 60%, #0a1f44 100%);
@@ -13,22 +31,6 @@
   overflow: hidden;
   padding: 18px 24px 24px;
   box-sizing: border-box;
-}
-
-.data-screen .bg-map {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.55;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.data-screen .bg-map svg {
-  width: 70%;
-  max-width: 900px;
-  height: auto;
 }
 
 .data-screen .bg-hunan {
@@ -64,7 +66,6 @@
   top: -1px;
   width: 80px;
   height: 14px;
-  border: 1px solid rgba(0, 212, 255, 0.7);
   border-bottom: none;
 }
 .data-screen .title-wrap::before { left: 30%; border-right: none; border-top-left-radius: 4px; }
@@ -81,9 +82,10 @@
 /* ========== 网格布局 ========== */
 .data-screen .content-wrap {
   display: grid;
-  grid-template-rows: auto 1fr 1fr;
+  grid-template-rows: auto 1fr;
   gap: 14px;
-  height: calc(100vh - 64px - 60px);
+  flex: 1;
+  min-height: 0;
   position: relative;
   z-index: 1;
 }
@@ -94,8 +96,24 @@
 }
 /* 统计指标区：只占一列，让内部 statistic-list 自己铺满整行 */
 .data-screen .row.row-stats  { grid-template-columns: 1fr; }
-.data-screen .row.row-middle { grid-template-columns: 28% 44% 28%; }
-.data-screen .row.row-bottom { grid-template-columns: 30% 35% 35%; }
+/* 主区域：左（占比+趋势） | 中（领域分布地图贯通全高） | 右（行业分布+两个TOP10） */
+.data-screen .row.row-main { grid-template-columns: 29% 42% 29%; }
+
+.data-screen .main-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.data-screen .main-col .panel { min-height: 0; }
+.data-screen .main-col-left .panel:nth-child(1) { flex: 46; }
+.data-screen .main-col-left .panel:nth-child(2) { flex: 54; }
+.data-screen .main-col-center .panel { flex: 1; }
+.data-screen .main-col-right .panel:nth-child(1) { flex: 36; }
+.data-screen .main-col-right .panel:nth-child(2) { flex: 32; }
+.data-screen .main-col-right .panel:nth-child(3) { flex: 32; }
 
 /* ========== 通用卡片 ========== */
 .data-screen .panel {
@@ -218,6 +236,68 @@
   height: 100%;
 }
 
+/* 行业占比面板：环形图自适应收缩，图例固定在面板内部 */
+.data-screen .ring-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.data-screen .ring-wrap .chart {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+.data-screen .industry-legend {
+  flex: none;
+}
+
+/* 行业分布面板：左侧环形图 + 右侧 3 列图例 */
+.data-screen .industry-donut {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+  padding: 4px 6px;
+}
+
+.data-screen .industry-donut .donut-box {
+  width: 42%;
+  height: 100%;
+  min-height: 0;
+  flex: none;
+}
+
+.data-screen .industry-legend-grid {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 10px;
+  align-content: center;
+}
+
+.data-screen .industry-legend-grid .item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #cfe3ff;
+  font-size: 12px;
+}
+
+.data-screen .industry-legend-grid .dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
 .data-screen .industry-legend {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -322,7 +402,6 @@
   position: absolute;
   width: 90px;
   height: 30px;
-  border: 1px solid rgba(0, 212, 255, 0.6);
   border-bottom: none;
   pointer-events: none;
 }
@@ -330,40 +409,3 @@
 .data-screen .corner-deco.tr { top: 8px;    right: 8px;   border-left: none;  border-top-right-radius: 6px; }
 .data-screen .corner-deco.bl { bottom: 8px; left: 8px;    border-right: none; border-bottom: none; border-bottom-left-radius: 6px; }
 .data-screen .corner-deco.br { bottom: 8px; right: 8px;   border-left: none;  border-bottom: none; border-bottom-right-radius: 6px; }
-
-/* ========== 适配小屏 ========== */
-@media (max-width: 1366px) {
-  .data-screen { padding: 14px 18px 18px; }
-  .data-screen .title { font-size: 24px; letter-spacing: 4px; }
-  .data-screen .title-wrap { height: 56px; margin-bottom: 12px; }
-  .data-screen .content-wrap { gap: 12px; height: calc(100vh - 56px - 50px); }
-  .data-screen .row { gap: 12px; }
-  .data-screen .statistic-list { gap: 12px; }
-  .data-screen .stat-module { padding: 8px 10px; gap: 4px; }
-  .data-screen .stat-icon { width: 38px; height: 38px; }
-  .data-screen .stat-text .name { font-size: 13px; }
-  .data-screen .stat-text .num { font-size: 24px; }
-  .data-screen .stat-text .unit { font-size: 12px; }
-  .data-screen .stat-info { gap: 6px; }
-  .data-screen .stat-info .row-cell { font-size: 12px; }
-  .data-screen .bg-hunan { font-size: 72px; }
-}
-
-@media (max-width: 1280px) {
-  .data-screen { padding: 12px 16px 16px; }
-  .data-screen .title { font-size: 22px; letter-spacing: 3px; }
-  .data-screen .title-wrap { height: 52px; margin-bottom: 10px; }
-  .data-screen .content-wrap { gap: 10px; height: calc(100vh - 52px - 44px); }
-  .data-screen .row { gap: 10px; }
-  .data-screen .statistic-list { gap: 10px; }
-  .data-screen .stat-module { padding: 6px 8px; gap: 3px; }
-  .data-screen .stat-head { gap: 8px; }
-  .data-screen .stat-icon { width: 34px; height: 34px; }
-  .data-screen .stat-icon svg { width: 18px; height: 18px; }
-  .data-screen .stat-text .name { font-size: 12px; }
-  .data-screen .stat-text .num { font-size: 22px; }
-  .data-screen .stat-text .unit { font-size: 11px; }
-  .data-screen .stat-info { gap: 4px; padding-top: 4px; }
-  .data-screen .stat-info .row-cell { font-size: 11px; gap: 2px; }
-  .data-screen .bg-hunan { font-size: 60px; }
-}

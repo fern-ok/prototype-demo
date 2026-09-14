@@ -35,7 +35,7 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplate[] = messageTemplateTa
 
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'implement-org-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'demand-management' | 'domain-management' | 'unified-catalog-query' | 'monitoring-dashboard';
+  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'demand-management' | 'domain-management' | 'unified-catalog-query' | 'monitoring-dashboard';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;
@@ -62,7 +62,7 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
     ? ''
     : activeMenu === 'domain-management' ? '系统管理'
       : (activeMenu === 'product-security-review' || activeMenu === 'product-registration' || activeMenu === 'data-resource-catalog' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理'
-    : activeMenu === 'implement-org-workbench' ? '工作台'
+    : (activeMenu === 'implement-org-workbench' || activeMenu === 'other-entity-workbench') ? '工作台'
       : (activeMenu === 'product-subscription-supervision' || activeMenu === 'subscription-order-supervision') ? '授权监管'
         : activeMenu === 'demand-management' ? '需求管理'
           : '备案管理';
@@ -80,9 +80,9 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
           {!sidebarCollapsed && <div className="logo-text">公共数据资源授权运营管理平台</div>}
         </div>
         <nav className="sidebar-nav">
-          <a className={'nav-top-link' + (activeMenu === 'implement-org-workbench' ? ' active' : '')} href="/prototypes/implement-org-workbench.html" title="工作台">
+          <a className={'nav-top-link' + (activeMenu === 'other-entity-workbench' ? ' active' : '')} href="/prototypes/other-entity-workbench.html" title="其他经营主体工作台">
             <span className="nav-icon"><LayoutDashboard aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">工作台</span>}
+            {!sidebarCollapsed && <span className="nav-text">其他经营主体工作台</span>}
           </a>
           <a className={'nav-top-link' + (activeMenu === 'monitoring-dashboard' ? ' active' : '')} href="/prototypes/monitoring-dashboard.html" title="监控大屏" target="_blank" rel="noopener noreferrer">
             <span className="nav-icon"><Monitor aria-hidden="true" /></span>
@@ -104,6 +104,7 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
               <div className="nav-items">
                 <a className={'nav-item nav-item-link' + (activeMenu === 'product-service-filing' ? ' active' : '')} href="/prototypes/product-service-filing.html"><span className="nav-text">产品和服务清单备案</span></a>
                 <a className={'nav-item nav-item-link' + (activeMenu === 'operation-agreement-filing' ? ' active' : '')} href="/prototypes/operation-agreement-filing.html"><span className="nav-text">运营协议备案</span></a>
+                <a className={'nav-item nav-item-link' + (activeMenu === 'implementation-plan-joint-review' ? ' active' : '')} href="/prototypes/implementation-plan-joint-review.html"><span className="nav-text">实施方案联审</span></a>
                 {onAuthRecordClick && (
                   <div className="nav-item nav-item-clickable" onClick={onAuthRecordClick}><span className="nav-text">授权记录</span></div>
                 )}

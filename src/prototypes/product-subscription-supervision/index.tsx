@@ -682,7 +682,11 @@ const OriginalComponent = () => {
     setDetailPage(1);
   };
 
-  /** 当前明细所属产品是否为 API 类型（决定「调用明细」按钮是否出现） */
+  /**
+   * 当前明细所属产品是否为 API 类型。
+   * 仅 API 产品的订单提供「调用明细」，因此它同时决定订单明细表格「操作」列是否整列渲染：
+   * API 产品 → 渲染「操作」列及【调用明细】；数据集产品 → 不渲染该列（表头与单元格一并去掉）。
+   */
   const isApiProduct = currentRecord?.productType === API_PRODUCT_TYPE;
 
   const callLogs = useMemo(() => {
@@ -1241,13 +1245,13 @@ const OriginalComponent = () => {
                     <th>订单状态</th>
                     <th className="col-order-amount">订单总额（元）</th>
                     <th>更新时间</th>
-                    <th className="col-action">操作</th>
+                    {isApiProduct && <th className="col-action">操作</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedOrders.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="empty-state">
+                      <td colSpan={isApiProduct ? 7 : 6} className="empty-state">
                         <div className="empty-state-icon">📭</div>
                         暂无数据
                       </td>
@@ -1261,13 +1265,13 @@ const OriginalComponent = () => {
                         <td><span className={'status-tag ' + getOrderStatusClass(order.status)}>{order.status}</span></td>
                         <td className="col-order-amount">{formatAmountInCents(order.orderAmount)}</td>
                         <td>{order.updateTime}</td>
-                        <td className="col-action">
-                          {isApiProduct && (
+                        {isApiProduct && (
+                          <td className="col-action">
                             <div className="action-buttons">
                               <button className="action-btn" onClick={() => handleShowCallModal(order)}>调用明细</button>
                             </div>
-                          )}
-                        </td>
+                          </td>
+                        )}
                       </tr>
                     ))
                   )}

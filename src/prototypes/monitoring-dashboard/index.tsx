@@ -11,7 +11,7 @@
  */
 
 import * as echarts from 'echarts';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   ChevronDown,
@@ -60,8 +60,8 @@ const stats = [
     unit: '个',
     icon: Rocket,
     sub: [
-      { name: '已上链', value: '108', unit: '个' },
-      { name: '产品订阅', value: '97', unit: '次' },
+      { name: '有效订单数', value: '108', unit: '个' },
+      { name: '产品交易总额', value: '97', unit: '元' },
     ],
   },
 ];
@@ -185,45 +185,23 @@ function IndustryRing() {
   return <div ref={ref} className="chart" />;
 }
 
-/* ====================== 行业条形图：数据资源行业分布 ====================== */
-function IndustryBar() {
+/* ====================== 行业环形图：数据资源行业分布 ====================== */
+const INDUSTRY_COLORS = ['#3d8bff', '#22d3ee', '#f5a623', '#8b5cf6', '#22c55e', '#ef4444', '#14b8a6', '#eab308', '#ec4899'];
+
+function IndustryDonut() {
   const option = useMemo<echarts.EChartsCoreOption>(
     () => ({
-      grid: { top: 8, right: 24, bottom: 8, left: 72 },
-      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: 'rgba(10,30,70,0.9)', borderColor: '#1e88ff', textStyle: { color: '#fff' } },
-      xAxis: {
-        type: 'value',
-        axisLine: { lineStyle: { color: 'rgba(80,160,230,0.5)' } },
-        axisLabel: { color: '#9ec6f5', fontSize: 11 },
-        splitLine: { lineStyle: { color: 'rgba(80,160,230,0.15)' } },
-      },
-      yAxis: {
-        type: 'category',
-        data: industryBars.map(d => d.name).reverse(),
-        axisLine: { show: false },
-        axisTick: { show: false },
-        axisLabel: { color: '#cfe3ff', fontSize: 11 },
-      },
+      tooltip: { trigger: 'item', backgroundColor: 'rgba(10,30,70,0.9)', borderColor: '#1e88ff', textStyle: { color: '#fff' } },
+      legend: { show: false },
       series: [
         {
-          type: 'bar',
-          data: industryBars.map(d => d.value).reverse(),
-          barWidth: 8,
-          itemStyle: {
-            borderRadius: [0, 4, 4, 0],
-            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-              { offset: 0, color: '#0a3a8e' },
-              { offset: 1, color: '#1e88ff' },
-            ]),
-          },
-          label: {
-            show: true,
-            position: 'right',
-            color: '#ffffff',
-            fontSize: 11,
-            fontWeight: 600,
-            fontFamily: 'monospace',
-          },
+          type: 'pie',
+          radius: ['52%', '78%'],
+          center: ['50%', '50%'],
+          itemStyle: { borderColor: '#0a1f44', borderWidth: 2 },
+          label: { show: false },
+          labelLine: { show: false },
+          data: industryBars.map((d, i) => ({ name: d.name, value: d.value, itemStyle: { color: INDUSTRY_COLORS[i % INDUSTRY_COLORS.length] } })),
         },
       ],
     }),
@@ -390,7 +368,6 @@ function ScreenTitle() {
       <span className="corner-deco bl" />
       <span className="corner-deco br" />
       <span className="title">公共数据授权运营大屏</span>
-      <ChevronDown size={20} style={{ position: 'absolute', right: 16, top: 22, color: '#9ec6f5' }} />
     </div>
   );
 }
@@ -432,14 +409,27 @@ function StatCards() {
 }
 
 /* ====================== 页面内容 ====================== */
+/** 设计稿基准尺寸：所有元素按此尺寸固定布局，再整体等比缩放适配视口 */
+const STAGE_W = 1920;
+const STAGE_H = 1080;
+
 // 独立全屏页面：不套用 PortalLayout，去掉公共顶部导航与页脚
-const OriginalComponent = () => (
-  <div className="data-screen">
-    {/* 背景地图 + HUNAN 字样 */}
-    <div className="bg-map">
-      <HunanMap />
-    </div>
-    <div className="bg-hunan">HUNAN</div>
+const OriginalComponent = () => {
+  // 等比缩放适配：取宽高缩小比例的较小值，保证内容在任意分辨率/宽高比下完整呈现、无滚动条
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const fit = () => setScale(Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H));
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
+
+  return (
+    <div className="screen-viewport">
+      <div className="data-screen" style={{ transform: `scale(${scale})` }}>
+        {/* 背景仅保留 HUNAN 字样；地图只在中间面板渲染一次，避免重影 */}
+        <div className="bg-hunan">HUNAN</div>
 
     {/* 标题 */}
     <ScreenTitle />
@@ -451,72 +441,91 @@ const OriginalComponent = () => (
         <StatCards />
       </div>
 
-      {/* 中部三栏 */}
-      <div className="row row-middle">
-        <Panel title="再开发数据产品订阅行业占比">
-          <IndustryRing />
-          <div className="industry-legend">
-            {industryRatio.map(d => (
-              <span className="item" key={d.name}>
-                <span className="dot" style={{ background: d.color }} />
-                {d.name}
-              </span>
-            ))}
-          </div>
-        </Panel>
-
-        <Panel title="数据资源领域名称分布">
-          <HunanMap />
-        </Panel>
-
-        <Panel title="数据资源行业分布">
-          <IndustryBar />
-        </Panel>
-      </div>
-
-      {/* 底部三栏 */}
-      <div className="row row-bottom">
-        <Panel title="再开发数据产品订阅趋势分析">
-          <TrendLine />
-        </Panel>
-
-        <Panel title="基础数据产品授权次数TOP10">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, height: '100%' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
-              {basicTop10.slice(0, 5).map((d, idx) => (
-                <div className="top-row" key={d.name}>
-                  <span className="rank">{idx + 1}</span>
-                  <span className="name" title={d.name}>{d.name}</span>
-                  <span className="val">{d.value}</span>
-                </div>
-              ))}
+      {/* 主区域三列：左（行业占比+趋势分析） | 中（领域分布地图贯通） | 右（行业分布+两个TOP10） */}
+      <div className="row row-main">
+        <div className="main-col main-col-left">
+          <Panel title="再开发数据产品订单数行业占比">
+            <div className="ring-wrap">
+              <IndustryRing />
+              <div className="industry-legend">
+                {industryRatio.map(d => (
+                  <span className="item" key={d.name}>
+                    <span className="dot" style={{ background: d.color }} />
+                    {d.name}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div style={{ position: 'relative', minHeight: 0 }}>
-              <TopBar data={basicTop10.slice(0, 5)} color={['#0a3a8e', '#1e88ff']} />
-            </div>
-          </div>
-        </Panel>
+          </Panel>
 
-        <Panel title="再开发数据产品订阅次数TOP10">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, height: '100%' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
-              {redevTop10.slice(0, 5).map((d, idx) => (
-                <div className="top-row" key={d.name}>
-                  <span className="rank">{idx + 1}</span>
-                  <span className="name" title={d.name}>{d.name}</span>
-                  <span className="val">{d.value}</span>
-                </div>
-              ))}
+          <Panel title="再开发数据产品订单数趋势分析">
+            <TrendLine />
+          </Panel>
+        </div>
+
+        <div className="main-col main-col-center">
+          <Panel title="数据资源领域名称分布">
+            <HunanMap />
+          </Panel>
+        </div>
+
+        <div className="main-col main-col-right">
+          <Panel title="数据资源行业分布">
+            <div className="industry-donut">
+              <div className="donut-box">
+                <IndustryDonut />
+              </div>
+              <div className="industry-legend-grid">
+                {industryBars.map((d, i) => (
+                  <span className="item" key={d.name} title={d.name}>
+                    <span className="dot" style={{ background: INDUSTRY_COLORS[i % INDUSTRY_COLORS.length] }} />
+                    {d.name}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div style={{ position: 'relative', minHeight: 0 }}>
-              <TopBar data={redevTop10.slice(0, 5)} color={['#0a3a8e', '#00d4ff']} />
+          </Panel>
+
+          <Panel title="基础数据产品授权次数TOP10">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, height: '100%' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
+                {basicTop10.slice(0, 5).map((d, idx) => (
+                  <div className="top-row" key={d.name}>
+                    <span className="rank">{idx + 1}</span>
+                    <span className="name" title={d.name}>{d.name}</span>
+                    <span className="val">{d.value}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ position: 'relative', minHeight: 0 }}>
+                <TopBar data={basicTop10.slice(0, 5)} color={['#0a3a8e', '#1e88ff']} />
+              </div>
             </div>
-          </div>
-        </Panel>
+          </Panel>
+
+          <Panel title="再开发数据产品订单数TOP10">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, height: '100%' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
+                {redevTop10.slice(0, 5).map((d, idx) => (
+                  <div className="top-row" key={d.name}>
+                    <span className="rank">{idx + 1}</span>
+                    <span className="name" title={d.name}>{d.name}</span>
+                    <span className="val">{d.value}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ position: 'relative', minHeight: 0 }}>
+                <TopBar data={redevTop10.slice(0, 5)} color={['#0a3a8e', '#00d4ff']} />
+              </div>
+            </div>
+          </Panel>
+        </div>
       </div>
     </div>
-  </div>
-);
+      </div>
+    </div>
+  );
+};
 
 const Component = () => (
   <PasswordGuard>

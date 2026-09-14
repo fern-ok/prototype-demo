@@ -92,7 +92,8 @@
   display: grid;
   gap: 14px;
 }
-.data-screen .row.row-stats  { grid-template-columns: repeat(4, 1fr); }
+/* 统计指标区：只占一列，让内部 statistic-list 自己铺满整行 */
+.data-screen .row.row-stats  { grid-template-columns: 1fr; }
 .data-screen .row.row-middle { grid-template-columns: 28% 44% 28%; }
 .data-screen .row.row-bottom { grid-template-columns: 30% 35% 35%; }
 
@@ -146,8 +147,9 @@
 /* ========== 指标卡 ========== */
 .data-screen .statistic-list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
+  width: 100%;
 }
 
 .data-screen .stat-module {
@@ -178,6 +180,9 @@
 .data-screen .stat-text .name {
   font-size: 14px;
   color: #9ec6f5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .data-screen .stat-text .cont {
@@ -188,8 +193,9 @@
 .data-screen .stat-text .unit  { font-size: 14px; color: #cfe3ff; margin-left: 2px; }
 
 .data-screen .stat-info {
-  display: flex;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   border-top: 1px dashed rgba(80, 160, 230, 0.4);
   padding-top: 6px;
   margin-top: 4px;
@@ -197,8 +203,11 @@
 .data-screen .stat-info .row-cell {
   display: flex;
   align-items: baseline;
+  justify-content: flex-start;
   gap: 4px;
   font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .data-screen .stat-info .row-cell .name { color: #9ec6f5; }
 .data-screen .stat-info .row-cell .num  { color: #ffffff; font-weight: 600; }
@@ -324,7 +333,37 @@
 
 /* ========== 适配小屏 ========== */
 @media (max-width: 1366px) {
+  .data-screen { padding: 14px 18px 18px; }
   .data-screen .title { font-size: 24px; letter-spacing: 4px; }
-  .data-screen .stat-text .num { font-size: 26px; }
+  .data-screen .title-wrap { height: 56px; margin-bottom: 12px; }
+  .data-screen .content-wrap { gap: 12px; height: calc(100vh - 56px - 50px); }
+  .data-screen .row { gap: 12px; }
+  .data-screen .statistic-list { gap: 12px; }
+  .data-screen .stat-module { padding: 8px 10px; gap: 4px; }
+  .data-screen .stat-icon { width: 38px; height: 38px; }
+  .data-screen .stat-text .name { font-size: 13px; }
+  .data-screen .stat-text .num { font-size: 24px; }
+  .data-screen .stat-text .unit { font-size: 12px; }
+  .data-screen .stat-info { gap: 6px; }
+  .data-screen .stat-info .row-cell { font-size: 12px; }
   .data-screen .bg-hunan { font-size: 72px; }
+}
+
+@media (max-width: 1280px) {
+  .data-screen { padding: 12px 16px 16px; }
+  .data-screen .title { font-size: 22px; letter-spacing: 3px; }
+  .data-screen .title-wrap { height: 52px; margin-bottom: 10px; }
+  .data-screen .content-wrap { gap: 10px; height: calc(100vh - 52px - 44px); }
+  .data-screen .row { gap: 10px; }
+  .data-screen .statistic-list { gap: 10px; }
+  .data-screen .stat-module { padding: 6px 8px; gap: 3px; }
+  .data-screen .stat-head { gap: 8px; }
+  .data-screen .stat-icon { width: 34px; height: 34px; }
+  .data-screen .stat-icon svg { width: 18px; height: 18px; }
+  .data-screen .stat-text .name { font-size: 12px; }
+  .data-screen .stat-text .num { font-size: 22px; }
+  .data-screen .stat-text .unit { font-size: 11px; }
+  .data-screen .stat-info { gap: 4px; padding-top: 4px; }
+  .data-screen .stat-info .row-cell { font-size: 11px; gap: 2px; }
+  .data-screen .bg-hunan { font-size: 60px; }
 }

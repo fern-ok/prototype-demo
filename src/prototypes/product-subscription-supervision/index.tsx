@@ -6,6 +6,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { Paperclip, Trash2 } from 'lucide-react';
 import Layout from '../../common/Layout';
 import RegionCascader from '../../common/RegionCascader';
 import specContent from './spec.md?raw';
@@ -77,6 +78,191 @@ function fetchOrderDetailProduct(record: ProductSubscription | null): Promise<Or
     }, 220);
   });
 }
+
+/** 「查看详情」弹窗 - 基本信息页签字段（两类产品一致） */
+interface ProductBasicInfo {
+  productName: string;              // 产品名称
+  productType: string;              // 产品类型
+  coverageRange: string;            // 覆盖时间范围
+  industryCategory: string;         // 行业分类
+  regionCategory: string;           // 地域分类
+  hasPersonalInfo: string;          // 是否涉及个人信息
+  deliveryMode: string;             // 交付方式
+  authUsage: string;                // 授权使用
+  dataSubject: string;              // 数据主体
+  dataScale: string;                // 数据规模
+  updateFrequency: string;          // 更新频率
+  personalOrEnterpriseAuth: string; // 个人或企业授权使用
+  baseProductCode: string;          // 基础数据产品标识码
+  productIntro: string;             // 产品简介
+  usageLimit: string;               // 使用限制
+  devApplication: string;           // 再开发申请书（附件文件名）
+  devAgreement: string;             // 再开发协议（附件文件名）
+  domainName: string;               // 领域名称
+}
+
+/** API 接口参数（请求参数含「参数位置 / 必填」，返回参数不含） */
+interface ApiParam {
+  name: string;       // 参数名
+  location?: string;  // 参数位置（仅请求参数）
+  required?: string;  // 必填（仅请求参数）
+  type: string;       // 字段类型
+  desc: string;       // 说明
+}
+
+/** 配置信息 - API 产品：API接口信息 */
+interface ApiConfigInfo {
+  kind: 'api';
+  apiName: string;         // API名称
+  serviceCode: string;     // 服务编码
+  serviceType: string;     // 服务类型
+  responseFormat: string;  // 返回格式
+  requestMethod: string;   // 请求方式
+  requestParams: ApiParam[];
+  responseParams: ApiParam[];
+}
+
+/** 配置信息 - 数据集产品：字段信息 */
+interface DatasetFieldItem {
+  no: number;           // 序号
+  fieldName: string;    // 字段名称
+  fieldCnName: string;  // 字段中文名
+  dataType: string;     // 数据类型
+  primaryKey: string;   // 主键
+  nullable: string;     // 允许为空
+  description: string;  // 描述
+}
+
+interface DatasetConfigInfo {
+  kind: 'dataset';
+  fields: DatasetFieldItem[];
+}
+
+/** 「查看详情」弹窗数据：基本信息 + 按产品类型二选一的配置信息（kind 为判别字段，避免两套配置串用） */
+interface ProductDetail {
+  basic: ProductBasicInfo;
+  config: ApiConfigInfo | DatasetConfigInfo;
+}
+
+/** API 请求参数（演示数据） */
+const API_REQUEST_PARAMS: ApiParam[] = [
+  { name: 'sfzhm', location: 'Body', required: '是', type: '字符型', desc: '身份证号码，已按脱敏规则处理' },
+  { name: 'startdate', location: 'Body', required: '否', type: '字符型', desc: '数据统计起始日期，格式 yyyy-MM-dd' },
+  { name: 'enddate', location: 'Body', required: '否', type: '字符型', desc: '数据统计截止日期，格式 yyyy-MM-dd' },
+  { name: 'inscode', location: 'Body', required: '是', type: '字符型', desc: '医疗机构统一编码' },
+  { name: 'jzix', location: 'Body', required: '否', type: '字符型', desc: '就诊类型编码' }
+];
+
+/** API 返回参数（演示数据） */
+const API_RESPONSE_PARAMS: ApiParam[] = [
+  { name: 'uuid', type: '字符型', desc: '本次调用唯一标识' },
+  { name: 'inscode', type: '字符型', desc: '医疗机构统一编码' },
+  { name: 'yibao_res', type: '对象型', desc: '医保结算结果对象' },
+  { name: 'inscode_err', type: '字符型', desc: '机构编码校验失败原因' },
+  { name: 'beetch_res', type: '对象型', desc: '批量查询结果对象' }
+];
+
+/** 数据集字段信息（演示数据） */
+const DATASET_FIELDS: DatasetFieldItem[] = [
+  { no: 1, fieldName: '个人证件号码（脱敏）', fieldCnName: '个人证件号码（脱敏）', dataType: '字符型', primaryKey: '是', nullable: '否', description: '个人证件号码，已按脱敏规则处理' },
+  { no: 2, fieldName: '总病例数', fieldCnName: '总病例数', dataType: '数值型', primaryKey: '否', nullable: '是', description: '统计周期内累计病例总数' },
+  { no: 3, fieldName: '累计病种数', fieldCnName: '累计病种数', dataType: '数值型', primaryKey: '否', nullable: '是', description: '累计覆盖的病种数量' },
+  { no: 4, fieldName: '年龄段', fieldCnName: '年龄段', dataType: '数值型', primaryKey: '否', nullable: '是', description: '参保人员年龄段区间编码' },
+  { no: 5, fieldName: '累计医疗费总额等级', fieldCnName: '累计医疗费总额等级', dataType: '字符型', primaryKey: '否', nullable: '是', description: '累计医疗费用总额分级编码' }
+];
+
+/** 行业分类：按领域名称映射（演示数据） */
+const INDUSTRY_BY_DOMAIN: Record<string, string> = {
+  医疗健康: '卫生和社会工作',
+  医疗保障: '卫生和社会工作',
+  城市治理: '公共管理、社会保障和社会组织',
+  金融服务: '金融业',
+  工业制造: '制造业',
+  教育: '教育',
+  智慧农业: '农、林、牧、渔业',
+  应急管理: '水利、环境和公共设施管理业'
+};
+
+/** 地域分类：将列表「所属地域」规范为「省 / 市 / 区县」路径（演示数据） */
+const REGION_PATH: Record<string, string> = {
+  省本级: '湖南省',
+  芙蓉区: '湖南省/长沙市/芙蓉区',
+  长沙市: '湖南省/长沙市',
+  株洲市: '湖南省/株洲市',
+  湘潭市: '湖南省/湘潭市',
+  衡阳市: '湖南省/衡阳市',
+  岳阳市: '湖南省/岳阳市'
+};
+
+/** 基础数据产品标识码后缀（演示数据，按产品 id 轮换） */
+const CODE_SUFFIX = ['KVKPMY', 'W2NQ4T', 'X9JSDL', 'P3MB7E', 'R6YT2K', 'L4NH8Q', 'D7WF5A', 'Z2CG9U'];
+const UPDATE_FREQUENCY_LIST = ['2次/天', '4次/天', '6次/天', '12次/天', '实时'];
+
+/** 依据列表记录派生详情数据（演示数据，稳定可复现） */
+function buildProductDetail(record: ProductSubscription): ProductDetail {
+  const isApi = record.productType === API_PRODUCT_TYPE;
+  const isEnterprise = record.domain === '工业制造' || record.domain === '金融服务';
+  const month = String(1 + (record.id % 6)).padStart(2, '0');
+  const day = String(2 + ((record.id * 5) % 27)).padStart(2, '0');
+  const endMonth = String(7 + (record.id % 6)).padStart(2, '0');
+  const endDay = String(1 + ((record.id * 3) % 27)).padStart(2, '0');
+
+  return {
+    basic: {
+      productName: record.productName,
+      productType: record.productType,
+      coverageRange: '2026-' + month + '-' + day + ' 至 2026-' + endMonth + '-' + endDay,
+      industryCategory: INDUSTRY_BY_DOMAIN[record.domain] || '',
+      regionCategory: REGION_PATH[record.region] || record.region,
+      hasPersonalInfo: isEnterprise ? '否' : '是',
+      deliveryMode: isApi ? '接口调用' : '数据流传输',
+      authUsage: record.subscribeCount > 3 ? '是' : '否',
+      dataSubject: isEnterprise ? '企业信息' : '个人信息',
+      dataScale: isApi ? (record.id + 1) + ' GB' : (record.id + 3) + ' MB',
+      updateFrequency: UPDATE_FREQUENCY_LIST[record.id % UPDATE_FREQUENCY_LIST.length],
+      personalOrEnterpriseAuth: isEnterprise ? '是' : '否',
+      baseProductCode: '691652928710818579H4301268' + CODE_SUFFIX[record.id % CODE_SUFFIX.length],
+      productIntro: record.productDesc,
+      usageLimit: '仅限在授权范围内使用，不得转授第三方或用于未约定用途。',
+      devApplication: '再开发申请书.pdf',
+      devAgreement: '再开发协议.pdf',
+      domainName: record.domain
+    },
+    config: isApi
+      ? {
+        kind: 'api',
+        apiName: record.productName + '接口',
+        serviceCode: '58b47a10fb32478aa599fd79e15240b3c497e5e105474067209761298523164672:' + (1788944941791 - record.id * 317),
+        serviceType: 'Restful',
+        responseFormat: 'json',
+        requestMethod: 'POST',
+        requestParams: API_REQUEST_PARAMS,
+        responseParams: API_RESPONSE_PARAMS
+      }
+      : { kind: 'dataset', fields: DATASET_FIELDS }
+  };
+}
+
+/** 模拟详情接口拉取；原型阶段基于本地数据派生，保留 Promise 形态便于切换为真实接口 */
+function fetchProductDetail(record: ProductSubscription | null): Promise<ProductDetail | null> {
+  return new Promise(function (resolve) {
+    if (!record) {
+      resolve(null);
+      return;
+    }
+    setTimeout(function () {
+      resolve(buildProductDetail(record));
+    }, 220);
+  });
+}
+
+/** 详情字段占位：空值、缺失值、数值 0 统一显示为「—」，避免空白单元格 */
+const displayValue = (value: unknown): string => {
+  if (value === null || value === undefined) return '—';
+  if (typeof value === 'number') return Number.isFinite(value) && value !== 0 ? String(value) : '—';
+  const text = String(value).trim();
+  return text && text !== '0' ? text : '—';
+};
 
 const AUTH_TYPE_OPTIONS = ['整体授权运营', '分领域授权运营'];
 const DOMAIN_OPTIONS = ['医疗健康', '交通运输', '教育', '文化旅游', '自然资源', '城市治理', '金融服务', '工业制造', '智慧农业', '应急管理'];
@@ -355,6 +541,11 @@ const OriginalComponent = () => {
   // 订阅明细中被点击的订单（用于打开该订单的调用明细）
   const [currentOrder, setCurrentOrder] = useState<SubscriptionOrder | null>(null);
 
+  // 查看详情弹窗：页签 / 详情数据（基本信息 + 配置信息）/ 加载与失败态
+  const [viewTab, setViewTab] = useState<'basic' | 'config'>('basic');
+  const [viewDetail, setViewDetail] = useState<ProductDetail | null>(null);
+  const [viewLoading, setViewLoading] = useState(false);
+
   // 订单明细分页
   const [detailPage, setDetailPage] = useState(1);
   const [detailPageSize, setDetailPageSize] = useState(10);
@@ -436,7 +627,21 @@ const OriginalComponent = () => {
 
   const handleView = (record: ProductSubscription) => {
     setCurrentRecord(record);
+    setViewTab('basic');
+    setViewDetail(null);
+    setViewLoading(true);
     setShowViewModal(true);
+
+    fetchProductDetail(record)
+      .then(function (data) {
+        setViewDetail(data);
+      })
+      .catch(function () {
+        setViewDetail(null);
+      })
+      .finally(function () {
+        setViewLoading(false);
+      });
   };
 
   const handleViewDetail = (record: ProductSubscription) => {
@@ -691,40 +896,271 @@ const OriginalComponent = () => {
     </div>
   );
 
-  const renderViewModal = () => (
-    <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
-      <div className="modal-medium" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>产品详情</h3>
-          <button className="modal-close" onClick={() => setShowViewModal(false)}>×</button>
+  const renderViewModal = () => {
+    const basic = viewDetail ? viewDetail.basic : null;
+    const config = viewDetail ? viewDetail.config : null;
+
+    /** 值单元格：加载中显示骨架，否则统一走「—」占位 */
+    const renderValue = (value: unknown) => (
+      viewLoading ? <span className="detail-value-skeleton" /> : displayValue(value)
+    );
+
+    const renderTypeValue = () => {
+      if (viewLoading) return <span className="detail-value-skeleton" />;
+      const type = displayValue(basic ? basic.productType : '');
+      return type === '—' ? '—' : <span className="type-tag">{type}</span>;
+    };
+
+    /** 基础数据产品标识码：蓝色 chip 展示 */
+    const renderCodeValue = () => {
+      if (viewLoading) return <span className="detail-value-skeleton" />;
+      const code = displayValue(basic ? basic.baseProductCode : '');
+      return code === '—' ? '—' : <span className="detail-code-chip">{code}</span>;
+    };
+
+    /** 再开发材料附件：附件 chip + 删除图标（只读监管视角，纯展示） */
+    const renderMaterial = (fileName: string) => {
+      if (viewLoading) return <span className="detail-value-skeleton" />;
+      const name = displayValue(fileName);
+      if (name === '—') return '—';
+      return (
+        <span className="detail-file">
+          <span className="detail-file-chip" title={name}>
+            <Paperclip size={12} aria-hidden="true" />
+            <span className="detail-file-name">{name}</span>
+          </span>
+          <span className="detail-file-remove" title="删除附件" role="img" aria-label="删除附件">
+            <Trash2 size={13} aria-hidden="true" />
+          </span>
+        </span>
+      );
+    };
+
+    /** 配置信息 - API产品：API接口信息（含请求参数 / 返回参数明细表） */
+    const renderApiConfig = (apiConfig: ApiConfigInfo) => (
+      <section className="detail-section" aria-labelledby="product-api-config-title">
+        <h4 id="product-api-config-title">API接口信息</h4>
+        <table className="detail-readonly-table">
+          <tbody>
+            <tr>
+              <th>API名称</th>
+              <td colSpan={3}>{displayValue(apiConfig.apiName)}</td>
+            </tr>
+            <tr>
+              <th>服务编码</th>
+              <td>{displayValue(apiConfig.serviceCode)}</td>
+              <th>服务类型</th>
+              <td>{displayValue(apiConfig.serviceType)}</td>
+            </tr>
+            <tr>
+              <th>返回格式</th>
+              <td>{displayValue(apiConfig.responseFormat)}</td>
+              <th>请求方式</th>
+              <td>{displayValue(apiConfig.requestMethod)}</td>
+            </tr>
+            <tr>
+              <th>请求参数</th>
+              <td colSpan={3}>
+                <table className="detail-param-table detail-param-table-request">
+                  <thead>
+                    <tr>
+                      <th>参数名</th>
+                      <th>参数位置</th>
+                      <th>必填</th>
+                      <th>字段类型</th>
+                      <th>说明</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {apiConfig.requestParams.length === 0 ? (
+                      <tr><td colSpan={5} className="detail-empty">暂无请求参数</td></tr>
+                    ) : (
+                      apiConfig.requestParams.map((param, index) => (
+                        <tr key={param.name + index}>
+                          <td>{displayValue(param.name)}</td>
+                          <td>{displayValue(param.location)}</td>
+                          <td>{displayValue(param.required)}</td>
+                          <td>{displayValue(param.type)}</td>
+                          <td>{displayValue(param.desc)}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <th>返回参数</th>
+              <td colSpan={3}>
+                <table className="detail-param-table detail-param-table-response">
+                  <thead>
+                    <tr>
+                      <th>参数名</th>
+                      <th>字段类型</th>
+                      <th>说明</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {apiConfig.responseParams.length === 0 ? (
+                      <tr><td colSpan={3} className="detail-empty">暂无返回参数</td></tr>
+                    ) : (
+                      apiConfig.responseParams.map((param, index) => (
+                        <tr key={param.name + index}>
+                          <td>{displayValue(param.name)}</td>
+                          <td>{displayValue(param.type)}</td>
+                          <td>{displayValue(param.desc)}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    );
+
+    /** 配置信息 - 数据集产品：字段信息 */
+    const renderDatasetConfig = (datasetConfig: DatasetConfigInfo) => (
+      <section className="detail-section" aria-labelledby="product-dataset-config-title">
+        <h4 id="product-dataset-config-title">字段信息</h4>
+        <div className="detail-info-table-wrap">
+          <table className="detail-info-table">
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>字段名称</th>
+                <th>字段中文名</th>
+                <th>数据类型</th>
+                <th>主键</th>
+                <th>允许为空</th>
+                <th>描述</th>
+              </tr>
+            </thead>
+            <tbody>
+              {datasetConfig.fields.length === 0 ? (
+                <tr><td colSpan={7} className="detail-empty">暂无字段数据</td></tr>
+              ) : (
+                datasetConfig.fields.map(field => (
+                  <tr key={field.no}>
+                    <td>{displayValue(field.no)}</td>
+                    <td>{displayValue(field.fieldName)}</td>
+                    <td>{displayValue(field.fieldCnName)}</td>
+                    <td>{displayValue(field.dataType)}</td>
+                    <td>{displayValue(field.primaryKey)}</td>
+                    <td>{displayValue(field.nullable)}</td>
+                    <td>{displayValue(field.description)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-        <div className="modal-body">
-          <div className="section-title"><span className="title-bar"></span>基本信息</div>
-          <div className="view-info-grid">
-            <div className="info-label">产品名称</div>
-            <div className="info-value">{currentRecord?.productName}</div>
-            <div className="info-label">产品类型</div>
-            <div className="info-value"><span className="type-tag">{currentRecord?.productType}</span></div>
-            <div className="info-label">所属地域</div>
-            <div className="info-value">{currentRecord?.region}</div>
-            <div className="info-label">授权运营类型</div>
-            <div className="info-value">{currentRecord?.authType}</div>
-            <div className="info-label">领域名称</div>
-            <div className="info-value">{currentRecord?.domain}</div>
-            <div className="info-label">产品提供方</div>
-            <div className="info-value">{currentRecord?.provider}</div>
-            <div className="info-label">订单总数</div>
-            <div className="info-value-span">{currentRecord?.subscribeCount}</div>
-            <div className="info-label">产品简介</div>
-            <div className="info-value-span">{currentRecord?.productDesc}</div>
+      </section>
+    );
+
+    return (
+      <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
+        <div className="modal-large product-detail-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>产品详情</h3>
+            <button className="modal-close" onClick={() => setShowViewModal(false)}>×</button>
+          </div>
+          <div className="detail-tabs" role="tablist" aria-label="产品详情页签">
+            <button type="button" role="tab" aria-selected={viewTab === 'basic'} className={viewTab === 'basic' ? 'active' : ''} onClick={() => setViewTab('basic')}>基本信息</button>
+            <button type="button" role="tab" aria-selected={viewTab === 'config'} className={viewTab === 'config' ? 'active' : ''} onClick={() => setViewTab('config')}>配置信息</button>
+          </div>
+          <div className="modal-body product-detail-body">
+            {viewTab === 'basic' ? (
+              <section className="detail-section" aria-labelledby="product-basic-title">
+                <h4 id="product-basic-title">基本信息</h4>
+                <table className="detail-readonly-table">
+                  <tbody>
+                    <tr>
+                      <th>产品名称</th>
+                      <td>{renderValue(basic ? basic.productName : '')}</td>
+                      <th>产品类型</th>
+                      <td>{renderTypeValue()}</td>
+                    </tr>
+                    <tr>
+                      <th>覆盖时间范围</th>
+                      <td>{renderValue(basic ? basic.coverageRange : '')}</td>
+                      <th>行业分类</th>
+                      <td>{renderValue(basic ? basic.industryCategory : '')}</td>
+                    </tr>
+                    <tr>
+                      <th>地域分类</th>
+                      <td>{renderValue(basic ? basic.regionCategory : '')}</td>
+                      <th>是否涉及个人信息</th>
+                      <td>{renderValue(basic ? basic.hasPersonalInfo : '')}</td>
+                    </tr>
+                    <tr>
+                      <th>交付方式</th>
+                      <td>{renderValue(basic ? basic.deliveryMode : '')}</td>
+                      <th>授权使用</th>
+                      <td>{renderValue(basic ? basic.authUsage : '')}</td>
+                    </tr>
+                    <tr>
+                      <th>数据主体</th>
+                      <td>{renderValue(basic ? basic.dataSubject : '')}</td>
+                      <th>数据规模</th>
+                      <td>{renderValue(basic ? basic.dataScale : '')}</td>
+                    </tr>
+                    <tr>
+                      <th>更新频率</th>
+                      <td>{renderValue(basic ? basic.updateFrequency : '')}</td>
+                      <th>个人或企业授权使用</th>
+                      <td>{renderValue(basic ? basic.personalOrEnterpriseAuth : '')}</td>
+                    </tr>
+                    <tr>
+                      <th>基础数据产品标识码</th>
+                      <td colSpan={3}>{renderCodeValue()}</td>
+                    </tr>
+                    <tr>
+                      <th>产品简介</th>
+                      <td colSpan={3}>{renderValue(basic ? basic.productIntro : '')}</td>
+                    </tr>
+                    <tr>
+                      <th>使用限制</th>
+                      <td colSpan={3}>{renderValue(basic ? basic.usageLimit : '')}</td>
+                    </tr>
+                    <tr>
+                      <th>再开发申请书</th>
+                      <td>{renderMaterial(basic ? basic.devApplication : '')}</td>
+                      <th>再开发协议</th>
+                      <td>{renderMaterial(basic ? basic.devAgreement : '')}</td>
+                    </tr>
+                    <tr>
+                      <th>领域名称</th>
+                      <td colSpan={3}>{renderValue(basic ? basic.domainName : '')}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+            ) : viewLoading ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">⏳</div>
+                加载中…
+              </div>
+            ) : config && config.kind === 'api' ? (
+              renderApiConfig(config)
+            ) : config ? (
+              renderDatasetConfig(config)
+            ) : (
+              <div className="empty-state">
+                <div className="empty-state-icon">📭</div>
+                暂无配置信息
+              </div>
+            )}
+          </div>
+          <div className="modal-footer">
+            <button className="btn btn-default" onClick={() => setShowViewModal(false)}>关闭</button>
           </div>
         </div>
-        <div className="modal-footer">
-          <button className="btn btn-default" onClick={() => setShowViewModal(false)}>关闭</button>
-        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderDetailModal = () => (
     <div className="modal-overlay" onClick={() => setShowDetailModal(false)}>

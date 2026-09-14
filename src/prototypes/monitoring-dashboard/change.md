@@ -1,5 +1,13 @@
 # 原型修改记录
 
+## 2026-09-11
+
+- 修复监控大屏顶部统计指标区布局：
+  - `src/prototypes/monitoring-dashboard/style.css`：将 `.row.row-stats` 改为单列布局，避免 `StatCards` 被外层 `repeat(4, 1fr)` 限制为仅占 25% 宽度。
+  - `.statistic-list` 使用 `grid-template-columns: repeat(4, minmax(0, 1fr))`，确保 4 个统计卡片在水平方向占满整行且均匀分布。
+  - `.stat-info` 改为双列等宽网格布局，子指标项禁止换行并防止溢出。
+  - 新增/完善 1366px 与 1280px 响应式断点，缩放字体、间距与图标尺寸，保证不同分辨率下统计项铺满整行、对齐整齐、避免换行或溢出。
+
 ## 2026-09-08（补充 2）
 
 - 监控大屏改为独立全屏页面：移除 `PortalLayout` 包裹，去掉门户公共顶部导航栏与页脚，整页仅保留大屏本体；同步移除页面上"页面说明""原型修改记录"入口，规格与记录改为直接维护 `spec.md` / `change.md` 文件。

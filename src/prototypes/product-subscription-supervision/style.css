@@ -653,3 +653,271 @@
     min-width: 1000px;
   }
 }
+
+/* ===== 「查看详情」弹窗：页签 + 只读详情表（与数据资源目录详情弹窗同源视觉） ===== */
+.product-detail-modal {
+  width: 1080px;
+  max-width: calc(100vw - 48px);
+}
+
+/* 页签栏 */
+.detail-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 28px;
+  height: 46px;
+  padding: 0 24px;
+  border-bottom: 1px solid #e7ebf2;
+}
+
+.detail-tabs button {
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: #667085;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.detail-tabs button.active {
+  color: #1464f4;
+  font-weight: 600;
+}
+
+.detail-tabs button.active::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: #1464f4;
+  content: '';
+}
+
+.product-detail-body {
+  padding: 20px 24px 26px;
+}
+
+/* 小节标题：蓝色竖条 */
+.detail-section + .detail-section {
+  margin-top: 24px;
+}
+
+.detail-section h4 {
+  display: flex;
+  align-items: center;
+  min-height: 20px;
+  margin: 0 0 12px;
+  padding-left: 9px;
+  border-left: 4px solid #3b82f6;
+  color: #30343b;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+/* 只读详情表 / 字段信息表 / 嵌套参数表 */
+.detail-readonly-table,
+.detail-info-table,
+.detail-param-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #3e4652;
+  font-size: 13px;
+}
+
+.detail-readonly-table {
+  table-layout: fixed;
+}
+
+.detail-readonly-table th,
+.detail-readonly-table td,
+.detail-info-table th,
+.detail-info-table td,
+.detail-param-table th,
+.detail-param-table td {
+  padding: 10px 18px;
+  border: 1px solid #e4e9f1;
+  text-align: left;
+  line-height: 20px;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.detail-readonly-table th {
+  width: 18%;
+  background: #fafbfe;
+  color: #4f5968;
+  font-weight: 400;
+}
+
+.detail-readonly-table td {
+  width: 32%;
+  background: #fff;
+}
+
+.detail-info-table,
+.detail-param-table {
+  table-layout: fixed;
+}
+
+.detail-info-table th,
+.detail-param-table th {
+  background: #f5f7fb;
+  color: #4f5968;
+  font-weight: 500;
+}
+
+/* 字段信息表列宽 */
+.detail-info-table-wrap {
+  overflow-x: auto;
+}
+
+.detail-info-table {
+  min-width: 760px;
+}
+
+.detail-info-table th:nth-child(1),
+.detail-info-table td:nth-child(1) { width: 7%; }
+
+.detail-info-table th:nth-child(2),
+.detail-info-table td:nth-child(2) { width: 17%; }
+
+.detail-info-table th:nth-child(3),
+.detail-info-table td:nth-child(3) { width: 17%; }
+
+.detail-info-table th:nth-child(4),
+.detail-info-table td:nth-child(4) { width: 12%; }
+
+.detail-info-table th:nth-child(5),
+.detail-info-table td:nth-child(5) { width: 9%; }
+
+.detail-info-table th:nth-child(6),
+.detail-info-table td:nth-child(6) { width: 11%; }
+
+.detail-info-table th:nth-child(7),
+.detail-info-table td:nth-child(7) { width: 27%; }
+
+/* 嵌套参数表列宽 */
+.detail-param-table-request th:nth-child(1),
+.detail-param-table-request td:nth-child(1) { width: 22%; }
+
+.detail-param-table-request th:nth-child(2),
+.detail-param-table-request td:nth-child(2) { width: 15%; }
+
+.detail-param-table-request th:nth-child(3),
+.detail-param-table-request td:nth-child(3) { width: 12%; }
+
+.detail-param-table-request th:nth-child(4),
+.detail-param-table-request td:nth-child(4) { width: 16%; }
+
+.detail-param-table-request th:nth-child(5),
+.detail-param-table-request td:nth-child(5) { width: 35%; }
+
+.detail-param-table-response th:nth-child(1),
+.detail-param-table-response td:nth-child(1) { width: 30%; }
+
+.detail-param-table-response th:nth-child(2),
+.detail-param-table-response td:nth-child(2) { width: 20%; }
+
+.detail-param-table-response th:nth-child(3),
+.detail-param-table-response td:nth-child(3) { width: 50%; }
+
+.detail-param-table th,
+.detail-param-table td {
+  padding: 8px 14px;
+}
+
+.detail-empty {
+  height: 96px;
+  color: #98a2b3;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* 基础数据产品标识码：蓝色 chip */
+.detail-code-chip {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid #d8e6ff;
+  border-radius: 2px;
+  background: #eef4ff;
+  color: #0052d9;
+  font-size: 12px;
+  line-height: 18px;
+  word-break: break-all;
+}
+
+/* 再开发材料附件：附件 chip + 删除图标 */
+.detail-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.detail-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  min-width: 0;
+  padding: 3px 8px;
+  border: 1px solid #d8e6ff;
+  border-radius: 2px;
+  background: #eef4ff;
+  color: #0052d9;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.detail-file-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.detail-file-remove {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  color: #35a854;
+}
+
+/* 加载态骨架 */
+.detail-value-skeleton {
+  display: inline-block;
+  width: 60%;
+  height: 14px;
+  border-radius: 3px;
+  vertical-align: middle;
+  background: linear-gradient(90deg, #eef1f6 0%, #f5f7fb 50%, #eef1f6 100%);
+  background-size: 200% 100%;
+  animation: detail-summary-shimmer 1.2s ease-in-out infinite;
+}
+
+@media (max-width: 720px) {
+  .product-detail-modal {
+    width: calc(100vw - 20px);
+  }
+
+  .detail-tabs {
+    gap: 20px;
+    padding: 0 16px;
+  }
+
+  .product-detail-body {
+    padding: 16px;
+  }
+
+  .detail-readonly-table th,
+  .detail-readonly-table td,
+  .detail-info-table th,
+  .detail-info-table td,
+  .detail-param-table th,
+  .detail-param-table td {
+    padding: 9px 10px;
+  }
+}

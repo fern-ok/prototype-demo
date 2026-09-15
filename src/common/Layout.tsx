@@ -5,7 +5,7 @@
  * 提供统一的侧边栏和顶部栏布局，供各业务页面复用
  */
 
-import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, Shield, FileSearch, FileCheck, KeyRound, X, Bell, LayoutDashboard, ClipboardList, ListTree, Settings2, Search, Monitor } from 'lucide-react';
+import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, Shield, FileSearch, FileCheck, KeyRound, X, Bell, LayoutDashboard, ClipboardList, ListTree, Settings2, Search, Monitor, Workflow } from 'lucide-react';
 import { useState, ReactNode } from 'react';
 import messageTemplateTable from '../database/message-templates.json';
 import './layout.css';
@@ -35,7 +35,7 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplate[] = messageTemplateTa
 
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'demand-management' | 'domain-management' | 'unified-catalog-query' | 'monitoring-dashboard';
+  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'unified-catalog-query' | 'monitoring-dashboard';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;
@@ -58,12 +58,12 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
   const [showNotificationModal, setShowNotificationModal] = useState(false);
 
   // 一级菜单（如统一目录查询）没有父级分类，面包屑直接展示 首页 / 当前页
-  const parentMenu = activeMenu === 'unified-catalog-query'
+  const parentMenu = (activeMenu === 'unified-catalog-query' || activeMenu === 'product-lifecycle')
     ? ''
     : activeMenu === 'domain-management' ? '系统管理'
       : (activeMenu === 'product-security-review' || activeMenu === 'product-registration' || activeMenu === 'data-resource-catalog' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理'
     : (activeMenu === 'implement-org-workbench' || activeMenu === 'other-entity-workbench') ? '工作台'
-      : (activeMenu === 'product-subscription-supervision' || activeMenu === 'subscription-order-supervision') ? '授权监管'
+      : (activeMenu === 'product-subscription-supervision' || activeMenu === 'subscription-order-supervision' || activeMenu === 'redev-data-product-supervision') ? '授权监管'
         : activeMenu === 'demand-management' ? '需求管理'
           : '备案管理';
 
@@ -135,6 +135,10 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
             <span className="nav-icon"><FileCheck aria-hidden="true" /></span>
             {!sidebarCollapsed && <span className="nav-text">数据资源复审</span>}
           </a>
+          <a className={'nav-top-link' + (activeMenu === 'product-lifecycle' ? ' active' : '')} href="/prototypes/product-lifecycle.html" title="产品生命周期">
+            <span className="nav-icon"><Workflow aria-hidden="true" /></span>
+            {!sidebarCollapsed && <span className="nav-text">产品生命周期</span>}
+          </a>
           <div className="nav-group">
             <div className={'nav-group-title ' + (collapsedGroups['授权监管'] ? 'collapsed' : '')} onClick={() => toggleGroup('授权监管')}>
               <span className="nav-label">
@@ -147,6 +151,7 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
               <div className="nav-items">
                 <a className={'nav-item nav-item-link' + (activeMenu === 'product-subscription-supervision' ? ' active' : '')} href="/prototypes/product-subscription-supervision.html"><span className="nav-text">产品交易监管</span></a>
                 <a className={'nav-item nav-item-link' + (activeMenu === 'subscription-order-supervision' ? ' active' : '')} href="/prototypes/subscription-order-supervision.html"><span className="nav-text">订单交付监管</span></a>
+                <a className={'nav-item nav-item-link' + (activeMenu === 'redev-data-product-supervision' ? ' active' : '')} href="/prototypes/redev-data-product-supervision.html"><span className="nav-text">再开发数据产品监管</span></a>
               </div>
             )}
           </div>

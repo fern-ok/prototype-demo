@@ -1,0 +1,474 @@
+/* Redev Data Product Supervision page visual styling */
+
+* {
+  box-sizing: border-box;
+}
+
+/* Column widths */
+.col-index { width: 56px; text-align: left; }
+.col-code { width: 180px; }
+.col-product { width: 190px; }
+.col-product-type { width: 96px; }
+.col-region { width: 150px; }
+.col-domain { width: 100px; }
+.col-provider { width: 200px; }
+.col-progress { width: 170px; }
+.col-status { width: 96px; }
+.col-action { width: 72px; }
+
+.data-table {
+  min-width: 1410px;
+}
+
+/* Product type cell */
+.type-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid #d8e6ff;
+  border-radius: 2px;
+  background: #eef4ff;
+  color: #0052d9;
+  font-size: 12px;
+}
+
+/* Progress bar */
+.progress-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-track {
+  width: 90px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 3px;
+  background: #e7ebf2;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .2s ease;
+}
+
+.progress-blue { background: #0f63f4; }
+.progress-green { background: #179b55; }
+.progress-red { background: #d54941; }
+
+.progress-text {
+  color: #4b5563;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 8vh 20px 32px;
+  background: rgba(0, 0, 0, .42);
+}
+
+.modal-medium {
+  width: 640px;
+  max-width: calc(100vw - 48px);
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 3px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .18);
+  overflow: hidden;
+}
+
+.modal-header {
+  min-height: 54px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  background: #fff;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #1f2329;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.modal-close {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: #9097a3;
+  border: 0;
+  background: transparent;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: #4b5563;
+  background: #f3f6fb;
+}
+
+.modal-body {
+  flex: 1;
+  min-height: 0;
+  padding: 20px 24px;
+  overflow: auto;
+  background: #fff;
+}
+
+.modal-footer {
+  min-height: 58px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid #edf0f5;
+  background: #fff;
+}
+
+/* View info grid */
+.view-info-grid {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) 130px minmax(0, 1fr);
+  border: 1px solid #dfe5ef;
+  margin-bottom: 18px;
+}
+
+.view-info-grid .info-label {
+  padding: 10px 12px;
+  border-right: 1px solid #dfe5ef;
+  border-bottom: 1px solid #dfe5ef;
+  background: #f5f7fb;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.view-info-grid .info-value {
+  padding: 10px 12px;
+  border-right: 1px solid #dfe5ef;
+  border-bottom: 1px solid #dfe5ef;
+  color: #1f2329;
+  background: #fff;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.view-info-grid .info-value:nth-child(4n):not(.info-value-span) {
+  border-right: 0;
+}
+
+/* 末行为两对标签/值（4 个单元格），取消底边框 */
+.view-info-grid > :nth-last-child(-n + 4) {
+  border-bottom: 0;
+}
+
+.view-info-grid .info-value-span {
+  grid-column: span 3;
+  border-right: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid #dfe5ef;
+  color: #1f2329;
+  background: #fff;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+/* Empty state */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  color: #8a95a6;
+  font-size: 14px;
+}
+
+.empty-state-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+@media (max-width: 1280px) {
+  .modal-medium {
+    width: calc(100vw - 48px);
+  }
+}
+
+/* Wide modal for product detail (left info column + right records column) */
+.modal-wide {
+  width: 1280px;
+  max-width: calc(100vw - 48px);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 3px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .18);
+  overflow: hidden;
+}
+
+@media (max-width: 1340px) {
+  .modal-wide {
+    width: calc(100vw - 48px);
+  }
+}
+
+/* Process step bar */
+.detail-steps {
+  display: flex;
+  align-items: flex-start;
+  padding: 4px 4px 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.detail-step {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.detail-step-node {
+  display: flex;
+  align-items: center;
+}
+
+.step-icon {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.step-icon-done {
+  background: #179b55;
+  color: #fff;
+  border: 2px solid #179b55;
+}
+
+.step-icon-current {
+  background: #fff;
+  border: 2px solid #d54941;
+  color: transparent;
+}
+
+.step-line {
+  flex: 1 1 auto;
+  height: 2px;
+  margin: 0 6px;
+  border-radius: 1px;
+}
+
+.step-line-done {
+  background: #0f63f4;
+}
+
+.step-line-todo {
+  background: #d9dee7;
+}
+
+.detail-step-meta {
+  margin-top: 8px;
+  padding-right: 12px;
+}
+
+.detail-step-name {
+  color: #1f2329;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.detail-step-time {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #8a95a6;
+  white-space: nowrap;
+}
+
+.step-time-current {
+  color: #d54941;
+}
+
+/* Two-column detail layout: left info column (基本信息 top + 定价信息 bottom) / right records column */
+.detail-columns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.detail-left {
+  flex: 1 1 760px;
+  min-width: 0;
+}
+
+.detail-right {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+/* Module title with blue vertical bar */
+.module-block {
+  margin-bottom: 18px;
+}
+
+.module-block:last-child {
+  margin-bottom: 0;
+}
+
+.module-title {
+  position: relative;
+  padding-left: 10px;
+  margin-bottom: 12px;
+  color: #1f2329;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.module-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 1px;
+  bottom: 1px;
+  width: 3px;
+  border-radius: 2px;
+  background: #0f63f4;
+}
+
+/* Detail info grid: label | value | label | value (two field pairs per row) */
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 112px minmax(0, 1fr);
+  gap: 1px;
+  border: 1px solid #dfe5ef;
+  border-radius: 2px;
+  background: #dfe5ef;
+}
+
+.detail-info-grid .info-label {
+  padding: 9px 12px;
+  background: #f5f7fb;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.detail-info-grid .info-value {
+  padding: 9px 12px;
+  background: #fff;
+  color: #1f2329;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.detail-info-grid .info-value-span3 {
+  grid-column: span 3;
+}
+
+/* Product image preview box */
+.product-image-box {
+  width: 200px;
+  max-width: 100%;
+  border: 1px solid #dfe5ef;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #f5f7fb;
+}
+
+.product-image-box img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Subscription records */
+.sub-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sub-record {
+  position: relative;
+  padding: 12px 14px 12px 16px;
+  border: 1px solid #e7ebf2;
+  border-radius: 3px;
+  background: #fafbfd;
+}
+
+.sub-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.sub-dot {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #0f63f4;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sub-time {
+  color: #4b5563;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sub-body {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-left: 32px;
+}
+
+.sub-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.sub-key {
+  flex: 0 0 auto;
+  color: #8a95a6;
+}
+
+.sub-val {
+  color: #1f2329;
+  word-break: break-all;
+}

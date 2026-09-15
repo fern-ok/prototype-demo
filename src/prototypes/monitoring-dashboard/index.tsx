@@ -61,7 +61,7 @@ const stats = [
     icon: Rocket,
     sub: [
       { name: '有效订单数', value: '108', unit: '个' },
-      { name: '产品交易总额', value: '97', unit: '元' },
+      { name: '交易总额', value: '97', unit: '元' },
     ],
   },
 ];

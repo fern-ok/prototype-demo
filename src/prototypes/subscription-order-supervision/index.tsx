@@ -646,7 +646,7 @@ const OriginalComponent = () => {
               <th className="col-product-type">产品类型</th>
               <th className="col-demander">数据需求方</th>
                   <th className="col-status">订单状态</th>
-                  <th className="col-amount">订单总额（元）</th>
+                  <th className="col-amount">订单金额（元）</th>
                   <th className="col-update-time">更新时间</th>
               <th className="col-action">操作</th>
             </tr>
@@ -767,7 +767,7 @@ const OriginalComponent = () => {
           <div className="view-info-grid call-stats-grid">
             <div className="info-label">API接口名称</div>
             <div className="info-value" title={currentRecord?.productName}>{currentRecord?.productName}</div>
-            <div className="info-label">调用总次数</div>
+            <div className="info-label">调用次数</div>
             <div className="info-value">{statsLoading ? '统计中…' : callStats?.total}</div>
             <div className="info-label">调用成功次数</div>
             <div className="info-value">{statsLoading ? '统计中…' : callStats?.success}</div>

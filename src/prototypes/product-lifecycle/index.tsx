@@ -46,7 +46,7 @@ const OriginalComponent = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // 弹窗（查看、时间轴）；数据血缘已改为独立整页，不再使用弹窗
+  // 弹窗（查看、时间轴）；数据血缘、生命图谱均已改为独立整页，不再使用弹窗
   const [showViewModal, setShowViewModal] = useState(false);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<LifecycleRecord | null>(null);
@@ -108,10 +108,6 @@ const OriginalComponent = () => {
       <div className="info-value">{currentRecord?.productCode}</div>
       <div className="info-label">产品名称</div>
       <div className="info-value" title={currentRecord?.productName}>{currentRecord?.productName}</div>
-      <div className="info-label">产品类型</div>
-      <div className="info-value"><span className="type-tag">{currentRecord?.productType}</span></div>
-      <div className="info-label">产品阶段</div>
-      <div className="info-value">{currentRecord?.productStage}</div>
     </div>
   );
 
@@ -147,21 +143,19 @@ const OriginalComponent = () => {
           <input type="text" placeholder="请输入" value={searchProvider} onChange={(e) => setSearchProvider(e.target.value)} />
         </div>
         <div className="filter-item filter-item-select">
-          <label>当前阶段</label>
+          <label>流程节点</label>
           <select value={searchStage} onChange={(e) => setSearchStage(e.target.value)}>
             <option value="">请选择</option>
             {STAGE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div className="filter-item filter-item-select">
-          <label>阶段状态</label>
+          <label>节点状态</label>
           <select value={searchStatus} onChange={(e) => setSearchStatus(e.target.value)}>
             <option value="">请选择</option>
             {STAGE_STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
-      </div>
-      <div className="filter-row">
         <div className="filter-item filter-item-range">
           <label>更新时间</label>
           <div className="range-inputs">
@@ -192,14 +186,14 @@ const OriginalComponent = () => {
               <th className="col-product-type">产品类型</th>
               <th className="col-product-stage">产品阶段</th>
               <th className="col-provider">产品提供方</th>
-              <th className="col-stage">当前阶段</th>
-              <th className="col-status">阶段状态</th>
+              <th className="col-stage">流程节点</th>
+              <th className="col-status">节点状态</th>
               <th className="col-update-time">更新时间</th>
               <th className="col-action">操作</th>
             </tr>
           </thead>
           <tbody>
-            {paginatedList.length === 0 ? (
+            {            paginatedList.length === 0 ? (
               <tr>
                 <td colSpan={10} className="empty-state">
                   <div className="empty-state-icon">📭</div>
@@ -207,7 +201,9 @@ const OriginalComponent = () => {
                 </td>
               </tr>
             ) : (
-              paginatedList.map((record, index) => (
+              paginatedList.map((record, index) => {
+                const isFirstRow = index === 0 && currentPage === 1;
+                return (
                 <tr key={record.id}>
                   <td className="col-index">{(safePage - 1) * pageSize + index + 1}</td>
                   <td className="col-code" title={record.productCode}>{record.productCode}</td>
@@ -226,10 +222,21 @@ const OriginalComponent = () => {
                         className="action-btn"
                         href={'/prototypes/product-lifecycle-lineage.html?code=' + encodeURIComponent(record.productCode)}
                       >数据血缘</a>
+                      <a
+                        className="action-btn"
+                        href={'/prototypes/product-lifecycle-graph.html?code=' + encodeURIComponent(record.productCode)}
+                      >生命图谱</a>
+                      {isFirstRow && (
+                        <a
+                          className="action-btn"
+                          href={'/prototypes/product-lifecycle-graph1.html?code=' + encodeURIComponent(record.productCode)}
+                        >生命图谱1</a>
+                      )}
                     </div>
                   </td>
                 </tr>
-              ))
+                );
+              })
             )}
           </tbody>
         </table>
@@ -282,11 +289,11 @@ const OriginalComponent = () => {
             <div className="info-label">产品提供方</div>
             <div className="info-value-span" title={currentRecord?.provider}>{currentRecord?.provider}</div>
           </div>
-          <div className="section-title"><span className="title-bar"></span>阶段信息</div>
+          <div className="section-title"><span className="title-bar"></span>流程信息</div>
           <div className="view-info-grid">
-            <div className="info-label">当前阶段</div>
+            <div className="info-label">流程节点</div>
             <div className="info-value">{currentRecord?.currentStage}</div>
-            <div className="info-label">阶段状态</div>
+            <div className="info-label">节点状态</div>
             <div className="info-value"><span className={'status-tag ' + getStageStatusClass(currentRecord?.stageStatus || '')}>{currentRecord?.stageStatus}</span></div>
             <div className="info-label">更新时间</div>
             <div className="info-value">{currentRecord?.updateTime}</div>
@@ -312,20 +319,66 @@ const OriginalComponent = () => {
         </div>
         <div className="modal-body">
           {renderSummaryBar()}
-          <div className="section-title"><span className="title-bar"></span>阶段流转记录</div>
+          <div className="section-title"><span className="title-bar"></span>流程记录</div>
           <div className="timeline-list">
-            {timeline.map(function (item) {
+            {timeline.map(function (item, idx) {
               return (
                 <div key={item.stage} className={'timeline-item' + (item.current ? ' is-current' : '')}>
                   <div className="timeline-head">
+                    <span className="timeline-index">{idx + 1}</span>
                     <span className="timeline-stage">{item.stage}</span>
                     <span className={'status-tag ' + getStageStatusClass(item.status)}>{item.status}</span>
-                    <span className="timeline-time">{item.time}</span>
                   </div>
-                  <div className="timeline-meta">
-                    操作人：{item.operator}（{item.operatorOrg}）
+                  <div className="timeline-block">
+                    <div className="timeline-block-title">发起信息</div>
+                    <div className="timeline-fields">
+                      <div className="timeline-field">
+                        <span className="timeline-field-label">单位名称</span>
+                        <span className="timeline-field-value" title={item.org}>{item.org}</span>
+                      </div>
+                      <div className="timeline-field">
+                        <span className="timeline-field-label">法人经办人姓名</span>
+                        <span className="timeline-field-value">{item.handler}</span>
+                      </div>
+                      <div className="timeline-field">
+                        <span className="timeline-field-label">操作时间</span>
+                        <span className="timeline-field-value">{item.time}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="timeline-remark">{item.remark}</div>
+                  <div className="timeline-block">
+                    <div className="timeline-block-title">审批信息</div>
+                    <div className="timeline-fields">
+                      <div className="timeline-field">
+                        <span className="timeline-field-label">单位名称</span>
+                        <span className="timeline-field-value" title={item.auditOrg}>{item.auditOrg}</span>
+                      </div>
+                      <div className="timeline-field">
+                        <span className="timeline-field-label">法人经办人姓名</span>
+                        <span className="timeline-field-value">{item.auditHandler}</span>
+                      </div>
+                      <div className="timeline-field">
+                        <span className="timeline-field-label">审核结果</span>
+                        <span className="timeline-field-value">
+                          {item.auditResult === '审核通过' ? (
+                            <span className="audit-tag audit-pass">审核通过</span>
+                          ) : item.auditResult === '审核不通过' ? (
+                            <span className="audit-tag audit-fail">审核不通过</span>
+                          ) : (
+                            '—'
+                          )}
+                        </span>
+                      </div>
+                      <div className="timeline-field">
+                        <span className="timeline-field-label">审核意见</span>
+                        <span className="timeline-field-value">{item.auditOpinion}</span>
+                      </div>
+                      <div className="timeline-field">
+                        <span className="timeline-field-label">操作时间</span>
+                        <span className="timeline-field-value">{item.auditTime}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               );
             })}

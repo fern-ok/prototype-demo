@@ -6,7 +6,8 @@
  */
 
 import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, Shield, FileSearch, FileCheck, KeyRound, X, Bell, LayoutDashboard, ClipboardList, ListTree, Settings2, Search, Monitor, Workflow } from 'lucide-react';
-import { useState, ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { useState, useMemo, ReactNode } from 'react';
 import messageTemplateTable from '../database/message-templates.json';
 import './layout.css';
 
@@ -33,6 +34,61 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplate[] = messageTemplateTa
   updateTime: item.updateTime
 }));
 
+/* ============================================================
+ * 侧边栏菜单数据（公共数据资源授权运营管理平台）
+ * 一级链接 + 分组菜单统一数据化，便于菜单搜索过滤与高亮
+ * ========================================================== */
+type NavLeaf = { key: string; label: string; kind?: 'link' | 'action' };
+type NavEntry =
+  | { type: 'link'; key: string; label: string; icon: LucideIcon; href: string; external?: boolean }
+  | { type: 'group'; key: string; label: string; icon: LucideIcon; items: NavLeaf[] };
+
+const SIDEBAR_MENU: NavEntry[] = [
+  { type: 'link', key: 'other-entity-workbench', label: '其他经营主体工作台', icon: LayoutDashboard, href: '/prototypes/other-entity-workbench.html' },
+  { type: 'link', key: 'monitoring-dashboard', label: '监控大屏', icon: Monitor, href: '/prototypes/monitoring-dashboard.html', external: true },
+  { type: 'link', key: 'unified-catalog-query', label: '统一目录查询', icon: Search, href: '/prototypes/unified-catalog-query.html' },
+  {
+    type: 'group',
+    key: '备案管理',
+    label: '备案管理',
+    icon: FolderOpen,
+    items: [
+      { key: 'product-service-filing', label: '产品和服务清单备案' },
+      { key: 'operation-agreement-filing', label: '运营协议备案' },
+      { key: 'implementation-plan-joint-review', label: '实施方案联审' },
+      { key: 'auth-record', label: '授权记录', kind: 'action' }
+    ]
+  },
+  { type: 'link', key: 'product-security-review', label: '产品安全审查', icon: ShieldCheck, href: '/prototypes/product-security-review.html' },
+  { type: 'link', key: 'product-registration', label: '产品登记', icon: ClipboardList, href: '/prototypes/product-registration.html' },
+  { type: 'link', key: 'data-resource-catalog', label: '数据资源目录', icon: ListTree, href: '/prototypes/data-resource-catalog.html' },
+  { type: 'link', key: 'data-resource-auth', label: '数据资源授权', icon: KeyRound, href: '/prototypes/data-resource-auth.html' },
+  { type: 'link', key: 'data-resource-review', label: '数据资源初审', icon: FileSearch, href: '/prototypes/data-resource-review.html' },
+  { type: 'link', key: 'data-resource-recheck', label: '数据资源复审', icon: FileCheck, href: '/prototypes/data-resource-recheck.html' },
+  { type: 'link', key: 'product-lifecycle', label: '产品生命周期', icon: Workflow, href: '/prototypes/product-lifecycle.html' },
+  {
+    type: 'group',
+    key: '授权监管',
+    label: '授权监管',
+    icon: Shield,
+    items: [
+      { key: 'product-subscription-supervision', label: '产品交易监管' },
+      { key: 'subscription-order-supervision', label: '订单交付监管' },
+      { key: 'redev-data-product-supervision', label: '再开发数据产品监管' }
+    ]
+  },
+  { type: 'link', key: 'demand-management', label: '需求管理', icon: FileText, href: '/prototypes/demand-management.html' },
+  {
+    type: 'group',
+    key: '系统管理',
+    label: '系统管理',
+    icon: Settings2,
+    items: [
+      { key: 'domain-management', label: '领域管理' }
+    ]
+  }
+];
+
 interface LayoutProps {
   children: ReactNode;
   activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'unified-catalog-query' | 'monitoring-dashboard';
@@ -56,6 +112,41 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
   const [showSpecModal, setShowSpecModal] = useState(false);
   const [showChangeLogModal, setShowChangeLogModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [menuKeyword, setMenuKeyword] = useState('');
+
+  // 菜单搜索：输入关键字实时过滤菜单，分组自动展开，命中文本高亮
+  const searching = menuKeyword.trim().length > 0;
+
+  const visibleMenu = useMemo<NavEntry[]>(() => {
+    const kw = menuKeyword.trim().toLowerCase();
+    if (!kw) return SIDEBAR_MENU;
+    const result: NavEntry[] = [];
+    SIDEBAR_MENU.forEach(entry => {
+      if (entry.type === 'link') {
+        if (entry.label.toLowerCase().includes(kw)) result.push(entry);
+        return;
+      }
+      const selfMatch = entry.label.toLowerCase().includes(kw);
+      const items = selfMatch ? entry.items : entry.items.filter(it => it.label.toLowerCase().includes(kw));
+      if (items.length > 0) result.push({ ...entry, items });
+    });
+    return result;
+  }, [menuKeyword]);
+
+  // 命中关键字高亮（不区分大小写）
+  const renderNavText = (text: string) => {
+    const kw = menuKeyword.trim();
+    if (!kw) return text;
+    const idx = text.toLowerCase().indexOf(kw.toLowerCase());
+    if (idx === -1) return text;
+    return (
+      <>
+        {text.slice(0, idx)}
+        <mark className="nav-hl">{text.slice(idx, idx + kw.length)}</mark>
+        {text.slice(idx + kw.length)}
+      </>
+    );
+  };
 
   // 一级菜单（如统一目录查询）没有父级分类，面包屑直接展示 首页 / 当前页
   const parentMenu = (activeMenu === 'unified-catalog-query' || activeMenu === 'product-lifecycle')
@@ -79,100 +170,78 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
           <div className="logo-icon"><DatabaseZap aria-hidden="true" /></div>
           {!sidebarCollapsed && <div className="logo-text">公共数据资源授权运营管理平台</div>}
         </div>
+        {!sidebarCollapsed && (
+          <div className="sidebar-search">
+            <Search size={14} className="sidebar-search-icon" aria-hidden="true" />
+            <input
+              type="text"
+              value={menuKeyword}
+              onChange={(e) => setMenuKeyword(e.target.value)}
+              placeholder="搜索菜单"
+              aria-label="搜索菜单"
+            />
+            {menuKeyword && (
+              <button type="button" className="sidebar-search-clear" onClick={() => setMenuKeyword('')} aria-label="清空搜索">
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        )}
         <nav className="sidebar-nav">
-          <a className={'nav-top-link' + (activeMenu === 'other-entity-workbench' ? ' active' : '')} href="/prototypes/other-entity-workbench.html" title="其他经营主体工作台">
-            <span className="nav-icon"><LayoutDashboard aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">其他经营主体工作台</span>}
-          </a>
-          <a className={'nav-top-link' + (activeMenu === 'monitoring-dashboard' ? ' active' : '')} href="/prototypes/monitoring-dashboard.html" title="监控大屏" target="_blank" rel="noopener noreferrer">
-            <span className="nav-icon"><Monitor aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">监控大屏</span>}
-          </a>
-          <a className={'nav-top-link' + (activeMenu === 'unified-catalog-query' ? ' active' : '')} href="/prototypes/unified-catalog-query.html" title="统一目录查询">
-            <span className="nav-icon"><Search aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">统一目录查询</span>}
-          </a>
-          <div className="nav-group">
-            <div className={'nav-group-title ' + (collapsedGroups['备案管理'] ? 'collapsed' : '')} onClick={() => toggleGroup('备案管理')}>
-              <span className="nav-label">
-                <span className="nav-icon"><FolderOpen aria-hidden="true" /></span>
-                {!sidebarCollapsed && <span>备案管理</span>}
-              </span>
-              {!sidebarCollapsed && <svg className="nav-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>}
-            </div>
-            {!sidebarCollapsed && !collapsedGroups['备案管理'] && (
-              <div className="nav-items">
-                <a className={'nav-item nav-item-link' + (activeMenu === 'product-service-filing' ? ' active' : '')} href="/prototypes/product-service-filing.html"><span className="nav-text">产品和服务清单备案</span></a>
-                <a className={'nav-item nav-item-link' + (activeMenu === 'operation-agreement-filing' ? ' active' : '')} href="/prototypes/operation-agreement-filing.html"><span className="nav-text">运营协议备案</span></a>
-                <a className={'nav-item nav-item-link' + (activeMenu === 'implementation-plan-joint-review' ? ' active' : '')} href="/prototypes/implementation-plan-joint-review.html"><span className="nav-text">实施方案联审</span></a>
-                {onAuthRecordClick && (
-                  <div className="nav-item nav-item-clickable" onClick={onAuthRecordClick}><span className="nav-text">授权记录</span></div>
-                )}
-              </div>
-            )}
-          </div>
-          <a className={'nav-top-link' + (activeMenu === 'product-security-review' ? ' active' : '')} href="/prototypes/product-security-review.html" title="产品安全审查">
-            <span className="nav-icon"><ShieldCheck aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">产品安全审查</span>}
-          </a>
-          <a className={'nav-top-link' + (activeMenu === 'product-registration' ? ' active' : '')} href="/prototypes/product-registration.html" title="产品登记">
-            <span className="nav-icon"><ClipboardList aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">产品登记</span>}
-          </a>
-          <a className={'nav-top-link' + (activeMenu === 'data-resource-catalog' ? ' active' : '')} href="/prototypes/data-resource-catalog.html" title="数据资源目录">
-            <span className="nav-icon"><ListTree aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">数据资源目录</span>}
-          </a>
-          <a className={'nav-top-link' + (activeMenu === 'data-resource-auth' ? ' active' : '')} href="/prototypes/data-resource-auth.html" title="数据资源授权">
-            <span className="nav-icon"><KeyRound aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">数据资源授权</span>}
-          </a>
-          <a className={'nav-top-link' + (activeMenu === 'data-resource-review' ? ' active' : '')} href="/prototypes/data-resource-review.html" title="数据资源初审">
-            <span className="nav-icon"><FileSearch aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">数据资源初审</span>}
-          </a>
-          <a className={'nav-top-link' + (activeMenu === 'data-resource-recheck' ? ' active' : '')} href="/prototypes/data-resource-recheck.html" title="数据资源复审">
-            <span className="nav-icon"><FileCheck aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">数据资源复审</span>}
-          </a>
-          <a className={'nav-top-link' + (activeMenu === 'product-lifecycle' ? ' active' : '')} href="/prototypes/product-lifecycle.html" title="产品生命周期">
-            <span className="nav-icon"><Workflow aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">产品生命周期</span>}
-          </a>
-          <div className="nav-group">
-            <div className={'nav-group-title ' + (collapsedGroups['授权监管'] ? 'collapsed' : '')} onClick={() => toggleGroup('授权监管')}>
-              <span className="nav-label">
-                <span className="nav-icon"><Shield aria-hidden="true" /></span>
-                {!sidebarCollapsed && <span>授权监管</span>}
-              </span>
-              {!sidebarCollapsed && <svg className="nav-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>}
-            </div>
-            {!sidebarCollapsed && !collapsedGroups['授权监管'] && (
-              <div className="nav-items">
-                <a className={'nav-item nav-item-link' + (activeMenu === 'product-subscription-supervision' ? ' active' : '')} href="/prototypes/product-subscription-supervision.html"><span className="nav-text">产品交易监管</span></a>
-                <a className={'nav-item nav-item-link' + (activeMenu === 'subscription-order-supervision' ? ' active' : '')} href="/prototypes/subscription-order-supervision.html"><span className="nav-text">订单交付监管</span></a>
-                <a className={'nav-item nav-item-link' + (activeMenu === 'redev-data-product-supervision' ? ' active' : '')} href="/prototypes/redev-data-product-supervision.html"><span className="nav-text">再开发数据产品监管</span></a>
-              </div>
-            )}
-          </div>
-          <a className={'nav-top-link' + (activeMenu === 'demand-management' ? ' active' : '')} href="/prototypes/demand-management.html" title="需求管理">
-            <span className="nav-icon"><FileText aria-hidden="true" /></span>
-            {!sidebarCollapsed && <span className="nav-text">需求管理</span>}
-          </a>
-          <div className="nav-group">
-            <div className={'nav-group-title ' + (collapsedGroups['系统管理'] ? 'collapsed' : '')} onClick={() => toggleGroup('系统管理')}>
-              <span className="nav-label">
-                <span className="nav-icon"><Settings2 aria-hidden="true" /></span>
-                {!sidebarCollapsed && <span>系统管理</span>}
-              </span>
-              {!sidebarCollapsed && <svg className="nav-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>}
-            </div>
-            {!sidebarCollapsed && !collapsedGroups['系统管理'] && (
-              <div className="nav-items">
-                <a className={'nav-item nav-item-link' + (activeMenu === 'domain-management' ? ' active' : '')} href="/prototypes/domain-management.html"><span className="nav-text">领域管理</span></a>
-              </div>
-            )}
-          </div>
+          {searching && visibleMenu.length === 0 ? (
+            <div className="sidebar-nav-empty">未找到匹配菜单</div>
+          ) : (
+            visibleMenu.map(entry => {
+              const Icon = entry.icon;
+              if (entry.type === 'link') {
+                return (
+                  <a
+                    key={entry.key}
+                    className={'nav-top-link' + (activeMenu === entry.key ? ' active' : '')}
+                    href={entry.href}
+                    title={entry.label}
+                    {...(entry.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  >
+                    <span className="nav-icon"><Icon aria-hidden="true" /></span>
+                    {!sidebarCollapsed && <span className="nav-text">{renderNavText(entry.label)}</span>}
+                  </a>
+                );
+              }
+              return (
+                <div key={entry.key} className="nav-group">
+                  <div
+                    className={'nav-group-title ' + (!searching && collapsedGroups[entry.key] ? 'collapsed' : '')}
+                    onClick={() => toggleGroup(entry.key)}
+                  >
+                    <span className="nav-label">
+                      <span className="nav-icon"><Icon aria-hidden="true" /></span>
+                      {!sidebarCollapsed && <span>{renderNavText(entry.label)}</span>}
+                    </span>
+                    {!sidebarCollapsed && <svg className="nav-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>}
+                  </div>
+                  {!sidebarCollapsed && (searching || !collapsedGroups[entry.key]) && (
+                    <div className="nav-items">
+                      {entry.items
+                        .filter(it => it.kind !== 'action' || onAuthRecordClick)
+                        .map(it => it.kind === 'action' ? (
+                          <div key={it.key} className="nav-item nav-item-clickable" onClick={onAuthRecordClick}>
+                            <span className="nav-text">{renderNavText(it.label)}</span>
+                          </div>
+                        ) : (
+                          <a
+                            key={it.key}
+                            className={'nav-item nav-item-link' + (activeMenu === it.key ? ' active' : '')}
+                            href={`/prototypes/${it.key}.html`}
+                          >
+                            <span className="nav-text">{renderNavText(it.label)}</span>
+                          </a>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </nav>
         <div className="sidebar-footer">
           <button className="sidebar-toggle-btn" onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>

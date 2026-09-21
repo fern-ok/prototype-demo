@@ -31,11 +31,64 @@ export interface TimelineItem {
   time: string;
   remark: string;
   current: boolean;
+  /** 发起信息：单位名称 */
+  org: string;
+  /** 发起信息：法人经办人姓名 */
+  handler: string;
+  /** 审批信息：单位名称 */
+  auditOrg: string;
+  /** 审批信息：法人经办人姓名 */
+  auditHandler: string;
+  /** 审批信息：操作时间 */
+  auditTime: string;
+  /** 审批信息：审核结果（审核通过 / 审核不通过 / —） */
+  auditResult: string;
+  /** 审批信息：审核意见 */
+  auditOpinion: string;
+}
+
+/** 数据资源节点的详细信息，在血缘抽屉「基本信息」中展示 */
+export interface DataResourceDetail {
+  resourceName: string;
+  resourceCode: string;
+  industry: string;
+  involvesPersonal: string;
+  format: string;
+  source: string;
+  updateFreq: string;
+  coverage: string;
+  region: string;
+  holder: string;
+  summary: string;
+}
+
+/** 数据产品节点（基础产品 / 再开发产品）的详细信息，在血缘抽屉「基本信息」中展示 */
+export interface DataProductDetail {
+  productName: string;
+  productCode: string;
+  productType: string;
+  coverage: string;
+  industry: string;
+  region: string;
+  involvesPersonal: string;
+  deliveryMethod: string;
+  authorizedUse: string;
+  dataSubject: string;
+  dataScale: string;
+  updateFreq: string;
+  personalOrEnterpriseAuth: string;
+  productDesc: string;
+  usageLimit: string;
+  providerName: string;
 }
 
 export interface LineageNode {
   name: string;
   type: string;
+  /** 数据资源节点的详细信息（点击节点后在抽屉「基本信息」中展示） */
+  detail?: DataResourceDetail;
+  /** 数据产品节点（基础产品 / 再开发产品）的详细信息 */
+  productDetail?: DataProductDetail;
 }
 
 export interface LineageLayer {
@@ -198,7 +251,19 @@ export const buildTimeline = (record: LifecycleRecord): TimelineItem[] => {
       operatorOrg: STAGE_OPERATOR_ORG[stage],
       time: time,
       remark: (STAGE_ACTION[stage] || stage) + (STATUS_REMARK[status] || ''),
-      current: isCurrent
+      current: isCurrent,
+      org: record.provider,
+      handler: OPERATORS[(record.id * 3 + i * 2 + 1) % OPERATORS.length],
+      auditOrg: '湖南省公共数据运营中心',
+      auditHandler: OPERATORS[(record.id * 7 + i * 3 + 2) % OPERATORS.length],
+      auditTime: status === '已完成' || status === '已驳回' ? time : '—',
+      auditResult: status === '已完成' ? '审核通过' : status === '已驳回' ? '审核不通过' : '—',
+      auditOpinion:
+        status === '已完成'
+          ? '通过'
+          : status === '已驳回'
+            ? '首次' + (STAGE_ACTION[stage] || stage) + '不通过，材料修改后重新提交'
+            : '—'
     });
   }
   return items;
@@ -217,7 +282,8 @@ export const buildLineage = (record: LifecycleRecord): { layers: LineageLayer[];
 
   const dataResources: LineageNode[] = [];
   for (let i = 0; i < (isRedev ? 5 : 4); i++) {
-    dataResources.push({ name: label + domain + '数据资源' + (i + 1), type: '数据资源' });
+    const name = label + domain + '数据资源' + (i + 1);
+    dataResources.push({ name: name, type: '数据资源', detail: buildResourceDetail(record, name) });
   }
 
   const edges: LineageEdge[] = [];
@@ -228,15 +294,16 @@ export const buildLineage = (record: LifecycleRecord): { layers: LineageLayer[];
 
   if (!isRedev) {
     // 场景 1：基础产品进入 —— 左侧数据资源，右侧再开发产品
-    const basic: LineageNode = { name: record.productName, type: '基础产品' };
+    const basic: LineageNode = { name: record.productName, type: '基础产品', productDetail: buildProductDetail(record, record.productName, 0) };
     const redevList: LineageNode[] = [];
     for (let i = 0; i < 5; i++) {
-      redevList.push({ name: label + domain + '再开发产品' + (i + 1), type: '再开发产品' });
+      const name = label + domain + '再开发产品' + (i + 1);
+      redevList.push({ name: name, type: '再开发产品', productDetail: buildProductDetail(record, name, i + 1) });
     }
     middleNodes = [basic];
     rightNodes = redevList;
     middleTitle = '基础产品';
-    rightTitle = '下游再开发产品';
+    rightTitle = '再开发产品';
 
     dataResources.forEach(function (u) {
       edges.push({ from: u.name, fromType: u.type, to: basic.name, toType: basic.type });
@@ -248,9 +315,10 @@ export const buildLineage = (record: LifecycleRecord): { layers: LineageLayer[];
     // 场景 2：再开发产品进入 —— 左列数据资源，中列基础产品（多个），右列再开发产品（当前产品）
     const basicList: LineageNode[] = [];
     for (let i = 0; i < 3; i++) {
-      basicList.push({ name: label + domain + '基础产品' + (i + 1), type: '基础产品' });
+      const name = label + domain + '基础产品' + (i + 1);
+      basicList.push({ name: name, type: '基础产品', productDetail: buildProductDetail(record, name, i + 1) });
     }
-    const redev: LineageNode = { name: record.productName, type: '再开发产品' };
+    const redev: LineageNode = { name: record.productName, type: '再开发产品', productDetail: buildProductDetail(record, record.productName, 0) };
     middleNodes = basicList;
     rightNodes = [redev];
     middleTitle = '基础产品';
@@ -268,7 +336,7 @@ export const buildLineage = (record: LifecycleRecord): { layers: LineageLayer[];
   }
 
   const layers: LineageLayer[] = [
-    { title: '上游数据资源', nodes: dataResources },
+    { title: '数据资源', nodes: dataResources },
     { title: middleTitle, nodes: middleNodes },
     { title: rightTitle, nodes: rightNodes }
   ];
@@ -276,11 +344,199 @@ export const buildLineage = (record: LifecycleRecord): { layers: LineageLayer[];
   return { layers: layers, edges: edges };
 };
 
+/** 各领域对应的资源持有方（演示用，与数据资源目录样例保持一致） */
+const DOMAIN_HOLDER: Record<string, string> = {
+  医疗健康: '湖南省卫生健康委信息统计中心',
+  交通运输: '湖南省交通运输厅',
+  教育: '湖南省教育厅',
+  文化旅游: '湖南省文化和旅游厅',
+  自然资源: '湖南省自然资源厅',
+  城市治理: '湖南省住房和城乡建设厅',
+  金融服务: '湖南省地方金融监督管理局',
+  工业制造: '湖南省工业和信息化厅',
+  智慧农业: '湖南省农业农村厅',
+  应急管理: '湖南省应急管理厅'
+};
+
+/** 由名称稳定生成 8 位标识码后缀（剔除易混淆字符） */
+const hashSuffix = (s: string): string => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = '';
+  for (let i = 0; i < 8; i++) {
+    out += chars[h % chars.length];
+    h = (h * 31 + 7) >>> 0;
+  }
+  return out;
+};
+
+/** 数据资源节点的详细信息，由所属数据产品的地域 / 领域推导生成（演示用） */
+export const buildResourceDetail = (record: LifecycleRecord, name: string): DataResourceDetail => {
+  const label = regionLabel(record.region);
+  const holder = DOMAIN_HOLDER[record.domain] || label + '数据运营中心';
+  const regionCode = REGION_CODES[record.region] || '430000';
+  const resourceCode = '712430000MB0L046927' + regionCode.slice(0, 4) + hashSuffix(name);
+  const month = Number(record.updateTime.slice(5, 7));
+  const coverage = record.updateTime.slice(0, 4) + '-' + pad(month) + '-01 ~ 至今';
+  return {
+    resourceName: name,
+    resourceCode: resourceCode,
+    industry: record.domain,
+    involvesPersonal: '是',
+    format: 'OFD',
+    source: '原始取得',
+    updateFreq: '2次/天',
+    coverage: coverage,
+    region: label,
+    holder: holder,
+    summary: name + '，由' + holder + '持有，覆盖' + label + '区域内' + record.domain + '相关数据，用于支撑业务分析与协同。'
+  };
+};
+
+/** 数据产品节点（基础产品 / 再开发产品）的详细信息，由所属数据产品的地域 / 领域推导生成（演示用） */
+export const buildProductDetail = (record: LifecycleRecord, name: string, index: number): DataProductDetail => {
+  const label = regionLabel(record.region);
+  const regionCode = REGION_CODES[record.region] || '430000';
+  const productCode = '712430000MB0L046927' + regionCode.slice(0, 4) + hashSuffix(name);
+  const startM = 9;
+  const startD = ((index * 3 + 1) % 27) + 1;
+  const endM = 10;
+  const endD = ((index * 5 + 2) % 27) + 1;
+  const scalePool = ['1 MB', '10 MB', '100 MB', '500 MB', '1 GB'];
+  const dataScale = scalePool[index % scalePool.length];
+  const updateFreq = (index % 12 + 1) + '次/天';
+  return {
+    productName: name,
+    productCode: productCode,
+    productType: record.productType,
+    coverage: '2026-' + pad(startM) + '-' + pad(startD) + ' 至 ' + '2026-' + pad(endM) + '-' + pad(endD),
+    industry: record.domain,
+    region: label,
+    involvesPersonal: '否',
+    deliveryMethod: '文件传输',
+    authorizedUse: '否',
+    dataSubject: '个人信息',
+    dataScale: dataScale,
+    updateFreq: updateFreq,
+    personalOrEnterpriseAuth: '否',
+    productDesc: record.productDesc,
+    usageLimit: '仅限授权范围内使用，不得向第三方转售或泄露，超出范围需重新申请授权。',
+    providerName: record.provider
+  };
+};
+
 /** 依据数据产品标识码定位记录（供独立数据血缘页按参数加载） */
 export const getRecordByCode = (code: string): LifecycleRecord | undefined => {
   if (!code) return undefined;
   const target = code.trim();
   return seedRecords.find(function (r) { return r.productCode === target; });
+};
+
+/* ---------------- 节点详情列表（授权信息 / 交易信息） ---------------- */
+
+export interface AuthRecord {
+  /** 全局序号（按授权时间倒序后 1 起） */
+  seq: number;
+  /** 运营机构 */
+  org: string;
+  /** 授权时间，格式 yyyy-MM-dd */
+  authTime: string;
+}
+
+export interface TradeRecord {
+  /** 全局序号（按创建时间倒序后 1 起） */
+  seq: number;
+  /** 数据需求方 */
+  demander: string;
+  /** 创建时间，格式 yyyy-MM-dd */
+  createdAt: string;
+}
+
+const AUTH_ORGS = [
+  '湖南省数据局',
+  '长沙市数据资源管理局',
+  '株洲市政务服务中心',
+  '湖南省卫生健康委信息统计中心',
+  '岳阳市大数据中心',
+  '湘潭市行政审批服务局',
+  '衡阳市数据管理局',
+  '湖南省交通运输厅信息中心'
+];
+
+const TRADE_DEMANDERS = [
+  '湖南智医科技有限公司',
+  '长沙云图数据服务有限公司',
+  '株洲数智科技有限公司',
+  '岳阳明诚医疗数据公司',
+  '湘潭数擎信息技术有限公司',
+  '湖南湘江新区数据运营公司',
+  '常德市智慧城市建设公司',
+  '湖南中科大数据分析中心'
+];
+
+/** 稳定的字符串散列（FNV-1a），用于由节点名派生可复现的演示数据 */
+const hashSeed = (s: string): number => {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+};
+
+/** 线性同余伪随机，输出 [0, 1) */
+const seededRand = (seed: number) => {
+  let s = seed || 1;
+  return () => {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+};
+
+const pad2 = (n: number) => (n < 10 ? '0' + n : '' + n);
+
+const pickDate = (rand: () => number) => {
+  const month = 1 + Math.floor(rand() * 9);
+  const day = 1 + Math.floor(rand() * 28);
+  return '2026-' + pad2(month) + '-' + pad2(day);
+};
+
+/**
+ * 生成「授权信息」列表：序号、运营机构、授权时间，按授权时间倒序排列。
+ * 由节点名派生种子，保证同一节点的演示数据稳定且各节点互不相同。
+ */
+export const buildAuthList = (seed: string, count = 17): AuthRecord[] => {
+  const rand = seededRand(hashSeed(seed + '|auth'));
+  const list: AuthRecord[] = [];
+  for (let i = 0; i < count; i++) {
+    list.push({
+      seq: 0,
+      org: AUTH_ORGS[Math.floor(rand() * AUTH_ORGS.length)],
+      authTime: pickDate(rand)
+    });
+  }
+  list.sort((a, b) => (a.authTime < b.authTime ? 1 : a.authTime > b.authTime ? -1 : 0));
+  list.forEach(function (r, idx) { r.seq = idx + 1; });
+  return list;
+};
+
+/**
+ * 生成「交易信息」列表：序号、数据需求方、创建时间，按创建时间倒序排列。
+ */
+export const buildTradeList = (seed: string, count = 15): TradeRecord[] => {
+  const rand = seededRand(hashSeed(seed + '|trade'));
+  const list: TradeRecord[] = [];
+  for (let i = 0; i < count; i++) {
+    list.push({
+      seq: 0,
+      demander: TRADE_DEMANDERS[Math.floor(rand() * TRADE_DEMANDERS.length)],
+      createdAt: pickDate(rand)
+    });
+  }
+  list.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+  list.forEach(function (r, idx) { r.seq = idx + 1; });
+  return list;
 };
 
 export const getStageStatusClass = (status: string) => {

@@ -14,6 +14,7 @@ import v20260824 from './versions/20260824.md?raw';
 import v20260904 from './versions/20260904.md?raw';
 import v20260924 from './versions/20260924.md?raw';
 import v20261023 from './versions/20261023.md?raw';
+import v20261107 from './versions/20261107.md?raw';
 import changeFlowImg from './images/变更撤销.svg';
 import shengImg from './images/省本级备案.png';
 import dishiImg from './images/地市区县备案.png';
@@ -21,15 +22,15 @@ import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
 
 const versions = [
+    {
+    version: '20261023',
+    title: '20261023版本',
+    content: v20261023,
+  },
   {
     version: '20260924',
     title: '20260924版本',
     content: v20260924,
-  },
-  {
-    version: '20261023',
-    title: '20261023版本',
-    content: v20261023,
   },
   {
     version: '20260824',
@@ -40,6 +41,11 @@ const versions = [
     version: '20260904',
     title: '20260904版本',
     content: v20260904,
+  },
+  {
+    version: '20261107',
+    title: '20261107版本',
+    content: v20261107,
   },
 
 ];

@@ -32,14 +32,16 @@
 .sidebar {
   width: 216px;
   flex: 0 0 216px;
-  min-height: 100vh;
+  height: 100vh;
   background: #ffffff;
   border-right: 1px solid #f0f0f0;
   display: flex;
   flex-direction: column;
   z-index: 2;
   transition: width 0.2s ease, flex 0.2s ease;
-  position: relative;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
 }
 
 .sidebar.sidebar-collapsed {
@@ -133,6 +135,92 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 侧边栏菜单搜索框（标题下方固定，不随菜单滚动） */
+.sidebar-search {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #ffffff;
+}
+
+.sidebar-search input {
+  width: 100%;
+  height: 30px;
+  padding: 0 26px 0 28px;
+  border: 1px solid var(--layout-border);
+  border-radius: 6px;
+  outline: none;
+  background: #fbfcfe;
+  color: var(--layout-text);
+  font-family: inherit;
+  font-size: 13px;
+  box-sizing: border-box;
+  transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+
+.sidebar-search input::placeholder {
+  color: #9aa4b2;
+}
+
+.sidebar-search input:hover {
+  border-color: var(--layout-border-dark);
+}
+
+.sidebar-search input:focus {
+  border-color: var(--layout-blue);
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.12);
+}
+
+.sidebar-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 22px;
+  transform: translateY(-50%);
+  color: #9aa4b2;
+  pointer-events: none;
+}
+
+.sidebar-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: #d9dfe8;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background .16s ease;
+}
+
+.sidebar-search-clear:hover {
+  background: #b7c0cd;
+}
+
+/* 菜单搜索无结果空状态 */
+.sidebar-nav-empty {
+  padding: 28px 12px;
+  color: #8a95a6;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* 菜单命中文本高亮 */
+.nav-hl {
+  padding: 0 1px;
+  border-radius: 2px;
+  background: rgba(22, 119, 255, 0.14);
+  color: var(--layout-blue-strong);
 }
 
 .sidebar-nav {

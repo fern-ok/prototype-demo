@@ -20,7 +20,11 @@ import {
   buildLineage,
   LineageGraph,
   LINEAGE_LEGEND,
-  NODE_STYLE as LEGEND_STYLE
+  NODE_STYLE as LEGEND_STYLE,
+  AuthRecord,
+  TradeRecord,
+  buildAuthList,
+  buildTradeList
 } from '../product-lifecycle/lifecycle-shared';
 import '../product-lifecycle/style.css';
 import '../../common/backend-list.css';
@@ -34,7 +38,7 @@ const MAX_SCALE = 3;
 const WHEEL_SENSITIVITY = 0.0016;
 const DRAG_THRESHOLD = 4;
 
-type TabKey = 'basic' | 'auth';
+type TabKey = 'basic' | 'auth' | 'trade';
 
 interface Transform {
   x: number;
@@ -57,6 +61,23 @@ const OriginalComponent = () => {
   const [selectedNode, setSelectedNode] = useState<LineageNode | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('basic');
+  const [listPage, setListPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+
+  /** 依据节点类型确定抽屉页签：数据资源仅基本信息；基础产品 + 授权信息；再开发产品 + 交易信息 */
+  const getTabs = useCallback((type: string): TabKey[] => {
+    if (type === '数据资源') return ['basic'];
+    if (type === '基础产品') return ['basic', 'auth'];
+    if (type === '再开发产品') return ['basic', 'trade'];
+    return ['basic'];
+  }, []);
+
+  /** 切换页签 / 节点时，列表分页回到第一页 */
+  useEffect(() => { setListPage(1); }, [selectedNode, activeTab]);
+
+  /** 由节点名派生可复现的授权信息 / 交易信息演示数据（各节点互不相同） */
+  const authList = useMemo<AuthRecord[]>(() => (selectedNode ? buildAuthList(selectedNode.name) : []), [selectedNode]);
+  const tradeList = useMemo<TradeRecord[]>(() => (selectedNode ? buildTradeList(selectedNode.name) : []), [selectedNode]);
 
   /* ---------------- 画布平移 / 缩放状态 ---------------- */
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -213,57 +234,203 @@ const OriginalComponent = () => {
 
   const isCenterNode = (node: LineageNode) => record && node.name === record.productName;
 
-  const renderDrawerContent = () => {
+  /** 抽屉内可翻页列表（授权信息 / 交易信息通用） */
+  const DrawerList = <T extends { seq: number }>(props: {
+    rows: T[];
+    columns: { key: Extract<keyof T, string>; title: string; cls?: string }[];
+    page: number;
+    pageSize: number;
+    onPageChange: (p: number) => void;
+    onPageSizeChange: (n: number) => void;
+  }) => {
+    const total = props.rows.length;
+    const totalPages = Math.max(1, Math.ceil(total / props.pageSize));
+    const safePage = Math.min(props.page, totalPages);
+    const start = (safePage - 1) * props.pageSize;
+    const pageRows = props.rows.slice(start, start + props.pageSize);
+    return (
+      <div className="drawer-list">
+        <table className="drawer-table">
+          <thead>
+            <tr>
+              <th className="col-seq">序号</th>
+              {props.columns.map((c) => <th key={c.key} className={c.cls}>{c.title}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {pageRows.length === 0 ? (
+              <tr><td className="drawer-table-empty" colSpan={props.columns.length + 1}>暂无数据</td></tr>
+            ) : pageRows.map((r, i) => (
+              <tr key={r.seq}>
+                <td className="col-seq">{start + i + 1}</td>
+                {props.columns.map((c) => <td key={c.key} className={c.cls} title={String(r[c.key])}>{String(r[c.key])}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="drawer-list-pagination">
+          <span className="pagination-info">共 {total} 条记录</span>
+          <div className="pagination-controls">
+            <button className="page-btn" disabled={safePage <= 1} onClick={() => props.onPageChange(Math.max(1, safePage - 1))}>上一页</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+              .map((p, idx, arr) => (
+                <span key={p} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  {idx > 0 && arr[idx - 1] !== p - 1 && <span style={{ color: '#999' }}>...</span>}
+                  <button className={'page-number' + (p === safePage ? ' active' : '')} onClick={() => props.onPageChange(p)}>{p}</button>
+                </span>
+              ))}
+            <button className="page-btn" disabled={safePage >= totalPages} onClick={() => props.onPageChange(Math.min(totalPages, safePage + 1))}>下一页</button>
+            <select className="page-size-select" value={props.pageSize} onChange={(e) => props.onPageSizeChange(Number(e.target.value))}>
+              <option value={5}>5 条/页</option>
+              <option value={10}>10 条/页</option>
+              <option value={20}>20 条/页</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  /** 基本信息页签：依据节点类型展示不同字段集 */
+  const renderBasicInfo = () => {
     if (!selectedNode || !record) return null;
     const isCenter = isCenterNode(selectedNode);
+    const detail = selectedNode.detail;
+    const isResource = selectedNode.type === '数据资源' && !!detail;
+    const productDetail = selectedNode.productDetail;
+    if (isResource) {
+      return (
+        <div className="drawer-info-grid">
+          <div className="drawer-info-label">资源名称</div>
+          <div className="drawer-info-value" title={detail!.resourceName}>{detail!.resourceName}</div>
+          <div className="drawer-info-label">数据资源标识码</div>
+          <div className="drawer-info-value">{detail!.resourceCode}</div>
+          <div className="drawer-info-label">行业分类</div>
+          <div className="drawer-info-value">{detail!.industry}</div>
+          <div className="drawer-info-label">是否涉及个人信息</div>
+          <div className="drawer-info-value">{detail!.involvesPersonal}</div>
+          <div className="drawer-info-label">资源格式</div>
+          <div className="drawer-info-value">{detail!.format}</div>
+          <div className="drawer-info-label">数据来源</div>
+          <div className="drawer-info-value">{detail!.source}</div>
+          <div className="drawer-info-label">更新频率</div>
+          <div className="drawer-info-value">{detail!.updateFreq}</div>
+          <div className="drawer-info-label">覆盖时间范围</div>
+          <div className="drawer-info-value">{detail!.coverage}</div>
+          <div className="drawer-info-label">地域分类</div>
+          <div className="drawer-info-value">{detail!.region}</div>
+          <div className="drawer-info-label">资源持有方</div>
+          <div className="drawer-info-value" title={detail!.holder}>{detail!.holder}</div>
+          <div className="drawer-info-label">资源摘要</div>
+          <div className="drawer-info-value drawer-info-desc">{detail!.summary}</div>
+        </div>
+      );
+    }
+    if (productDetail) {
+      return (
+        <div className="drawer-info-grid">
+          <div className="drawer-info-label">产品名称</div>
+          <div className="drawer-info-value" title={productDetail.productName}>{productDetail.productName}</div>
+          <div className="drawer-info-label">数据产品标识码</div>
+          <div className="drawer-info-value">{productDetail.productCode}</div>
+          <div className="drawer-info-label">产品类型</div>
+          <div className="drawer-info-value"><span className="type-tag">{productDetail.productType}</span></div>
+          <div className="drawer-info-label">覆盖时间范围</div>
+          <div className="drawer-info-value">{productDetail.coverage}</div>
+          <div className="drawer-info-label">行业分类</div>
+          <div className="drawer-info-value">{productDetail.industry}</div>
+          <div className="drawer-info-label">地域分类</div>
+          <div className="drawer-info-value">{productDetail.region}</div>
+          <div className="drawer-info-label">是否涉及个人信息</div>
+          <div className="drawer-info-value">{productDetail.involvesPersonal}</div>
+          <div className="drawer-info-label">交付方式</div>
+          <div className="drawer-info-value">{productDetail.deliveryMethod}</div>
+          <div className="drawer-info-label">授权使用</div>
+          <div className="drawer-info-value">{productDetail.authorizedUse}</div>
+          <div className="drawer-info-label">数据主体</div>
+          <div className="drawer-info-value">{productDetail.dataSubject}</div>
+          <div className="drawer-info-label">数据规模</div>
+          <div className="drawer-info-value">{productDetail.dataScale}</div>
+          <div className="drawer-info-label">更新频率</div>
+          <div className="drawer-info-value">{productDetail.updateFreq}</div>
+          <div className="drawer-info-label">个人或企业授权使用</div>
+          <div className="drawer-info-value">{productDetail.personalOrEnterpriseAuth}</div>
+          <div className="drawer-info-label">产品简介</div>
+          <div className="drawer-info-value drawer-info-desc">{productDetail.productDesc}</div>
+          <div className="drawer-info-label">使用限制</div>
+          <div className="drawer-info-value drawer-info-desc">{productDetail.usageLimit}</div>
+          <div className="drawer-info-label">提供方名称</div>
+          <div className="drawer-info-value" title={productDetail.providerName}>{productDetail.providerName}</div>
+        </div>
+      );
+    }
+    return (
+      <div className="drawer-info-grid">
+        <div className="drawer-info-label">节点名称</div>
+        <div className="drawer-info-value" title={selectedNode.name}>{selectedNode.name}</div>
+        <div className="drawer-info-label">节点类型</div>
+        <div className="drawer-info-value"><span className="type-tag">{selectedNode.type}</span></div>
+        {isCenter && (
+          <>
+            <div className="drawer-info-label">产品标识码</div>
+            <div className="drawer-info-value">{record.productCode}</div>
+            <div className="drawer-info-label">产品类型</div>
+            <div className="drawer-info-value">{record.productType}</div>
+            <div className="drawer-info-label">行业分类</div>
+            <div className="drawer-info-value">{record.domain}</div>
+            <div className="drawer-info-label">地域分类</div>
+            <div className="drawer-info-value">{record.region}</div>
+            <div className="drawer-info-label">产品提供方</div>
+            <div className="drawer-info-value" title={record.provider}>{record.provider}</div>
+            <div className="drawer-info-label">产品简介</div>
+            <div className="drawer-info-value drawer-info-desc">{record.productDesc}</div>
+          </>
+        )}
+        {!isCenter && (
+          <>
+            <div className="drawer-info-label">所属来源</div>
+            <div className="drawer-info-value">{record.productName}</div>
+            <div className="drawer-info-label">关联产品标识码</div>
+            <div className="drawer-info-value">{record.productCode}</div>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  const TAB_LABEL: Record<TabKey, string> = { basic: '基本信息', auth: '授权信息', trade: '交易信息' };
+
+  const renderDrawerContent = () => {
+    if (!selectedNode || !record) return null;
+    const tabs = getTabs(selectedNode.type);
     return (
       <div className="lineage-drawer-body">
         <div className="drawer-tabs">
-          <button className={'drawer-tab ' + (activeTab === 'basic' ? 'active' : '')} onClick={() => setActiveTab('basic')}>基本信息</button>
-          <button className={'drawer-tab ' + (activeTab === 'auth' ? 'active' : '')} onClick={() => setActiveTab('auth')}>授权信息</button>
+          {tabs.map((t) => (
+            <button key={t} className={'drawer-tab ' + (activeTab === t ? 'active' : '')} onClick={() => setActiveTab(t)}>{TAB_LABEL[t]}</button>
+          ))}
         </div>
         {activeTab === 'basic' ? (
-          <div className="drawer-info-grid">
-            <div className="drawer-info-label">节点名称</div>
-            <div className="drawer-info-value" title={selectedNode.name}>{selectedNode.name}</div>
-            <div className="drawer-info-label">节点类型</div>
-            <div className="drawer-info-value"><span className="type-tag">{selectedNode.type}</span></div>
-            {isCenter && (
-              <>
-                <div className="drawer-info-label">产品标识码</div>
-                <div className="drawer-info-value">{record.productCode}</div>
-                <div className="drawer-info-label">产品类型</div>
-                <div className="drawer-info-value">{record.productType}</div>
-                <div className="drawer-info-label">行业分类</div>
-                <div className="drawer-info-value">{record.domain}</div>
-                <div className="drawer-info-label">地域分类</div>
-                <div className="drawer-info-value">{record.region}</div>
-                <div className="drawer-info-label">产品提供方</div>
-                <div className="drawer-info-value" title={record.provider}>{record.provider}</div>
-                <div className="drawer-info-label">产品简介</div>
-                <div className="drawer-info-value drawer-info-desc">{record.productDesc}</div>
-              </>
-            )}
-            {!isCenter && (
-              <>
-                <div className="drawer-info-label">所属来源</div>
-                <div className="drawer-info-value">{record.productName}</div>
-                <div className="drawer-info-label">关联产品标识码</div>
-                <div className="drawer-info-value">{record.productCode}</div>
-              </>
-            )}
-          </div>
+          renderBasicInfo()
+        ) : activeTab === 'auth' ? (
+          <DrawerList
+            rows={authList}
+            columns={[{ key: 'org', title: '运营机构', cls: 'col-org' }, { key: 'authTime', title: '授权时间', cls: 'col-time' }]}
+            page={listPage}
+            pageSize={pageSize}
+            onPageChange={setListPage}
+            onPageSizeChange={(n) => { setPageSize(n); setListPage(1); }}
+          />
         ) : (
-          <div className="drawer-info-grid">
-            <div className="drawer-info-label">授权状态</div>
-            <div className="drawer-info-value">已授权</div>
-            <div className="drawer-info-label">授权对象</div>
-            <div className="drawer-info-value">运营机构</div>
-            <div className="drawer-info-label">授权时间</div>
-            <div className="drawer-info-value">{record.updateTime}</div>
-            <div className="drawer-info-label">授权范围</div>
-            <div className="drawer-info-value">{record.region}</div>
-          </div>
+          <DrawerList
+            rows={tradeList}
+            columns={[{ key: 'demander', title: '数据需求方', cls: 'col-demander' }, { key: 'createdAt', title: '创建时间', cls: 'col-time' }]}
+            page={listPage}
+            pageSize={pageSize}
+            onPageChange={setListPage}
+            onPageSizeChange={(n) => { setPageSize(n); setListPage(1); }}
+          />
         )}
       </div>
     );

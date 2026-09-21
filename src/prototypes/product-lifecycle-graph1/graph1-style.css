@@ -1,0 +1,31 @@
+/* 生命图谱1 — 线性无分支图谱补充样式
+ * 节点、箭头、抽屉等核心视觉复用 product-lifecycle-graph/graph-style.css，
+ * 本文件仅保留本页专属的布局提示与微调。
+ */
+
+/* 线性图谱顶部提示 */
+.life-graph1-hint {
+  flex: 0 0 auto;
+  margin: 12px 20px 4px;
+  padding: 8px 14px;
+  background: #f0f7ff;
+  border: 1px solid #d6e8ff;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #2f5d8a;
+  line-height: 1.6;
+}
+
+.life-graph1-hint strong {
+  color: #1677ff;
+}
+
+/* 线性图谱画布内边距，让首末节点不与边界紧贴 */
+.life-graph-page .lineage-canvas-fullscreen .lineage-viewport {
+  padding: 20px 40px;
+}
+
+/* 抽屉内阶段说明label对齐 */
+.life-drawer-body .life-drawer-desc .life-drawer-label {
+  text-align: left;
+}

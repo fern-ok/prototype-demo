@@ -39,9 +39,9 @@
 .status-frozen { color: #6b7280; background: #f3f4f6; border-color: #e2e5ea; }
 .status-paused { color: #722ed1; background: #f9f0ff; border-color: #e4d4ff; }
 
-/* Filter: date range */
+/* Filter: date range（与其他筛选项同行单列展示，保持 4 列对齐） */
 .filter-item-range {
-  grid-column: span 2;
+  grid-column: span 1;
 }
 
 .range-inputs {
@@ -337,6 +337,83 @@
   color: #1f2329;
   font-size: 13px;
   line-height: 1.6;
+}
+
+/* 时间轴节点：序号 */
+.timeline-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 2px;
+  background: #eef2f8;
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 时间轴节点：发起信息 / 审批信息块 */
+.timeline-block {
+  margin-top: 8px;
+  padding: 8px 12px 10px;
+  border: 1px solid #e8edf4;
+  border-radius: 2px;
+  background: #fafbfd;
+}
+
+.timeline-block-title {
+  margin-bottom: 6px;
+  color: #1f2329;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.timeline-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timeline-field {
+  display: flex;
+  align-items: baseline;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.timeline-field-label {
+  flex: 0 0 96px;
+  color: #6b7280;
+}
+
+.timeline-field-value {
+  flex: 1;
+  min-width: 0;
+  color: #1f2329;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 审核结果标签 */
+.audit-tag {
+  display: inline-block;
+  padding: 0 8px;
+  border-radius: 2px;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.audit-tag.audit-pass {
+  background: #e8f7ef;
+  color: #0fa05e;
+}
+
+.audit-tag.audit-fail {
+  background: #fdeaea;
+  color: #e34d59;
 }
 
 /* 列表页「数据血缘」改为页面跳转链接，保持与兄弟按钮一致的视觉（去除下划线） */

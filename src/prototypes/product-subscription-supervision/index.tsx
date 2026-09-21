@@ -24,7 +24,7 @@ interface ProductSubscription {
   productType: string;
   provider: string;
   subscribeCount: number;
-  /** 销售总额，单位：分（整数存储与展示，不做隐式单位换算） */
+  /** 订单总额，单位：分（整数存储与展示，不做隐式单位换算） */
   salesAmount: number;
   productDesc: string;
 }
@@ -396,9 +396,9 @@ const formatAmountInCents = (value: number) => {
 /** 顶部统计概览：全量统计口径，不随列表筛选条件联动；tip 为悬浮问号图标的说明文案 */
 const OVERVIEW_STATS: Array<{ key: string; label: string; tip: string; value: number }> = [
   { key: 'tradableProducts', label: '流通数据产品（个）', tip: '当前处于可交易状态的数据产品', value: 1284 },
-  { key: 'validOrders', label: '有效订单数（个）', tip: '供需双方完成合同签订的订单', value: 86420 },
-  { key: 'successCalls', label: '成功调用数（次）', tip: 'API 产品的成功调用次数，数据累计至前一日 24:00', value: 12684500 },
-  { key: 'tradeAmount', label: '产品交易总额（元）', tip: '完成合同签订的数据产品订单总额', value: 45365700 }
+  { key: 'validOrders', label: '有效交易订单（笔）', tip: '供需双方完成合同签订的订单', value: 86420 },
+  { key: 'successCalls', label: '调用成功次数（次）', tip: 'API 产品的成功调用次数，数据累计至前一日 24:00', value: 12684500 },
+  { key: 'tradeAmount', label: '产品订单总额（元）', tip: '完成合同签订的数据产品订单总额', value: 45365700 }
 ];
 
 /** 依据产品订单总数生成订阅订单明细（演示数据，稳定可复现） */
@@ -837,7 +837,7 @@ const OriginalComponent = () => {
               <th className="col-product-type">产品类型</th>
               <th className="col-provider">产品提供方</th>
               <th className="col-subscribe-count">订单总数</th>
-              <th className="col-sales-amount">销售总额（元）</th>
+              <th className="col-sales-amount">订单总额（元）</th>
               <th className="col-action">操作</th>
             </tr>
           </thead>
@@ -1243,7 +1243,7 @@ const OriginalComponent = () => {
                     <th>订单编号</th>
                     <th>数据需求方</th>
                     <th>订单状态</th>
-                    <th className="col-order-amount">订单总额（元）</th>
+                    <th className="col-order-amount">订单金额（元）</th>
                     <th>更新时间</th>
                     {isApiProduct && <th className="col-action">操作</th>}
                   </tr>
@@ -1324,7 +1324,7 @@ const OriginalComponent = () => {
           <div className="view-info-grid call-stats-grid">
             <div className="info-label">API接口名称</div>
             <div className="info-value" title={currentOrder ? currentRecord?.productName : ''}>{currentRecord?.productName}</div>
-            <div className="info-label">调用总次数</div>
+            <div className="info-label">调用次数</div>
             <div className="info-value">{statsLoading ? '统计中…' : (callStats ? formatThousands(callStats.total) : '-')}</div>
             <div className="info-label">调用成功次数</div>
             <div className="info-value">{statsLoading ? '统计中…' : (callStats ? formatThousands(callStats.success) : '-')}</div>

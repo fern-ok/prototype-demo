@@ -71,6 +71,7 @@ type Resource = {
   provider: string;
   changed?: boolean;
   changeRecords?: ChangeRecord[];
+  govCatalog?: GovCatalog;
 };
 
 const reviewStatuses = [
@@ -88,6 +89,25 @@ const reviewStatuses = [
 type ReviewStatus = typeof reviewStatuses[number];
 
 const industries = ['农、林、牧、渔业', '采矿业', '制造业', '电力、热力、燃气及水生产和供应业', '建筑业', '批发和零售业', '交通运输、仓储和邮政业', '住宿和餐饮业', '信息传输、软件和信息技术服务业', '金融业', '房地产业', '科学研究和技术服务业', '租赁和商务服务业', '水利、环境和公共设施管理业', '居民服务、修理和其他服务业', '教育', '卫生和社会工作', '文化、体育和娱乐业', '公共管理、社会保障和社会组织', '国际组织'];
+
+type GovCatalog = {
+  id: number;
+  name: string;
+  domain: string;
+  summary: string;
+};
+
+// 政务信息资源目录（关联弹窗数据源）。所有数据资源默认关联其中一条，确保每条目录自动绑定对应政务目录资源。
+const seedGovCatalogs: GovCatalog[] = [
+  { id: 1, name: '气温变化', domain: '建筑领域', summary: '近十年城市气温变化趋势监测数据，包含月平均气温、极端高温与低温记录。' },
+  { id: 2, name: '就诊记录', domain: '制造领域', summary: 'xxxx' },
+  { id: 3, name: '就诊记录', domain: '采矿领域', summary: 'xxxx' },
+  { id: 6, name: '空气质量监测', domain: '环保领域', summary: 'xxxx' },
+  { id: 7, name: '医保结算数据', domain: '卫生领域', summary: 'xxxx' },
+  { id: 8, name: '教育资源分布', domain: '教育领域', summary: 'xxxx' },
+  { id: 9, name: '城市交通流量', domain: '交通领域', summary: 'xxxx' },
+  { id: 10, name: '财政收支月报', domain: '财政领域', summary: 'xxxx' },
+];
 
 // 变更详情演示数据：覆盖 modified / added / deleted 三类差异
 // 资源 #10 共 4 条变更记录，每条都挂一个全量字段快照
@@ -118,6 +138,27 @@ const baseInfoItems: { english: string; values: ChangeInfoItemValues }[] = [
   { english: 'shengao', values: { name: '身高', type: '数值型', length: '6', desc: '身高（cm）' } },
   { english: 'nianling', values: { name: '年龄', type: '数值型', length: '3', desc: '患者年龄' } },
   { english: 'hzname', values: { name: '户主姓名', type: '字符型', length: '50', desc: '户主姓名' } },
+];
+
+// 已撤销资源（#9 林木育苗）变更记录所需的林业场景基础字段
+const baseBasicFieldsForest: { label: string; value: string }[] = [
+  { label: '数据资源标识码', value: '712430000MB0L04692743009WLINMU1' },
+  { label: '资源名称', value: '已撤销-林木育苗数据' },
+  { label: '行业分类', value: '林木育苗' },
+  { label: '是否涉及个人信息', value: '否' },
+  { label: '资源格式', value: 'xls' },
+  { label: '数据来源', value: '原始取得' },
+  { label: '更新频率', value: '每年' },
+  { label: '覆盖时间范围', value: '2024-03-01 ~ 2026-08-10' },
+  { label: '地域分类', value: '湖南省' },
+  { label: '资源摘要', value: '林木育苗基础数据资源，用于支撑林业生产与服务分析。' },
+];
+
+const baseHolderFieldsForest: { label: string; value: string }[] = [
+  { label: '资源持有方', value: '湖南省林业局' },
+  { label: '统一社会信用代码', value: '12430000MB0L046927F' },
+  { label: '联系人', value: '赵六' },
+  { label: '联系方式', value: '13900001111' },
 ];
 
 // 在共享字段上叠加若干差异，返回全量字段快照所需的 ChangeKvDiff[]
@@ -236,17 +277,52 @@ const changeSnapshots: ChangeSnapshot[] = [
   },
 ];
 
+// 已撤销资源（#9 林木育苗）的变更记录快照：林业场景，覆盖 modified 差异
+const changeSnapshotsForest: ChangeSnapshot[] = [
+  {
+    status: '变更通过',
+    time: '2026-08-10 17:20:00',
+    operator: '湖南省林业局',
+    opinion: '分类与更新频率调整符合林业资源管理要求，同意本次变更登记。',
+    sections: [
+      { kind: 'kv', title: '基本信息', rows: buildKvDiff(baseBasicFieldsForest, {
+        '行业分类': { status: 'modified', before: '林木育种', after: '林木育苗' },
+        '更新频率': { status: 'modified', before: '每季度', after: '每年' },
+        '覆盖时间范围': { status: 'modified', before: '2024-03-01 ~ 2026-06-01', after: '2024-03-01 ~ 2026-08-10' },
+      }) },
+      { kind: 'kv', title: '资源持有方信息', rows: buildKvDiff(baseHolderFieldsForest, {
+        '联系人': { status: 'modified', before: '王五', after: '赵六' },
+      }) },
+    ],
+  },
+  {
+    status: '变更通过',
+    time: '2026-08-09 14:02:11',
+    operator: '湖南省林业局',
+    opinion: '更新频率由每季度调整为每年，符合最新管理要求。',
+    sections: [
+      { kind: 'kv', title: '基本信息', rows: buildKvDiff(baseBasicFieldsForest, {
+        '更新频率': { status: 'modified', before: '每季度', after: '每年' },
+      }) },
+      { kind: 'kv', title: '资源持有方信息', rows: buildKvDiff(baseHolderFieldsForest, {}) },
+    ],
+  },
+];
+
 const seedResources: Resource[] = [
-  { id: 1, name: '待登记-农业生产数据', industry: '稻谷种植,小麦种植,玉米种植', reviewStatus: '待登记', mountStatus: '待挂载', createdAt: '2026-08-24 18:36:42', updatedAt: '2026-08-24 18:38:02', provider: '湖南省农业农村厅' },
-  { id: 2, name: '首次登记待审核-耕地资源数据', industry: '稻谷种植', reviewStatus: '首次登记待审核', mountStatus: '待挂载', createdAt: '2026-06-25 10:55:59', updatedAt: '2026-08-24 10:17:13', provider: '长沙市农业农村局' },
-  { id: 3, name: '变更登记待审核-农作物分类数据', industry: '稻谷种植,小麦种植', reviewStatus: '变更登记待审核', mountStatus: '待挂载', createdAt: '2026-06-26 16:12:07', updatedAt: '2026-08-24 10:17:11', provider: '株洲市农业农村局' },
-  { id: 4, name: '撤销登记待审核-农业监测数据', industry: '稻谷种植', reviewStatus: '撤销登记待审核', mountStatus: '待挂载', createdAt: '2026-06-08 14:53:03', updatedAt: '2026-08-24 10:17:03', provider: '湘潭市农业农村局' },
-  { id: 5, name: '首次登记未通过-能源资源数据', industry: '烟煤和无烟煤开采洗选', reviewStatus: '首次登记未通过', mountStatus: '待挂载', createdAt: '2026-08-21 15:06:54', updatedAt: '2026-08-21 15:08:00', provider: '湖南省能源局' },
-  { id: 6, name: '变更登记未通过-豆类种植数据', industry: '豆类种植', reviewStatus: '变更登记未通过', mountStatus: '待挂载', createdAt: '2026-08-21 14:29:15', updatedAt: '2026-08-21 14:30:00', provider: '益阳市农业农村局' },
-  { id: 7, name: '撤销登记未通过-农产品流通数据', industry: '稻谷种植,小麦种植', reviewStatus: '撤销登记未通过', mountStatus: '待挂载', createdAt: '2026-08-17 14:20:04', updatedAt: '2026-08-18 16:52:01', provider: '岳阳市农业农村局' },
-  { id: 8, name: '已通过-医疗就诊数据资源', industry: '综合医院,中医医院,中西医结合医院', reviewStatus: '已通过', mountStatus: '已挂载', createdAt: '2026-08-11 15:23:32', updatedAt: '2026-08-11 15:28:15', provider: '湖南省卫生健康委' },
-  { id: 9, name: '已撤销-林木育苗数据', industry: '林木育苗', reviewStatus: '已撤销', mountStatus: '已挂载', createdAt: '2026-08-10 10:39:50', updatedAt: '2026-08-10 17:28:01', provider: '湖南省林业局' },
-  { id: 10, name: '地域分类为长沙市的数据资源', industry: '稻谷种植', reviewStatus: '已通过', mountStatus: '已挂载', createdAt: '2026-07-28 09:21:45', updatedAt: '2026-08-06 11:27:24', provider: '湖南省农业农村厅', changed: true, changeRecords: [
+  { id: 1, name: '待登记-农业生产数据', industry: '稻谷种植,小麦种植,玉米种植', reviewStatus: '待登记', mountStatus: '待挂载', createdAt: '2026-08-24 18:36:42', updatedAt: '2026-08-24 18:38:02', provider: '湖南省农业农村厅', govCatalog: seedGovCatalogs[0] },
+  { id: 2, name: '首次登记待审核-耕地资源数据', industry: '稻谷种植', reviewStatus: '首次登记待审核', mountStatus: '待挂载', createdAt: '2026-06-25 10:55:59', updatedAt: '2026-08-24 10:17:13', provider: '长沙市农业农村局', govCatalog: seedGovCatalogs[1] },
+  { id: 3, name: '变更登记待审核-农作物分类数据', industry: '稻谷种植,小麦种植', reviewStatus: '变更登记待审核', mountStatus: '待挂载', createdAt: '2026-06-26 16:12:07', updatedAt: '2026-08-24 10:17:11', provider: '株洲市农业农村局', govCatalog: seedGovCatalogs[2] },
+  { id: 4, name: '撤销登记待审核-农业监测数据', industry: '稻谷种植', reviewStatus: '撤销登记待审核', mountStatus: '待挂载', createdAt: '2026-06-08 14:53:03', updatedAt: '2026-08-24 10:17:03', provider: '湘潭市农业农村局', govCatalog: seedGovCatalogs[3] },
+  { id: 5, name: '首次登记未通过-能源资源数据', industry: '烟煤和无烟煤开采洗选', reviewStatus: '首次登记未通过', mountStatus: '待挂载', createdAt: '2026-08-21 15:06:54', updatedAt: '2026-08-21 15:08:00', provider: '湖南省能源局', govCatalog: seedGovCatalogs[4] },
+  { id: 6, name: '变更登记未通过-豆类种植数据', industry: '豆类种植', reviewStatus: '变更登记未通过', mountStatus: '待挂载', createdAt: '2026-08-21 14:29:15', updatedAt: '2026-08-21 14:30:00', provider: '益阳市农业农村局', govCatalog: seedGovCatalogs[5] },
+  { id: 7, name: '撤销登记未通过-农产品流通数据', industry: '稻谷种植,小麦种植', reviewStatus: '撤销登记未通过', mountStatus: '待挂载', createdAt: '2026-08-17 14:20:04', updatedAt: '2026-08-18 16:52:01', provider: '岳阳市农业农村局', govCatalog: seedGovCatalogs[6] },
+  { id: 8, name: '已通过-医疗就诊数据资源', industry: '综合医院,中医医院,中西医结合医院', reviewStatus: '已通过', mountStatus: '已挂载', createdAt: '2026-08-11 15:23:32', updatedAt: '2026-08-11 15:28:15', provider: '湖南省卫生健康委', govCatalog: seedGovCatalogs[4] },
+  { id: 9, name: '已撤销-林木育苗数据', industry: '林木育苗', reviewStatus: '已撤销', mountStatus: '已挂载', createdAt: '2026-08-10 10:39:50', updatedAt: '2026-08-10 17:28:01', provider: '湖南省林业局', govCatalog: seedGovCatalogs[3], changed: true, changeRecords: [
+    { status: '变更通过', time: '2026-08-10 17:20:00', field: '行业分类', oldValue: '林木育种', newValue: '林木育苗', operator: '湖南省林业局', opinion: '分类调整通过', snapshot: changeSnapshotsForest[0] },
+    { status: '变更通过', time: '2026-08-09 14:02:11', field: '更新频率', oldValue: '每季度', newValue: '每年', operator: '湖南省林业局', opinion: '更新频率调整通过', snapshot: changeSnapshotsForest[1] },
+  ] },
+  { id: 10, name: '地域分类为长沙市的数据资源', industry: '稻谷种植', reviewStatus: '已通过', mountStatus: '已挂载', createdAt: '2026-07-28 09:21:45', updatedAt: '2026-08-06 11:27:24', provider: '湖南省农业农村厅', govCatalog: seedGovCatalogs[7], changed: true, changeRecords: [
     { status: '变更通过', time: '2026-08-06 11:27:24', field: '地域分类', oldValue: '湖南省', newValue: '长沙市', operator: '湖南省农业农村厅', opinion: '变更内容符合要求', snapshot: changeSnapshots[0] },
     { status: '变更通过', time: '2026-08-06 11:25:10', field: '行业分类', oldValue: '稻谷种植,小麦种植', newValue: '稻谷种植', operator: '湖南省农业农村厅', opinion: '分类调整通过', snapshot: changeSnapshots[1] },
     { status: '变更不通过', time: '2026-08-06 11:20:33', field: '资源摘要', oldValue: '湖南省域内稻谷种植相关数据。', newValue: '全国稻谷种植相关数据，覆盖各省份。', operator: '湖南省农业农村厅', opinion: '请补充覆盖范围说明', snapshot: changeSnapshots[2] },
@@ -274,7 +350,7 @@ const ALL_ACTIONS: ActionDef[] = [
   { key: 'delete', label: '删除', show: s => ['待登记', '首次登记未通过'].includes(s) },
   { key: 'change', label: '变更', show: s => ['变更登记未通过', '撤销登记未通过', '已通过'].includes(s) },
   { key: 'revoke', label: '撤销', show: s => ['变更登记未通过', '撤销登记未通过', '已通过'].includes(s) },
-  { key: 'changeRecord', label: '变更记录', show: (s, item) => s === '已通过' && !!item?.changed },
+  { key: 'changeRecord', label: '变更记录', show: (s, item) => (s === '已通过' || s === '已撤销') && !!item?.changed },
   { key: 'proof', label: '查看存证', show: s => ['变更登记未通过', '撤销登记未通过', '已通过'].includes(s) },
 ];
 
@@ -387,7 +463,7 @@ const OriginalComponent = () => {
       {action && action.type === 'edit' && <EditResourceModal item={action.item} onClose={() => setAction(null)} />}
       {action && action.type === 'revoke' && <RevokeModal item={action.item} onClose={() => setAction(null)} />}
       {action && action.type === 'change' && <ChangeResourceModal item={action.item} onClose={() => setAction(null)} />}
-      {action && action.type === 'relate' && <RelateCatalogModal initialSelected={[]} initialAssociated={[]} onClose={() => setAction(null)} onConfirm={(ids, items) => { setAction(null); }} />}
+      {action && action.type === 'relate' && <RelateCatalogModal initialSelected={action.item.govCatalog ? [action.item.govCatalog.id] : []} initialAssociated={action.item.govCatalog ? [action.item.govCatalog] : []} onClose={() => setAction(null)} onConfirm={(ids, items) => { setAction(null); }} />}
     </Layout>
   );
 };
@@ -417,10 +493,11 @@ type FormInitial = {
   infoType?: string;
   infoItems?: InfoItem[];
   changeNote?: string;
+  govCatalog?: GovCatalog;
 };
 
 // 由列表行回显已填写的数据：资源名称、行业分类（取首个）、资源持有方（提供机构）
-const buildInitial = (item: Resource): FormInitial => ({ name: item.name, industry: item.industry, holder: item.provider });
+const buildInitial = (item: Resource): FormInitial => ({ name: item.name, industry: item.industry, holder: item.provider, govCatalog: item.govCatalog });
 
 // 新增 / 编辑 / 变更 三处弹窗共用同一套字段结构
 const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initial?: FormInitial; onClose: () => void; mode: 'add' | 'edit' | 'change' }) => {
@@ -447,7 +524,8 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
   const [infoType, setInfoType] = useState(initial?.infoType ?? '结构化数据');
   const [rows, setRows] = useState<InfoItem[]>(initial?.infoItems ?? [{ english: 'hname', name: '医院名称', type: '字符型', length: '50', desc: '医院名称' }]);
   const [showRelate, setShowRelate] = useState(false);
-  const [relatedItems, setRelatedItems] = useState<GovCatalog[]>([]);
+  // 新建目录默认自动绑定一个政务目录资源（取 seedGovCatalogs[0]）；编辑/变更则回显已绑定资源
+  const [relatedItems, setRelatedItems] = useState<GovCatalog[]>(initial?.govCatalog ? [initial.govCatalog] : (mode === 'add' ? [seedGovCatalogs[0]] : []));
   // 变更说明：仅变更弹窗使用，位于信息项表格下方
   const [changeNote, setChangeNote] = useState(initial?.changeNote ?? '');
   const addRow = () => setRows(prev => [...prev, { english: '', name: '', type: '字符型', length: '20', desc: '' }]);
@@ -476,7 +554,7 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
                 {relatedItems.length > 0 && (
                   <div className="relate-tags">
                     {relatedItems.map(item => (
-                      <span key={item.id} className="relate-tag">{item.name}<button type="button" className="relate-tag-remove" aria-label={`移除「${item.name}」`} title="移除" onClick={() => setRelatedItems(prev => prev.filter(x => x.id !== item.id))}><X size={11} strokeWidth={3} /></button></span>
+                      <span key={item.id} className="relate-tag">{item.name}<span className="relate-tag-remove" role="button" aria-label={`移除「${item.name}」`} title="移除" onClick={() => setRelatedItems(prev => prev.filter(x => x.id !== item.id))}><X size={12} strokeWidth={2.5} /></span></span>
                     ))}
                   </div>
                 )}
@@ -563,7 +641,7 @@ const auditFlowRows = [
 ];
 
 const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void }) => {
-  const [activeTab, setActiveTab] = useState<'basic' | 'items' | 'audit'>('basic');
+  const [activeTab, setActiveTab] = useState<'basic' | 'items' | 'audit' | 'gov'>('basic');
   const [showProof, setShowProof] = useState(false);
   const infoItems: InfoItem[] = [
     { english: 'menzhen', name: '门诊号', type: '字符型', length: '100', desc: '' },
@@ -571,13 +649,33 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
   ];
   const blank = (value?: string) => value?.trim() || '-';
 
+  // 信息项区段：原「信息项」页签内容，现统一抽为可复用区块。
+  // 展示位置调整：由原「信息项」页签移至「基本信息」页签内、「资源持有方信息」下方。
+  const infoItemsSection = (
+    <section className="detail-section" aria-labelledby="info-item-title">
+      <h4 id="info-item-title">信息项</h4>
+      <table className="detail-readonly-table detail-info-type"><tbody><tr><th>信息项数据类型</th><td>结构化数据</td></tr></tbody></table>
+      <div className="detail-info-table-wrap">
+        <table className="detail-info-table">
+          <thead><tr><th>序号</th><th>信息项英文名</th><th>信息项名称</th><th>数据类型</th><th>数据长度</th><th>信息项说明</th></tr></thead>
+          <tbody>{infoItems.length ? infoItems.map((row, idx) => <tr key={row.english}><td>{idx + 1}</td><td>{blank(row.english)}</td><td>{blank(row.name)}</td><td>{blank(row.type)}</td><td>{blank(row.length)}</td><td>{blank(row.desc)}</td></tr>) : <tr><td colSpan={6} className="detail-empty">暂无信息项数据</td></tr>}</tbody>
+        </table>
+      </div>
+      <div className="detail-pagination" aria-label="信息项分页预留区"><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
+    </section>
+  );
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="catalog-modal resource-detail-modal" onClick={event => event.stopPropagation()}>
         <div className="modal-head"><h3>数据资源详情</h3><button type="button" onClick={onClose} aria-label="关闭"><X size={18} /></button></div>
         <div className="detail-tabs" role="tablist" aria-label="数据资源详情页签">
           <button type="button" role="tab" aria-selected={activeTab === 'basic'} className={activeTab === 'basic' ? 'active' : ''} onClick={() => setActiveTab('basic')}>基本信息</button>
-          <button type="button" role="tab" aria-selected={activeTab === 'items'} className={activeTab === 'items' ? 'active' : ''} onClick={() => setActiveTab('items')}>信息项</button>
+          {/* 「信息项」页签已隐藏：其内容并入「基本信息」页签，展示在「资源持有方信息」下方。
+              按钮与切换逻辑保留（仅 display:none），如需恢复页签去掉 style 即可。 */}
+          <button type="button" role="tab" aria-selected={activeTab === 'items'} className={activeTab === 'items' ? 'active' : ''} onClick={() => setActiveTab('items')} style={{ display: 'none' }}>信息项</button>
+          {/* 「政务信息资源」页签：置于「审核信息」之前，格式参考「基本信息」页签 */}
+          <button type="button" role="tab" aria-selected={activeTab === 'gov'} className={activeTab === 'gov' ? 'active' : ''} onClick={() => setActiveTab('gov')}>政务信息资源</button>
           <button type="button" role="tab" aria-selected={activeTab === 'audit'} className={activeTab === 'audit' ? 'active' : ''} onClick={() => setActiveTab('audit')}>审核信息</button>
           <div className="detail-tabs-actions">
             <button type="button" className="btn primary" onClick={() => setShowProof(true)}>查看存证</button>
@@ -606,19 +704,40 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
                   <tr><th>联系人</th><td>李明</td><th>联系方式</th><td>13654785566</td></tr>
                 </tbody></table>
               </section>
+              {/* 信息项区段：位于「资源持有方信息」下方（原「信息项」页签内容并入本页签） */}
+              {infoItemsSection}
             </>
+          ) : activeTab === 'gov' ? (
+            item.govCatalog ? (
+            <>
+              <section className="detail-section" aria-labelledby="gov-basic-title">
+                <h4 id="gov-basic-title">基本信息</h4>
+                <table className="detail-readonly-table"><tbody>
+                  <tr><th>资源名称</th><td>{blank(item.govCatalog.name)}</td><th>数据所属领域</th><td>{blank(item.govCatalog.domain)}</td></tr>
+                  <tr><th>资源格式</th><td>xls</td><th>更新频率</th><td>每日</td></tr>
+                  <tr><th>覆盖时间范围</th><td>2026-5-24 — 至今</td><th>地域分类</th><td>湖南省</td></tr>
+                  <tr><th>资源摘要</th><td colSpan={3}>{blank(item.govCatalog.summary)}</td></tr>
+                </tbody></table>
+              </section>
+              <section className="detail-section" aria-labelledby="gov-info-title">
+                <h4 id="gov-info-title">信息项</h4>
+                <div className="detail-info-table-wrap">
+                  <table className="detail-info-table">
+                    <thead><tr><th>序号</th><th>信息项英文名</th><th>信息项名称</th><th>数据类型</th><th>数据长度</th></tr></thead>
+                    <tbody>{infoItems.length ? infoItems.map((row, idx) => <tr key={row.english}><td>{idx + 1}</td><td>{blank(row.english)}</td><td>{blank(row.name)}</td><td>{blank(row.type)}</td><td>{blank(row.length)}</td></tr>) : <tr><td colSpan={5} className="detail-empty">暂无信息项数据</td></tr>}</tbody>
+                  </table>
+                </div>
+                <div className="detail-pagination" aria-label="信息项分页预留区"><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
+              </section>
+            </>
+            ) : (
+              <section className="detail-section" aria-labelledby="gov-basic-title">
+                <h4 id="gov-basic-title">已关联政务信息资源目录</h4>
+                <div className="detail-empty" style={{ padding: '40px 0' }}>该目录尚未关联政务信息资源目录</div>
+              </section>
+            )
           ) : activeTab === 'items' ? (
-            <section className="detail-section" aria-labelledby="info-item-title">
-              <h4 id="info-item-title">信息项</h4>
-              <table className="detail-readonly-table detail-info-type"><tbody><tr><th>信息项数据类型</th><td>结构化数据</td></tr></tbody></table>
-              <div className="detail-info-table-wrap">
-                <table className="detail-info-table">
-                  <thead><tr><th>信息项英文名</th><th>信息项名称</th><th>数据类型</th><th>数据长度</th><th>信息项说明</th></tr></thead>
-                  <tbody>{infoItems.length ? infoItems.map(row => <tr key={row.english}><td>{blank(row.english)}</td><td>{blank(row.name)}</td><td>{blank(row.type)}</td><td>{blank(row.length)}</td><td>{blank(row.desc)}</td></tr>) : <tr><td colSpan={5} className="detail-empty">暂无信息项数据</td></tr>}</tbody>
-                </table>
-              </div>
-              <div className="detail-pagination" aria-label="信息项分页预留区"><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
-            </section>
+            infoItemsSection
           ) : (
             <section className="detail-section" aria-labelledby="audit-info-title">
               <h4 id="audit-info-title">审核流程</h4>
@@ -998,24 +1117,6 @@ const ConfirmModal = ({ title, message, danger, confirmText, onClose, onConfirm 
 
 const Component = () => <PasswordGuard><OriginalComponent /></PasswordGuard>;
 
-type GovCatalog = {
-  id: number;
-  name: string;
-  domain: string;
-  summary: string;
-};
-
-const seedGovCatalogs: GovCatalog[] = [
-  { id: 1, name: '气温变化', domain: '建筑领域', summary: '近十年城市气温变化趋势监测数据，包含月平均气温、极端高温与低温记录。' },
-  { id: 2, name: '就诊记录', domain: '制造领域', summary: 'xxxx' },
-  { id: 3, name: '就诊记录', domain: '采矿领域', summary: 'xxxx' },
-  { id: 6, name: '空气质量监测', domain: '环保领域', summary: 'xxxx' },
-  { id: 7, name: '医保结算数据', domain: '卫生领域', summary: 'xxxx' },
-  { id: 8, name: '教育资源分布', domain: '教育领域', summary: 'xxxx' },
-  { id: 9, name: '城市交通流量', domain: '交通领域', summary: 'xxxx' },
-  { id: 10, name: '财政收支月报', domain: '财政领域', summary: 'xxxx' },
-];
-
 const RelateCatalogModal = ({
   initialSelected,
   initialAssociated,
@@ -1042,6 +1143,11 @@ const RelateCatalogModal = ({
     setSelected(prev => (prev.includes(id) ? [] : [id]));
     if (confirmError) setConfirmError('');
   };
+  // 从已选中列表移除（点击 chip 上的删除图标）
+  const removeSelected = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelected(prev => prev.filter(i => i !== id));
+  };
   const reset = () => { setKeyword(''); setPage(1); if (confirmError) setConfirmError(''); };
   const jumpTo = (n: number) => setPage(Math.max(1, Math.min(totalPages, n)));
 
@@ -1064,40 +1170,32 @@ const RelateCatalogModal = ({
           </div>
         </div>
         <div className="modal-body relate-body">
-          {(initialAssociated.length > 0 || selected.length > 0) && (() => {
-            const selectedItem = selected.length > 0 ? seedGovCatalogs.find(c => c.id === selected[0]) ?? null : null;
-            const showSelectedSeparately = !!selectedItem && !initialAssociated.some(i => i.id === selectedItem.id);
+          {selected.length > 0 && (() => {
+            const selectedItems = selected.map(id => seedGovCatalogs.find(c => c.id === id)).filter((c): c is GovCatalog => !!c);
             return (
               <div className="relate-associated-panel">
                 <span className="head-associated-label">已关联政务信息资源目录：</span>
                 <div className="head-associated-list">
-                  {initialAssociated.map(item => {
-                    const isCurrent = selected.includes(item.id);
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        className={'head-associated-chip' + (isCurrent ? ' current' : '')}
-                        onClick={() => setViewItem(item)}
-                        title={isCurrent ? `${item.name}（当前选中）` : `查看「${item.name}」详情`}
-                      >
-                        {isCurrent && <Check size={12} strokeWidth={3} />}
-                        <span className="chip-text">{item.name}</span>
-                      </button>
-                    );
-                  })}
-                  {showSelectedSeparately && selectedItem && (
+                  {selectedItems.map(item => (
                     <button
+                      key={item.id}
                       type="button"
-                      className="head-associated-chip current new-selection"
-                      onClick={() => setViewItem(selectedItem)}
-                      title={`当前选中：${selectedItem.name}`}
+                      className="head-associated-chip current"
+                      onClick={() => setViewItem(item)}
+                      title={`查看「${item.name}」详情`}
                     >
-                      <Check size={12} strokeWidth={3} />
-                      <span className="chip-text">{selectedItem.name}</span>
-                      <span className="chip-tag">当前选中</span>
+                      <span className="chip-text">{item.name}</span>
+                      <span
+                        className="chip-remove"
+                        title="移除"
+                        onClick={e => removeSelected(item.id, e)}
+                        role="button"
+                        aria-label={`移除 ${item.name}`}
+                      >
+                        <X size={12} strokeWidth={2.5} />
+                      </span>
                     </button>
-                  )}
+                  ))}
                 </div>
               </div>
             );
@@ -1116,9 +1214,11 @@ const RelateCatalogModal = ({
                   <th className="col-check"></th>
                   <th style={{ width: 54 }}>序号</th>
                   <th>资源名称</th>
-                  <th style={{ width: 120 }}>数据所属领域</th>
+                  {/* 数据所属领域列：按需求隐藏显示（原始字段保留，仅 display:none），如需恢复去掉 style 即可 */}
+                  <th style={{ width: 120, display: 'none' }}>数据所属领域</th>
                   <th>资源摘要</th>
-                  <th style={{ width: 72 }}>操作</th>
+                  {/* 操作列：按需求隐藏（原始查看入口保留，仅 display:none） */}
+                  <th style={{ width: 72, display: 'none' }}>操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -1131,9 +1231,9 @@ const RelateCatalogModal = ({
                       <td><input type="checkbox" checked={isSelected} onChange={() => toggle(item.id)} /></td>
                       <td>{(page - 1) * pageSize + idx + 1}</td>
                       <td>{item.name}</td>
-                      <td>{item.domain}</td>
+                      <td style={{ display: 'none' }}>{item.domain}</td>
                       <td>{item.summary}</td>
-                      <td className="actions"><button onClick={() => setViewItem(item)}>查看</button></td>
+                      <td className="actions" style={{ display: 'none' }}><button onClick={() => setViewItem(item)}>查看</button></td>
                     </tr>
                   );
                 })}
@@ -1164,21 +1264,6 @@ const RelateCatalogModal = ({
           <button className="btn" onClick={onClose}>取消</button>
           <button className="btn primary" onClick={handleConfirm}>确定</button>
         </div>
-        {viewItem && (
-          <div className="modal-overlay relate-detail-overlay" onClick={() => setViewItem(null)}>
-            <div className="catalog-modal relate-detail-modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-head"><h3>目录详情</h3><button onClick={() => setViewItem(null)}><X size={18} /></button></div>
-              <div className="modal-body">
-                <div className="detail-grid">
-                  <b>资源名称</b><span>{viewItem.name}</span>
-                  <b>数据所属领域</b><span>{viewItem.domain}</span>
-                  <b>资源摘要</b><span>{viewItem.summary}</span>
-                </div>
-              </div>
-              <div className="modal-foot"><button className="btn" onClick={() => setViewItem(null)}>关闭</button></div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

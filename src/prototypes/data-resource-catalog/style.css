@@ -1172,39 +1172,32 @@
     align-items: center;
     gap: 4px;
     height: 26px;
-    padding: 0 6px 0 10px;
-    border-radius: 13px;
-    background: #edf3ff;
-    color: #1464f4;
-    font: 12px "Microsoft YaHei"
+    padding: 2px 10px;
+    border: 1px solid #1464f4;
+    border-radius: 14px;
+    background: #1464f4;
+    color: #fff;
+    font: 12px "Microsoft YaHei";
+    cursor: default
 }
 
 .relate-tag-remove {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
     margin-left: 2px;
-    border: 0;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    background: #f04444;
-    color: #fff;
+    background: transparent;
+    color: currentColor;
     cursor: pointer;
-    transition: background .15s, transform .15s, box-shadow .15s;
-    box-shadow: 0 0 0 0 rgba(240, 68, 68, 0);
-    flex: 0 0 18px
+    transition: background .15s ease;
+    flex-shrink: 0
 }
 
 .relate-tag-remove:hover {
-    background: #d83535;
-    box-shadow: 0 0 0 3px rgba(240, 68, 68, .14);
-    transform: scale(1.08)
-}
-
-.relate-tag-remove:active {
-    background: #c42929;
-    transform: scale(.96)
+    background: rgba(255, 255, 255, .25)
 }
 
 .relate-modal {
@@ -1465,15 +1458,23 @@
     border-color: #0f54d6
 }
 
-.head-associated-chip .chip-tag {
-    display: inline-block;
-    margin-left: 4px;
-    padding: 0 6px;
-    background: rgba(255, 255, 255, 0.25);
-    color: #fff;
-    font-size: 11px;
-    border-radius: 8px;
-    line-height: 16px
+.head-associated-chip .chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: transparent;
+    color: currentColor;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    flex-shrink: 0
+}
+
+.head-associated-chip .chip-remove:hover {
+    background: rgba(255, 255, 255, 0.25)
 }
 
 .head-associated-chip.new-selection {

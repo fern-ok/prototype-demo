@@ -1,0 +1,564 @@
+/* 生命图谱独立整页 - 流程图与节点、抽屉补充样式 */
+
+.life-graph-page {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.life-graph-fullscreen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #f7f8fb;
+  overflow: hidden;
+}
+
+/* 顶部工具条 */
+.life-graph-topbar {
+  flex: 0 0 auto;
+  min-height: 48px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e4e9f2;
+  box-shadow: 0 1px 4px rgba(18, 36, 77, 0.04);
+  z-index: 5;
+  flex-wrap: wrap;
+}
+
+.life-graph-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+.life-graph-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #4b5563;
+  min-width: 0;
+}
+
+.life-summary-code {
+  font-variant-numeric: tabular-nums;
+  color: #606a78;
+  white-space: nowrap;
+}
+
+.life-summary-sep {
+  color: #c2ccdb;
+}
+
+.life-summary-name {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.life-summary-tag {
+  margin-left: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: #1677ff;
+  background: #eef5ff;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* 图谱节点 */
+.life-graph-svg {
+  display: block;
+}
+
+.life-node {
+  transition: filter .16s ease;
+}
+
+.life-node:hover {
+  filter: brightness(0.97);
+}
+
+.life-node-index {
+  font-size: 13px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.life-node-name {
+  font-size: 16px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.life-node-cat {
+  font-size: 11px;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.life-node-badge {
+  font-size: 11px;
+  font-weight: 700;
+  fill: #fff;
+  pointer-events: none;
+}
+
+.life-node.is-future {
+  opacity: 0.5;
+}
+
+.life-node.is-available {
+  opacity: 0.9;
+}
+
+.life-node.is-current rect {
+  filter: drop-shadow(0 0 6px rgba(22, 119, 255, 0.35));
+}
+
+.life-edge-label {
+  font-size: 11px;
+  fill: #8a95a6;
+  pointer-events: none;
+}
+
+.life-edge-label.loop {
+  fill: #fa541c;
+  font-weight: 600;
+}
+
+.life-edge-label.skip {
+  fill: #f5222d;
+  font-weight: 600;
+}
+
+/* 右侧抽屉（阶段说明） */
+.life-drawer {
+  position: fixed;
+  top: 58px;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  max-width: 90vw;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-left: 1px solid #e4e9f2;
+  box-shadow: -4px 0 20px rgba(18, 36, 77, 0.1);
+  transform: translateX(100%);
+  transition: transform .22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.life-drawer.open {
+  transform: translateX(0);
+}
+
+.life-drawer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* 抽屉内时间轴式「发起信息 / 审批信息」适配 */
+.life-drawer-body .timeline-item {
+  padding-bottom: 0;
+}
+
+.life-drawer-body .timeline-field-value {
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.life-drawer-body .timeline-field {
+  align-items: flex-start;
+}
+
+.life-drawer-body .timeline-field-label {
+  padding-top: 1px;
+}
+
+.life-drawer-body .life-drawer-desc {
+  margin-top: 14px;
+}
+
+.life-drawer-body .life-drawer-desc .life-drawer-label {
+  text-align: left;
+}
+
+.life-drawer-body .life-drawer-desc p {
+  margin: 0;
+}
+
+.life-drawer-row {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.life-drawer-label {
+  color: #8a95a6;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.life-drawer-value {
+  color: #1f2329;
+  word-break: break-word;
+}
+
+.life-drawer-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.life-drawer-desc p {
+  margin: 0;
+  padding: 10px 12px;
+  background: #f7f8fb;
+  border-radius: 4px;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.life-drawer-note {
+  padding: 10px 12px;
+  background: #fff7f0;
+  border: 1px solid #ffd8bf;
+  border-radius: 4px;
+  color: #d4380d;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* 响应式适配 */
+@media (max-width: 992px) {
+  .life-graph-topbar {
+    height: auto;
+    min-height: 48px;
+    padding: 8px 12px;
+    gap: 10px;
+  }
+
+  .life-graph-summary {
+    order: 3;
+    width: 100%;
+  }
+
+  .life-drawer {
+    width: 100%;
+    max-width: 100%;
+    top: 58px;
+  }
+}
+
+/* 视图切换（流转图谱 / 运营周期） */
+.life-graph-viewswitch {
+  display: inline-flex;
+  border: 1px solid #e4e9f2;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f3f5f9;
+  flex: 0 0 auto;
+}
+
+.life-view-btn {
+  border: none;
+  background: transparent;
+  padding: 5px 14px;
+  font-size: 13px;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+.life-view-btn:hover {
+  color: #1677ff;
+}
+
+.life-view-btn.active {
+  background: #1677ff;
+  color: #fff;
+}
+
+/* 运营周期面板 */
+.life-cycles {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 24px 28px;
+  background: #ffffff;
+}
+
+.life-cycles-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #8a95a6;
+  background: #f7f8fb;
+}
+
+.life-cycles-empty-text {
+  font-size: 14px;
+  margin: 0;
+}
+
+.life-cycles-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.life-cycles-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+.life-cycles-summary {
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.life-cycles-summary b {
+  color: #1f2329;
+  padding: 0 2px;
+}
+
+.life-cycles-state {
+  margin-left: 10px;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.life-cycles-state.state-none {
+  color: #8a95a6;
+  background: #f0f2f5;
+}
+
+.life-cycles-state.state-selling {
+  color: #237804;
+  background: #f6ffed;
+}
+
+.life-cycles-state.state-suspended {
+  color: #ad6800;
+  background: #fffbe6;
+}
+
+.life-cycles-legend {
+  display: flex;
+  gap: 18px;
+  margin: 14px 0 6px;
+  font-size: 12px;
+  color: #4b5563;
+  flex-wrap: wrap;
+}
+
+.life-cycle-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.life-cycle-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.sw-shelf {
+  background: #52c41a;
+}
+
+.sw-unshelf {
+  background: #c2ccdb;
+}
+
+.sw-current {
+  background: #1677ff;
+}
+
+/* 甘特时间轴 */
+.life-cycles-track-wrap {
+  margin: 10px 0 22px;
+  padding: 8px 0 0;
+}
+
+.life-cycles-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #8a95a6;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 4px;
+}
+
+.life-cycles-bars {
+  position: relative;
+  height: 96px;
+}
+
+.life-cycles-baseline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 46px;
+  height: 2px;
+  background: #e4e9f2;
+}
+
+.life-cycle-bar {
+  position: absolute;
+  top: 34px;
+  height: 26px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(18, 36, 77, 0.12);
+  overflow: visible;
+}
+
+.bar-shelf {
+  background: #52c41a;
+}
+
+.bar-unshelf {
+  background: #c2ccdb;
+}
+
+.life-cycle-bar.is-current {
+  background: #1677ff;
+  outline: 2px dashed #91d5ff;
+  outline-offset: 2px;
+}
+
+.life-cycle-bar-label {
+  position: absolute;
+  left: 0;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+.life-cycle-bar-range {
+  position: absolute;
+  left: 0;
+  white-space: nowrap;
+  font-size: 10px;
+  color: #8a95a6;
+  font-variant-numeric: tabular-nums;
+}
+
+.life-cycle-bar.above .life-cycle-bar-label {
+  bottom: calc(100% + 5px);
+}
+
+.life-cycle-bar.above .life-cycle-bar-range {
+  top: calc(100% + 5px);
+}
+
+.life-cycle-bar.below .life-cycle-bar-label {
+  top: calc(100% + 5px);
+}
+
+.life-cycle-bar.below .life-cycle-bar-range {
+  bottom: calc(100% + 5px);
+}
+
+/* 明细表 */
+.life-cycles-table-wrap {
+  margin-top: 6px;
+}
+
+.life-cycles-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #fff;
+}
+
+.life-cycles-table th,
+.life-cycles-table td {
+  border: 1px solid #e4e9f2;
+  padding: 9px 12px;
+  text-align: left;
+}
+
+.life-cycles-table th {
+  background: #f7f8fb;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+.life-cycles-table td {
+  color: #1f2329;
+}
+
+.life-cycle-mono {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.life-cycle-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.chip-shelf {
+  color: #237804;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+}
+
+.chip-unshelf {
+  color: #5b6573;
+  background: #f3f5f9;
+  border: 1px solid #d6dce6;
+}
+
+.life-cycle-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.life-cycle-status.current {
+  color: #1677ff;
+  background: #e6f0ff;
+  border: 1px solid #adc6ff;
+}
+
+.life-cycle-status.done {
+  color: #5b6573;
+  background: #f3f5f9;
+  border: 1px solid #d6dce6;
+}
+
+.life-cycles-hint {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #8a95a6;
+}

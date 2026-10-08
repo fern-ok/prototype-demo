@@ -1,15 +1,19 @@
 /**
- * @name 数据资源授权
+ * @name 数据资源授权/申请
  * @mode axure
  *
- * 数据资源授权列表（发起方视角），分配给实施机构角色
+ * 数据资源授权/申请列表（发起方视角），分配给实施机构、运营机构角色
+ * 实施机构：显示【数据资源授权】按钮，点击打开授权弹窗
+ * 运营机构：显示【数据资源申请】按钮，点击打开数据资源申请弹窗
  */
 
 import { useMemo, useState, useRef, useEffect } from 'react';
+import { Paperclip, PlusCircle, Trash2, Upload, Download, ShieldCheck } from 'lucide-react';
 import Layout from '../../common/Layout';
 import specContent from './spec.md?raw';
 import changeLogContent from './change.md?raw';
 import PasswordGuard from '../../common/PasswordGuard';
+import AuthRecordViewModal from '../../common/AuthRecordViewModal';
 import './style.css';
 import '../../common/backend-list.css';
 
@@ -200,6 +204,28 @@ const OriginalComponent = () => {
   const [createForm, setCreateForm] = useState({ authName: '', resourceCatalog: '' });
   const [createErrors, setCreateErrors] = useState<Record<string, string>>({});
 
+  // 数据资源授权弹窗（实施机构）
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authForm, setAuthForm] = useState({
+    authName: '省本级医疗健康第9批资源授权',
+    agentName: '',
+    authStart: '2026-01-26',
+    authEnd: '2026-02-28',
+    authType: '分领域授权运营'
+  });
+  const [authErrors, setAuthErrors] = useState<Record<string, string>>({});
+
+  // 数据资源申请弹窗（运营机构）
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [applyForm, setApplyForm] = useState({
+    authName: '',
+    agentName: '',
+    agentPhone: '',
+    applyDesc: '',
+    devPlanFile: ''
+  });
+  const [applyErrors, setApplyErrors] = useState<Record<string, string>>({});
+
   // Auth record modal state
   const [authSearchResourceName, setAuthSearchResourceName] = useState('');
   const [authSearchInitiator, setAuthSearchInitiator] = useState('');
@@ -315,6 +341,88 @@ const OriginalComponent = () => {
     setShowCreateModal(true);
   };
 
+  // 打开数据资源授权弹窗（实施机构）
+  const handleOpenAuth = () => {
+    setAuthForm({
+      authName: '省本级医疗健康第9批资源授权',
+      agentName: '',
+      authStart: '2026-01-26',
+      authEnd: '2026-02-28',
+      authType: '分领域授权运营'
+    });
+    setAuthErrors({});
+    setShowAuthModal(true);
+  };
+
+  // 提交数据资源授权（实施机构）
+  const handleAuthSubmit = () => {
+    const errors: Record<string, string> = {};
+    if (!authForm.agentName.trim()) errors.agentName = '请输入法人经办人姓名';
+    if (!authForm.authStart || !authForm.authEnd) errors.authPeriod = '请选择授权期限';
+    if (Object.keys(errors).length > 0) {
+      setAuthErrors(errors);
+      return;
+    }
+
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const time = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    const newId = Math.max(...records.map(r => r.id)) + 1;
+
+    const newRecord: AuthRecord = {
+      id: newId,
+      authName: authForm.authName,
+      resourceCatalog: '待选择',
+      reviewStatus: '待初审',
+      createTime: time,
+      updateTime: time,
+      initiator: '实施机构',
+      unitName: '湖南省卫生健康委信息统计中心'
+    };
+
+    setRecords(prev => [newRecord, ...prev]);
+    setShowAuthModal(false);
+  };
+
+  // 打开数据资源申请弹窗（运营机构）
+  const handleOpenApply = () => {
+    setApplyForm({ authName: '', agentName: '', agentPhone: '', applyDesc: '', devPlanFile: '' });
+    setApplyErrors({});
+    setShowApplyModal(true);
+  };
+
+  // 提交数据资源申请（运营机构）
+  const handleApplySubmit = () => {
+    const errors: Record<string, string> = {};
+    if (!applyForm.authName.trim()) errors.authName = '请输入资源授权单名称';
+    if (!applyForm.agentName.trim()) errors.agentName = '请输入运营机构经办人';
+    if (!applyForm.agentPhone.trim()) errors.agentPhone = '请输入运营机构经办人电话';
+    if (!applyForm.devPlanFile.trim()) errors.devPlanFile = '请上传产品开发方案';
+    if (Object.keys(errors).length > 0) {
+      setApplyErrors(errors);
+      return;
+    }
+
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const time = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    const newId = Math.max(...records.map(r => r.id)) + 1;
+
+    const newRecord: AuthRecord = {
+      id: newId,
+      authName: applyForm.authName,
+      resourceCatalog: '待选择',
+      reviewStatus: '待初审',
+      createTime: time,
+      updateTime: time,
+      initiator: '运营机构',
+      unitName: '湖南数据产业集团有限公司'
+    };
+
+    setRecords(prev => [newRecord, ...prev]);
+    setShowApplyModal(false);
+  };
+
   const handleCreateSubmit = () => {
     const errors: Record<string, string> = {};
     if (!createForm.authName.trim()) errors.authName = '请输入资源授权单名称';
@@ -418,7 +526,12 @@ const OriginalComponent = () => {
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button className="btn btn-default btn-sm" onClick={() => setShowRecordModal(true)}>授权记录</button>
-          <button className="btn btn-primary btn-sm" style={{ background: '#0f63f4', borderColor: '#0f63f4' }} onClick={handleCreate}>+ 数据资源授权</button>
+          {role === '运营机构' ? (
+            <button className="btn btn-primary btn-sm" style={{ background: '#0f63f4', borderColor: '#0f63f4' }} onClick={handleOpenApply}>+ 数据资源申请</button>
+          ) : (
+            <button className="btn btn-primary btn-sm" style={{ background: '#0f63f4', borderColor: '#0f63f4' }} onClick={handleOpenAuth}>+ 数据资源授权</button>
+          )}
+          {/* 旧版新增入口（保留不删，已停用）：onClick={handleCreate} */}
         </div>
       </div>
     </div>
@@ -511,7 +624,8 @@ const OriginalComponent = () => {
     </div>
   );
 
-  const renderViewModal = () => (
+  // 旧版查看弹窗（保留不删，已停用，由新版带页签的 renderViewModal 替代）
+  const renderViewModalLegacy = () => (
     <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
       <div className="modal-large" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
@@ -787,6 +901,7 @@ const OriginalComponent = () => {
     </div>
   );
 
+  // 旧版新增弹窗（保留不删，已停用，由 renderAuthModal / renderApplyModal 替代）
   const renderCreateModal = () => (
     <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
       <div className="modal-medium" onClick={(e) => e.stopPropagation()}>
@@ -829,25 +944,269 @@ const OriginalComponent = () => {
     </div>
   );
 
+  // 数据资源授权-新增弹窗（实施机构）
+  const renderAuthModal = () => (
+    <div className="modal-overlay" onClick={() => setShowAuthModal(false)}>
+      <div className="modal-large" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>数据资源授权-新增</h3>
+          <button className="modal-close" onClick={() => setShowAuthModal(false)}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="auth-form-grid">
+            <div className="form-item">
+              <label>资源授权单名称</label>
+              <input
+                type="text"
+                value={authForm.authName}
+                onChange={(e) => setAuthForm(prev => ({ ...prev, authName: e.target.value }))}
+                disabled
+              />
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 法人经办人姓名</label>
+              <div className="field-wrap">
+                <input
+                  type="text"
+                  placeholder="请输入"
+                  value={authForm.agentName}
+                  onChange={(e) => setAuthForm(prev => ({ ...prev, agentName: e.target.value }))}
+                  className={authErrors.agentName ? 'has-error' : ''}
+                />
+                {authErrors.agentName && <span className="error-text">{authErrors.agentName}</span>}
+              </div>
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 授权运营类型</label>
+              <select value={authForm.authType} disabled onChange={(e) => setAuthForm(prev => ({ ...prev, authType: e.target.value }))} >
+                <option value="分领域授权运营">分领域授权运营</option>
+                <option value="整体授权运营">整体授权运营</option>
+              </select>
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 领域名称</label>
+              <input type="text" value="医疗健康" disabled />
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 实施机构</label>
+              <input type="text" value="湖南省卫生健康委信息统计中心" disabled />
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 运营机构</label>
+              <input type="text" value="湖南数据产业集团有限公司" disabled />
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 授权期限</label>
+              <div className="field-wrap">
+                <div className={'auth-date-range is-disabled' + (authErrors.authPeriod ? ' has-error' : '')} >
+                  <input type="date" value={authForm.authStart} disabled onChange={(e) => setAuthForm(prev => ({ ...prev, authStart: e.target.value }))} />
+                  <span className="date-separator">-</span>
+                  <input type="date" value={authForm.authEnd} disabled onChange={(e) => setAuthForm(prev => ({ ...prev, authEnd: e.target.value }))} />
+                </div>
+                {authErrors.authPeriod && <span className="error-text">{authErrors.authPeriod}</span>}
+              </div>
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 运营协议</label>
+              <div className="field-wrap">
+                <span className="file-chip"><Paperclip size={12} />通用协议文件 (4).pdf</span>
+              </div>
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 实施方案</label>
+              <div className="field-wrap">
+                <span className="file-chip" title="卫健委-卫生健康领域-实施方案 - 非联审.pdf"><Paperclip size={12} />卫健委-卫生健康领域-实施方案 - 非联审….pdf</span>
+              </div>
+            </div>
+            <div className="form-item">
+              <label>产品和服务清单</label>
+              <div className="field-wrap">
+                <button type="button" className="text-link">查看</button>
+              </div>
+            </div>
+            <div className="form-item form-item-full">
+              <label><span className="required">*</span> 数据资源目录</label>
+              <div className="field-wrap">
+                <div className="catalog-row">
+                  <span className="catalog-selected">已选(0)</span>
+                  <button type="button" className="catalog-add-btn" title="选择数据资源目录"><PlusCircle size={16} /></button>
+                  <button type="button" className="catalog-delete-btn" title="清空已选"><Trash2 size={15} /></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-default" onClick={() => setShowAuthModal(false)}>取消</button>
+          <button className="btn btn-primary" onClick={handleAuthSubmit}>确定</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // 数据资源申请-新增弹窗（运营机构）
+  const renderApplyModal = () => (
+    <div className="modal-overlay" onClick={() => setShowApplyModal(false)}>
+      <div className="modal-large" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>数据资源申请-新增</h3>
+          <button className="modal-close" onClick={() => setShowApplyModal(false)}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="section-title"><span className="title-bar"></span>基本信息</div>
+          <div className="auth-form-grid">
+            <div className="form-item">
+              <label><span className="required">*</span> 资源授权单名称</label>
+              <div className="field-wrap">
+                <input
+                  type="text"
+                  placeholder="请输入"
+                  value={applyForm.authName}
+                  onChange={(e) => setApplyForm(prev => ({ ...prev, authName: e.target.value }))}
+                  className={applyErrors.authName ? 'has-error' : ''}
+                />
+                {applyErrors.authName && <span className="error-text">{applyErrors.authName}</span>}
+              </div>
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 运营机构经办人</label>
+              <div className="field-wrap">
+                <input
+                  type="text"
+                  placeholder="请输入"
+                  value={applyForm.agentName}
+                  onChange={(e) => setApplyForm(prev => ({ ...prev, agentName: e.target.value }))}
+                  className={applyErrors.agentName ? 'has-error' : ''}
+                />
+                {applyErrors.agentName && <span className="error-text">{applyErrors.agentName}</span>}
+              </div>
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 运营机构经办人电话</label>
+              <div className="field-wrap">
+                <input
+                  type="text"
+                  placeholder="请输入"
+                  value={applyForm.agentPhone}
+                  onChange={(e) => setApplyForm(prev => ({ ...prev, agentPhone: e.target.value }))}
+                  className={applyErrors.agentPhone ? 'has-error' : ''}
+                />
+                {applyErrors.agentPhone && <span className="error-text">{applyErrors.agentPhone}</span>}
+              </div>
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 领域名称</label>
+              <input type="text" value="整体" disabled />
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 实施机构</label>
+              <input type="text" value="湖南省政务服务和大数据中心" disabled />
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 运营机构</label>
+              <input type="text" value="湖南数据产业集团有限公司" disabled />
+            </div>
+            <div className="form-item">
+              <label><span className="required">*</span> 授权期限</label>
+              <div className="auth-date-range is-disabled">
+                <input type="date" value="2026-01-26" disabled />
+                <span className="date-separator">-</span>
+                <input type="date" value="2026-02-28" disabled />
+              </div>
+            </div>
+            <div className="form-item">
+              <label>运营协议</label>
+              <div className="field-wrap">
+                <span className="file-chip"><Paperclip size={12} />运营协议.pdf</span>
+              </div>
+            </div>
+            <div className="form-item">
+              <label>实施方案</label>
+              <div className="field-wrap">
+                <span className="file-chip"><Paperclip size={12} />实施方案.pdf</span>
+              </div>
+            </div>
+            <div className="form-item">
+              <label>产品和服务清单</label>
+              <div className="field-wrap">
+                <button type="button" className="text-link">查看</button>
+              </div>
+            </div>
+            <div className="form-item form-item-full">
+              <label>申请说明</label>
+              <div className="field-wrap">
+                <textarea
+                  rows={4}
+                  placeholder="请输入"
+                  value={applyForm.applyDesc}
+                  onChange={(e) => setApplyForm(prev => ({ ...prev, applyDesc: e.target.value }))}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="section-title" style={{ marginTop: '18px' }}><span className="title-bar"></span>数据资源申请信息</div>
+          <div className="auth-form-grid">
+            <div className="form-item form-item-full">
+              <label><span className="required">*</span> 产品开发方案</label>
+              <div className="field-wrap">
+                <div className="upload-row">
+                  <button type="button" className="btn btn-primary btn-sm" onClick={() => setApplyForm(prev => ({ ...prev, devPlanFile: '产品开发方案.pdf' }))}><Upload size={13} />选择文件</button>
+                  <button type="button" className="btn btn-success btn-sm"><Download size={13} />下载模板</button>
+                  {applyForm.devPlanFile && <span className="file-chip"><Paperclip size={12} />{applyForm.devPlanFile}</span>}
+                </div>
+                <div className="upload-hint">支持格式: .pdf 单个文件不能超过15MB</div>
+                {applyErrors.devPlanFile && <span className="error-text">{applyErrors.devPlanFile}</span>}
+              </div>
+            </div>
+            <div className="form-item form-item-full">
+              <label><span className="required">*</span> 数据资源目录</label>
+              <div className="field-wrap">
+                <div className="catalog-row">
+                  <span className="catalog-selected">已选(0)</span>
+                  <button type="button" className="catalog-add-btn" title="选择数据资源目录"><PlusCircle size={16} /></button>
+                  <button type="button" className="catalog-delete-btn" title="清空已选"><Trash2 size={15} /></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-default" onClick={() => setShowApplyModal(false)}>取消</button>
+          <button className="btn btn-primary" onClick={handleApplySubmit}>确定</button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <Layout
       activeMenu={activeMenu}
-      breadcrumb="数据资源授权"
+      breadcrumb="数据资源授权/申请"
       role={role}
       onRoleChange={setRole}
-      roleOptions={['实施机构']}
-      title="数据资源授权"
+      roleOptions={['实施机构', '运营机构']}
+      title="数据资源授权/申请"
       specContent={specContent}
       changeLogContent={changeLogContent}
     >
       {renderFilter()}
       {renderTable()}
 
-      {showViewModal && renderViewModal()}
+      {/* 查看弹窗：复用公共组件 AuthRecordViewModal，按当前角色区分版式 */}
+      {showViewModal && (
+        <AuthRecordViewModal
+          record={currentRecord}
+          isOperator={role === '运营机构'}
+          onClose={() => setShowViewModal(false)}
+        />
+      )}
       {showEditModal && renderEditModal()}
       {showEvidenceModal && renderEvidenceModal()}
       {showRecordModal && renderRecordModal()}
       {showCreateModal && renderCreateModal()}
+      {showAuthModal && renderAuthModal()}
+      {showApplyModal && renderApplyModal()}
     </Layout>
   );
 };

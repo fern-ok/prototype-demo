@@ -1,9 +1,9 @@
-/* 生命图谱1 — 线性无分支图谱补充样式
- * 节点、箭头、抽屉等核心视觉复用 product-lifecycle-graph/graph-style.css，
- * 本文件仅保留本页专属的布局提示与微调。
+/* 生命周期1 — 蛇形回折跑道时间轴 专属样式
+ * 节点卡片、箭头、抽屉等核心视觉复用 product-lifecycle-graph/graph-style.css，
+ * 本文件仅补充本页专属的「跑道时间轴」元素、里程碑气泡、鸟瞰缩略图与提示。
  */
 
-/* 线性图谱顶部提示 */
+/* 顶部提示（蛇形回折跑道时间轴说明） */
 .life-graph1-hint {
   flex: 0 0 auto;
   margin: 12px 20px 4px;
@@ -20,12 +20,149 @@
   color: #1677ff;
 }
 
-/* 线性图谱画布内边距，让首末节点不与边界紧贴 */
-.life-graph-page .lineage-canvas-fullscreen .lineage-viewport {
-  padding: 20px 40px;
+/* 跑道时间轴 — 节点卡片 */
+.track-card-g {
+  cursor: pointer;
+  transition: filter .15s ease;
 }
 
-/* 抽屉内阶段说明label对齐 */
+.track-card-g:hover {
+  filter: drop-shadow(0 2px 6px rgba(18, 36, 77, 0.18));
+}
+
+.track-card-g.is-current {
+  filter: drop-shadow(0 0 8px rgba(22, 119, 255, 0.4));
+}
+
+.track-card-index {
+  font-size: 15px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.track-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  fill: #1f2329;
+  pointer-events: none;
+}
+
+/* 节点名称下方的分类小字：按需求隐藏（原始渲染代码保留在 index.tsx 中，未删除；
+   如需恢复，删除下面的 display: none 即可） */
+.track-card-cat {
+  font-size: 11px;
+  pointer-events: none;
+  display: none;
+}
+
+/* 节点卡片内「完成时间」：位于原分类小字位置（y=80），替换已隐藏的分类字 */
+.track-card-time {
+  font-size: 11px;
+  fill: #6b7785;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.track-badge {
+  font-size: 11px;
+  font-weight: 700;
+  fill: #ffffff;
+  pointer-events: none;
+}
+
+/* 跑道时间轴 — 连续 U 形跑道基底（粗描边路径，弧线与直道相切，行/行过渡平滑无锐角） */
+.track-band-border,
+.track-band-fill {
+  fill: none;
+  pointer-events: none;
+}
+
+/* 时间流转流动虚线动画：按需求取消（不再需要流动动画）。
+   渲染节点已从 index.tsx 移除，此处样式一并停用以避免无用动画；
+   如需恢复流动效果，取消下方注释并在 index.tsx 中重新加入 track-flow path 即可。
+.track-flow {
+  fill: none;
+  pointer-events: none;
+  animation: track-flow-move 1.6s linear infinite;
+}
+
+@keyframes track-flow-move {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -19; }
+}
+*/
+
+/* 跑道时间轴 — 每个节点中间的白色竖刻度线
+   2026-09-24 起按需求隐藏（不再在节点中间显示白线）。
+   原始 <line> 渲染代码保留在 index.tsx 中，未删除；
+   如需恢复，删除下面的 display: none 即可 */
+.track-tick {
+  display: none;
+}
+
+/* 跑道时间轴 — 白色竖刻度线时间标签（2026-09-24 起：时间文字已移至卡片内，
+   下方文字隐藏。如需恢复下方文字，删除 display: none 即可） */
+.track-time {
+  font-size: 11px;
+  fill: #6b7785;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  display: none;
+}
+
+/* 关键拐点里程碑气泡（黄色圆形悬浮） */
+.milestone-bubble {
+  pointer-events: none;
+}
+
+.milestone-glyph {
+  font-size: 16px;
+  font-weight: 700;
+  fill: #f5a623;
+  pointer-events: none;
+}
+
+.milestone-label {
+  font-size: 11px;
+  font-weight: 600;
+  fill: #8a5a00;
+  pointer-events: none;
+}
+
+/* 抽屉内阶段说明 label 左对齐（与生命周期保持一致） */
 .life-drawer-body .life-drawer-desc .life-drawer-label {
   text-align: left;
+}
+
+/* 右下角鸟瞰缩略小地图（位于缩放工具栏上方，居右下角） */
+.life-minimap {
+  position: absolute;
+  right: 16px;
+  bottom: 64px;
+  z-index: 18;
+  width: 236px;
+  background: #ffffff;
+  border: 1px solid #e4e9f2;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(18, 36, 77, 0.12);
+  padding: 8px 8px 6px;
+}
+
+.life-minimap-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  margin: 0 0 6px 2px;
+}
+
+.life-minimap-svg {
+  display: block;
+  border-radius: 4px;
+  cursor: crosshair;
+}
+
+.life-minimap-viewport {
+  fill: rgba(22, 119, 255, 0.12);
+  stroke: #1677ff;
+  stroke-width: 2;
 }

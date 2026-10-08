@@ -1,4 +1,4 @@
-/* 生命图谱独立整页 - 流程图与节点、抽屉补充样式 */
+/* 生命周期独立整页 - 流程图与节点、抽屉补充样式 */
 
 .life-graph-page {
   height: 100%;
@@ -561,4 +561,159 @@
   font-size: 12px;
   line-height: 1.6;
   color: #8a95a6;
+}
+
+/* 操作记录视图（7 环节流程图 + 操作记录列表） */
+.life-records {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 24px 28px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 环节流程图条带：节点横向依次排列 + 箭头连线，支持窄屏横向滚动 */
+.life-records-flow {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding: 14px 16px 18px;
+  margin-bottom: 16px;
+  background: #f7f8fb;
+  border: 1px solid #e4e9f2;
+  border-radius: 8px;
+  overflow-x: auto;
+  flex: 0 0 auto;
+}
+
+.life-flow-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 8px;
+  border: 1px solid #d6dce6;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: box-shadow .15s ease, transform .15s ease, opacity .15s ease;
+  flex: 0 0 auto;
+  text-align: left;
+}
+
+.life-flow-node:hover {
+  box-shadow: 0 2px 8px rgba(22, 119, 255, .18);
+}
+
+.life-flow-node.active {
+  box-shadow: 0 0 0 2px #1677ff;
+}
+
+/* 尚未流转到的环节：弱化显示（灰调 + 虚线描边 + 降透明度） */
+.life-flow-node.future {
+  background: #f7f8fb;
+  border-style: dashed;
+  border-color: #d6dce6;
+  opacity: .55;
+}
+
+.life-flow-node.future .life-flow-node-label {
+  color: #8a95a6;
+}
+
+.life-flow-node-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #d6dce6;
+  color: #fff;
+  font-size: 12px;
+  flex: 0 0 auto;
+}
+
+.life-flow-node.future .life-flow-node-no {
+  background: #e4e9f2;
+  color: #8a95a6;
+}
+
+.life-flow-node-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.life-flow-node-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2329;
+  white-space: nowrap;
+}
+
+.life-flow-node-cat {
+  font-size: 11px;
+  color: #8a95a6;
+  white-space: nowrap;
+}
+
+.life-flow-arrow {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  color: #d6dce6;
+}
+
+.life-flow-arrow svg line {
+  stroke: currentColor;
+}
+
+.life-flow-arrow svg polygon {
+  fill: currentColor;
+}
+
+.life-flow-arrow.on {
+  color: #91c6fd;
+}
+
+.life-records-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #8a95a6;
+}
+
+.life-records-table-wrap {
+  margin-top: 0;
+}
+
+.life-record-result {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.life-record-result.pass {
+  color: #237804;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+}
+
+.life-record-result.reject {
+  color: #cf1322;
+  background: #fff1f0;
+  border: 1px solid #ffa39e;
+}
+
+.life-record-result.none {
+  color: #5b6573;
+  background: #f3f5f9;
+  border: 1px solid #d6dce6;
 }

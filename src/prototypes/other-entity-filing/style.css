@@ -1,0 +1,309 @@
+/* Other entity filing page visual styling */
+
+* {
+  box-sizing: border-box;
+}
+
+/* ============ 列表列宽 ============ */
+.col-index {
+  width: 60px;
+}
+
+.col-time {
+  width: 170px;
+}
+
+.col-action {
+  width: 150px;
+}
+
+.time-cell {
+  color: #111827;
+}
+
+.empty-row {
+  text-align: center;
+  color: #86909c;
+  padding: 40px 0;
+}
+
+/* ============ 弹窗基础 ============ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 8vh 20px 32px;
+  background: rgba(0, 0, 0, .42);
+}
+
+.modal-medium {
+  width: 640px;
+  max-width: calc(100vw - 48px);
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 3px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .18);
+  overflow: hidden;
+}
+
+.modal-header {
+  min-height: 54px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  background: #fff;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #1f2329;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.modal-close {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: #9097a3;
+  border: 0;
+  background: transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.modal-close:hover {
+  color: #4b5563;
+  background: #f3f6fb;
+}
+
+.modal-body {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 20px 18px;
+  overflow: auto;
+  background: #fff;
+}
+
+.modal-footer {
+  min-height: 58px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid #edf0f5;
+  background: #fff;
+}
+
+/* ============ 弹窗 1：备案表单 ============ */
+.entity-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 10px 0 4px;
+}
+
+.entity-form-item {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.entity-form-item label {
+  color: #1f2329;
+  font-size: 13px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.entity-form-item input[type="text"] {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #d7dce6;
+  border-radius: 2px;
+  color: #1f2329;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.entity-form-item input[type="text"]:focus {
+  border-color: #3d8bff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
+}
+
+.entity-form-item input[type="text"]::placeholder {
+  color: #a8b1c1;
+}
+
+.entity-form-item .has-error {
+  border-color: var(--layout-danger) !important;
+}
+
+.entity-form-item .error-text {
+  grid-column: 2;
+  margin-top: 4px;
+  color: var(--layout-danger);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.required {
+  color: var(--layout-danger);
+  margin-right: 2px;
+}
+
+.entity-form-warning {
+  margin-top: 22px;
+  text-align: center;
+  color: var(--layout-danger);
+  font-size: 12.5px;
+  line-height: 18px;
+}
+
+/* ============ 弹窗 2：区块链存证证书 ============ */
+.cert-modal {
+  position: relative;
+  width: 600px;
+  max-width: calc(100vw - 48px);
+  max-height: 88vh;
+  overflow: auto;
+}
+
+.cert-close {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: #e5eaf3;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.cert-close:hover {
+  color: #fff;
+}
+
+/* 蓝色防伪花纹边框：波浪纹重复背景 + 双层描边 */
+.cert-frame {
+  padding: 16px;
+  background-color: #eaf3fd;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M0 4 Q6 0 12 4 T24 4' fill='none' stroke='%237aa8e8' stroke-width='1'/%3E%3Cpath d='M0 9 Q6 5 12 9 T24 9' fill='none' stroke='%238fb9ee' stroke-width='1'/%3E%3Cpath d='M0 14 Q6 10 12 14 T24 14' fill='none' stroke='%237aa8e8' stroke-width='1'/%3E%3Cpath d='M0 19 Q6 15 12 19 T24 19' fill='none' stroke='%238fb9ee' stroke-width='1'/%3E%3C/svg%3E");
+  border: 2px solid #5b93dd;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .22), inset 0 0 0 2px #fff;
+}
+
+/* 证书内页：白底 + 浅蓝灰放射/同心圆防伪底纹 */
+.cert-inner {
+  position: relative;
+  padding: 30px 48px 38px;
+  background-color: #fff;
+  background-image:
+    repeating-radial-gradient(circle at 50% 32%, rgba(91, 147, 221, .055) 0 1.5px, transparent 1.5px 16px),
+    radial-gradient(ellipse at 50% 30%, rgba(91, 147, 221, .06), transparent 68%);
+  border: 1px solid #9cc0ea;
+  box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 5px #c6dbf3;
+}
+
+.cert-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 26px;
+}
+
+.cert-title {
+  margin: 0;
+  color: #1f2329;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.cert-download {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: #2f7de1;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(47, 125, 225, .4);
+  transition: background .16s ease;
+}
+
+.cert-download:hover {
+  background: #1f68c8;
+}
+
+.cert-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cert-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  column-gap: 10px;
+  align-items: start;
+  font-size: 13.5px;
+  line-height: 20px;
+}
+
+.cert-label {
+  color: #1f2329;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cert-value {
+  color: #4b5563;
+  text-align: left;
+  word-break: break-all;
+}
+
+.cert-value.hash {
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 12.5px;
+}
+
+/* ============ 弹窗 3：删除提示 ============ */
+.delete-confirm-text {
+  padding: 18px 4px 22px;
+  color: #1f2329;
+  font-size: 14px;
+  line-height: 22px;
+}

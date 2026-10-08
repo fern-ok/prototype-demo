@@ -549,16 +549,19 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
         <div className="modal-body add-body">
           {step === 1 ? (
             <>
-              <div className="relate-link-row">
-                <button type="button" className="relate-link" onClick={() => setShowRelate(true)}><Plus size={14} />关联政务信息资源目录</button>
-                {relatedItems.length > 0 && (
-                  <div className="relate-tags">
-                    {relatedItems.map(item => (
-                      <span key={item.id} className="relate-tag">{item.name}<span className="relate-tag-remove" role="button" aria-label={`移除「${item.name}」`} title="移除" onClick={() => setRelatedItems(prev => prev.filter(x => x.id !== item.id))}><X size={12} strokeWidth={2.5} /></span></span>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {/* 变更弹窗不展示「关联政务信息资源目录」区块（入口按钮与已绑定资源标签一并隐藏）；新增／编辑弹窗仍保留 */}
+              {mode !== 'change' && (
+                <div className="relate-link-row">
+                  <button type="button" className="relate-link" onClick={() => setShowRelate(true)}><Plus size={14} />关联政务信息资源目录</button>
+                  {relatedItems.length > 0 && (
+                    <div className="relate-tags">
+                      {relatedItems.map(item => (
+                        <span key={item.id} className="relate-tag">{item.name}<span className="relate-tag-remove" role="button" aria-label={`移除「${item.name}」`} title="移除" onClick={() => setRelatedItems(prev => prev.filter(x => x.id !== item.id))}><X size={12} strokeWidth={2.5} /></span></span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
               <h4>基本信息</h4>
               <div className="form-grid">
                 <Field label="资源名称" required><input value={name} onChange={e => setName(e.target.value)} placeholder="请输入" /></Field>
@@ -743,7 +746,7 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
               <h4 id="audit-info-title">审核流程</h4>
               <div className="detail-audit-table-wrap">
                 <table className="detail-info-table detail-audit-table">
-                  <thead><tr><th>序号</th><th>流程节点</th><th>节点状态</th><th>单位名称</th><th>法人经办人姓名</th><th>操作时间</th><th>审核结果</th><th>审核意见</th></tr></thead>
+                  <thead><tr><th>序号</th><th>流程节点</th><th>节点状态</th><th>单位名称</th><th>法人经办人姓名</th><th>操作时间</th><th>审核结果</th><th>申请说明/审核意见</th></tr></thead>
                   <tbody>{auditFlowRows.map((row, idx) => (
                     <tr key={idx}>
                       <td>{idx + 1}</td>

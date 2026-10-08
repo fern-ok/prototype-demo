@@ -676,7 +676,11 @@ const OriginalComponent = () => {
                   <td className="col-action">
                     <div className="action-buttons">
                       {record.productType === 'API产品' && (
-                        <button className="action-btn" onClick={() => handleShowCallModal(record)}>调用明细</button>
+                        <button
+                          className="action-btn"
+                          onClick={() => handleShowCallModal(record)}
+                          style={{ display: record.status === '已下单' || record.status === '已终止' ? 'none' : undefined }}
+                        >调用明细</button>
                       )}
                       {/*
                       {record.productType === '数据集' && (

@@ -500,6 +500,115 @@ a.action-btn {
   height: 40px;
 }
 
+/* 查看弹窗「数据资源标识码」高亮 */
+.view-info-grid .code-text {
+  color: #1677ff;
+  font-weight: 500;
+}
+
+/* 查看弹窗 TAB 页签（基本信息 / 配置信息） */
+.view-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #dfe5ef;
+}
+
+.view-tab {
+  position: relative;
+  min-width: 88px;
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #4b5563;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color .2s, border-color .2s;
+}
+
+.view-tab:hover {
+  color: #0f63f4;
+}
+
+.view-tab.active {
+  color: #0f63f4;
+  font-weight: 600;
+  border-bottom-color: #0f63f4;
+}
+
+/* 查看弹窗「配置信息」：数据集字段表 / API 接口参数表 */
+.sub-section-title {
+  min-height: 28px;
+  margin: 16px 0 8px;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sub-section-title:first-child {
+  margin-top: 0;
+}
+
+.config-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.config-table th,
+.config-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #eff2f7;
+  color: #1f2329;
+  font-size: 13px;
+  text-align: left;
+}
+
+.config-table th {
+  background: #f5f7fb;
+  color: #4b5563;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.config-table td {
+  word-break: break-all;
+  white-space: normal;
+}
+
+.config-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.config-table tbody tr:hover td {
+  background: #fafbfd;
+}
+
+/* 数据集「字段信息」表列宽（固定布局，充分利用横向空间） */
+.config-table.dataset-table .col-seq { width: 52px; }
+.config-table.dataset-table .col-name { width: 18%; }
+.config-table.dataset-table .col-cn { width: 16%; }
+.config-table.dataset-table .col-type { width: 13%; }
+.config-table.dataset-table .col-pk { width: 9%; }
+.config-table.dataset-table .col-null { width: 9%; }
+.config-table.dataset-table .col-desc { width: auto; }
+
+/* API「请求参数」表列宽 */
+.config-table.api-request-table .col-name { width: 24%; }
+.config-table.api-request-table .col-pos { width: 15%; }
+.config-table.api-request-table .col-req { width: 11%; }
+.config-table.api-request-table .col-type { width: 18%; }
+.config-table.api-request-table .col-desc { width: auto; }
+
+/* API「返回参数」表列宽 */
+.config-table.api-response-table .col-name { width: 34%; }
+.config-table.api-response-table .col-type { width: 26%; }
+.config-table.api-response-table .col-desc { width: auto; }
+
 /* Empty state */
 .empty-state {
   padding: 60px 20px;

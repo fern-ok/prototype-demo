@@ -1268,7 +1268,11 @@ const OriginalComponent = () => {
                         {isApiProduct && (
                           <td className="col-action">
                             <div className="action-buttons">
-                              <button className="action-btn" onClick={() => handleShowCallModal(order)}>调用明细</button>
+                              <button
+                                className="action-btn"
+                                onClick={() => handleShowCallModal(order)}
+                                style={{ display: order.status === '已下单' || order.status === '已终止' ? 'none' : undefined }}
+                              >调用明细</button>
                             </div>
                           </td>
                         )}

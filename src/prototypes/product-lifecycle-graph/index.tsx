@@ -1,15 +1,14 @@
 /**
- * @name 生命图谱（独立整页）
+ * @name 生命周期（独立整页）
  * @mode axure
  *
- * 由「产品生命周期」列表页「生命图谱」按钮跳转进入的独立整页。
- * 通过 URL 参数 ?code=数据产品标识码 定位记录，全屏渲染产品生命周期流转图谱，
- * 清晰呈现 开发 → 编目 → 安全审查 → 登记 → 上架 → 交易 → 下架 → 撤销 的先后顺序与流转关系，
- * 并以回路形式体现「变更」可反复多次；点击节点从右侧滑出抽屉展示阶段说明。
- * 交互与展示方式参照「数据血缘」独立整页（画布平移 / 缩放 / 重置、节点抽屉、返回入口）。
+ * 由「产品生命周期」列表页「生命周期」按钮跳转进入的独立整页。
+ * 通过 URL 参数 ?code=数据产品标识码 定位记录，以「运营周期 / 操作记录」双视图展示产品生命周期；
+ * 提供阶段状态、运营周期（上架 / 下架区间）与操作记录等信息，点击节点从右侧滑出抽屉展示阶段说明。
+ * 交互与展示方式参照「数据血缘」独立整页（节点抽屉、返回入口）。
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Layout from '../../common/Layout';
 import PasswordGuard from '../../common/PasswordGuard';
 import {
@@ -21,6 +20,8 @@ import '../product-lifecycle/style.css';
 import '../product-lifecycle-lineage/lineage-style.css';
 import '../../common/backend-list.css';
 import './graph-style.css';
+import { LifecycleTrackView, TRACK_STATUS_STYLE } from '../product-lifecycle-graph1/index';
+import '../product-lifecycle-graph1/graph1-style.css';
 
 const LIST_PAGE_URL = '/prototypes/product-lifecycle.html';
 
@@ -137,7 +138,7 @@ const CURRENT_MAP: Record<string, string> = {
   安全审查: 'review',
   产品登记: 'register',
   产品上架: 'shelf',
-  产品交付: 'trade',
+  产品交易: 'trade',
   产品下架: 'unshelf'
 };
 
@@ -155,46 +156,6 @@ const CAT_STYLE: Record<StageCat, { fill: string; stroke: string; accent: string
   end: { fill: '#fff1f0', stroke: '#ffa39e', accent: '#f5222d' }
 };
 
-const NODE_W = 126;
-const NODE_H = 62;
-
-/** 节点中心坐标（设计坐标系）：主干一行，变更位于下方形成回流 */
-const POS: Record<string, { x: number; y: number }> = {
-  dev: { x: 88, y: 130 },
-  catalog: { x: 248, y: 130 },
-  review: { x: 408, y: 130 },
-  register: { x: 568, y: 130 },
-  shelf: { x: 728, y: 130 },
-  trade: { x: 888, y: 130 },
-  unshelf: { x: 1048, y: 130 },
-  revoke: { x: 1208, y: 130 },
-  change: { x: 808, y: 350 }
-};
-
-interface FlowEdge {
-  from: string;
-  to: string;
-  kind: 'forward' | 'down' | 'loop' | 'skip';
-  label?: string;
-}
-
-const EDGES: FlowEdge[] = [
-  // 主干流转：开发 → 编目 → 安全审查 → 登记 → 上架 → 交易 → 下架 → 撤销
-  { from: 'dev', to: 'catalog', kind: 'forward' },
-  { from: 'catalog', to: 'review', kind: 'forward' },
-  { from: 'review', to: 'register', kind: 'forward' },
-  { from: 'register', to: 'shelf', kind: 'forward' },
-  { from: 'shelf', to: 'trade', kind: 'forward', label: '对外服务' },
-  { from: 'trade', to: 'unshelf', kind: 'forward' },
-  { from: 'unshelf', to: 'revoke', kind: 'forward', label: '终止运营' },
-  // 变更：登记 / 上架 / 交易之后均可发起，并回流至安全审查（可反复多次）
-  { from: 'register', to: 'change', kind: 'down', label: '发起变更' },
-  { from: 'shelf', to: 'change', kind: 'down', label: '发起变更' },
-  { from: 'trade', to: 'change', kind: 'down', label: '发起变更' },
-  { from: 'change', to: 'review', kind: 'loop', label: '变更后重新安全审查 · 登记 → 上架（可多次）' },
-  // 撤销：登记之后可直接撤销，此后不再有上架、交易环节
-  { from: 'register', to: 'revoke', kind: 'skip', label: '登记后直接撤销 · 不再上架 / 交易' }
-];
 
 /** 由记录推导「变更」发生次数（稳定可复现，0~3） */
 const deriveChangeCount = (record: LifecycleRecord): number => record.id % 4;
@@ -322,6 +283,201 @@ const buildStageTag = (
   return { text: '未开始', cls: 'status-frozen' };
 };
 
+/* ---------------- 操作记录视图（7 环节切换 + 操作记录列表） ---------------- */
+
+/** 操作记录视图覆盖的 7 个环节 key（固定顺序：开发、编目、安全审查、登记、上架、交易、下架） */
+const RECORD_STAGE_KEYS = ['dev', 'catalog', 'review', 'register', 'shelf', 'trade', 'unshelf'];
+
+/** 操作记录视图覆盖的 7 个环节（按 STAGES 定义顺序过滤，保证固定顺序） */
+const RECORD_STAGES: FlowStage[] = STAGES.filter((s) => RECORD_STAGE_KEYS.indexOf(s.key) >= 0);
+
+interface StageOpRecord {
+  seq: number;
+  time: string;
+  handler: string;
+  org: string;
+  auditOpinion: string;
+  auditResult: string;
+}
+
+/**
+ * 生成某一环节的操作记录列表（稳定可复现）。
+ * 上架 / 下架按运营周期次数生成多条（第 N 次），其余环节各 1 条；尚未发生的环节返回空数组。
+ * 开发 / 编目无审批环节，审核结果与审核意见展示占位说明。
+ */
+const buildStageOpRecords = (
+  record: LifecycleRecord,
+  stage: FlowStage,
+  status: StageStatus,
+  currentIndex: number,
+  serviceCycles: { shelfCount: number; unshelfCount: number }
+): StageOpRecord[] => {
+  const occurred =
+    stage.cat === 'pre' || status === 'done' || status === 'current' || status === 'change-done';
+  if (!occurred) return [];
+
+  const orderNo = STAGE_INDEX[stage.key] ?? 0;
+  const count =
+    stage.key === 'shelf'
+      ? Math.max(1, serviceCycles.shelfCount)
+      : stage.key === 'unshelf'
+        ? Math.max(1, serviceCycles.unshelfCount)
+        : 1;
+
+  const seed = hashStr(record.productCode + '|' + stage.key);
+  const withApproval = APPROVAL_STAGES.includes(stage.key);
+  const effStatus = status === 'current' ? record.stageStatus : '已完成';
+
+  const list: StageOpRecord[] = [];
+  for (let i = 0; i < count; i++) {
+    const isLast = i === count - 1;
+    // 当前进行中的环节：仅最后一次操作取当前阶段状态，此前各次均为已完成
+    const itemStatus = isLast ? effStatus : '已完成';
+    const passed = itemStatus === '已完成';
+    const rejected = itemStatus === '已驳回';
+    list.push({
+      seq: i + 1,
+      time: deriveStageTime(record, orderNo + 1 + i, Math.max(0, currentIndex - orderNo - i)),
+      handler: HANDLER_POOL[(seed + 1 + i * 3) % HANDLER_POOL.length],
+      org: record.provider,
+      auditResult: !withApproval ? '—' : passed ? '审核通过' : rejected ? '审核不通过' : '—',
+      auditOpinion: !withApproval
+        ? '本环节无审批环节'
+        : passed
+          ? '通过'
+          : rejected
+            ? '材料不符合要求已被驳回，请修改后重新提交'
+            : '—'
+    });
+  }
+  return list;
+};
+
+/** 「操作记录」视图：顶部 7 个环节固定顺序横向切换，下方展示对应环节的操作记录列表 */
+const StageRecordsView = ({
+  record,
+  statusMap,
+  currentIndex,
+  serviceCycles
+}: {
+  record: LifecycleRecord;
+  statusMap: Record<string, StageStatus>;
+  currentIndex: number;
+  serviceCycles: { shelfCount: number; unshelfCount: number };
+}) => {
+  const [activeKey, setActiveKey] = useState<string>(RECORD_STAGES[0].key);
+  const activeStage = RECORD_STAGES.find((s) => s.key === activeKey) || RECORD_STAGES[0];
+  const status = statusMap[activeStage.key] || 'future';
+  const records = useMemo(
+    () => buildStageOpRecords(record, activeStage, status, currentIndex, serviceCycles),
+    [record, activeStage, status, currentIndex, serviceCycles]
+  );
+
+  return (
+    <div className="life-records">
+      {/* 环节流程图：按业务流转顺序排列节点，连线箭头体现方向；已完成 / 进行中正常醒目，未流转弱化；点击节点切换下方操作记录列表 */}
+      <div className="life-records-flow">
+        {RECORD_STAGES.map((s, i) => {
+          const st = statusMap[s.key] || 'future';
+          const occurred = s.cat === 'pre' || st === 'done' || st === 'current' || st === 'change-done';
+          const style = CAT_STYLE[s.cat];
+          const isActive = s.key === activeKey;
+          const prevOccurred =
+            i === 0 ||
+            (() => {
+              const p = RECORD_STAGES[i - 1];
+              const pst = statusMap[p.key] || 'future';
+              return p.cat === 'pre' || pst === 'done' || pst === 'current' || pst === 'change-done';
+            })();
+          return (
+            <Fragment key={s.key}>
+              {i > 0 && (
+                <span className={'life-flow-arrow' + (prevOccurred && occurred ? ' on' : '')} aria-hidden="true">
+                  <svg width="36" height="12" viewBox="0 0 36 12">
+                    <line x1="0" y1="6" x2="26" y2="6" strokeWidth="2" />
+                    <polygon points="25,1 36,6 25,11" />
+                  </svg>
+                </span>
+              )}
+              <button
+                className={
+                  'life-flow-node' +
+                  (occurred ? ' occurred' : ' future') +
+                  (st === 'current' ? ' current' : '') +
+                  (isActive ? ' active' : '')
+                }
+                style={
+                  occurred
+                    ? {
+                        background: style.fill,
+                        borderColor: st === 'current' ? style.accent : style.stroke,
+                        borderWidth: st === 'current' ? 2 : 1
+                      }
+                    : undefined
+                }
+                onClick={() => setActiveKey(s.key)}
+              >
+                <span className="life-flow-node-no" style={occurred ? { background: style.accent } : undefined}>
+                  {i + 1}
+                </span>
+                <span className="life-flow-node-text">
+                  <span className="life-flow-node-label" style={occurred ? { color: style.accent } : undefined}>
+                    {s.label}
+                  </span>
+                  <span className="life-flow-node-cat">{CAT_LABEL[s.cat]}</span>
+                </span>
+              </button>
+            </Fragment>
+          );
+        })}
+      </div>
+
+      {records.length === 0 ? (
+        <div className="life-records-empty">
+          <div className="empty-state-icon">📭</div>
+          <p className="life-cycles-empty-text">当前环节暂无操作记录（该环节尚未发生）。</p>
+        </div>
+      ) : (
+        <div className="life-records-table-wrap">
+          <table className="life-cycles-table">
+            <thead>
+              <tr>
+                <th style={{ width: 60 }}>序号</th>
+                <th>操作时间</th>
+                <th>法人经办人姓名</th>
+                <th>单位名称</th>
+                <th>审核意见</th>
+                <th>审核结果</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((r) => (
+                <tr key={r.seq}>
+                  <td>{r.seq}</td>
+                  <td className="life-cycle-mono">{r.time}</td>
+                  <td>{r.handler}</td>
+                  <td>{r.org}</td>
+                  <td>{r.auditOpinion}</td>
+                  <td>
+                    <span
+                      className={
+                        'life-record-result ' +
+                        (r.auditResult === '审核通过' ? 'pass' : r.auditResult === '审核不通过' ? 'reject' : 'none')
+                      }
+                    >
+                      {r.auditResult}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
 /* ---------------- 运营周期（多次上架 / 下架 / 再上架循环） ---------------- */
 
 export interface ServiceCycle {
@@ -355,8 +511,6 @@ const addDays = (base: Date, days: number): Date => {
 };
 
 const fmtDate = (d: Date): string => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
-
-const fmtTs = (t: number): string => fmtDate(new Date(t));
 
 /**
  * 由记录推导「运营周期」：产品在登记上架后可能经历多次「上架 → 下架 → 再上架」循环。
@@ -425,343 +579,6 @@ const buildServiceCycles = (
   return { cycles, shelfCount, unshelfCount, currentState };
 };
 
-/* ---------------- 生命周期流转图谱（SVG） ---------------- */
-
-const clipText = (text: string, max: number) => (text.length > max ? text.slice(0, max - 1) + '…' : text);
-
-/** 估算标签宽度（中文按 11px、西文按 6.2px），用于为连线标签铺底色 */
-const labelWidth = (text: string): number => {
-  let w = 0;
-  for (let i = 0; i < text.length; i++) {
-    w += text.charCodeAt(i) < 256 ? 6.2 : 11;
-  }
-  return w;
-};
-
-interface FlowGraphProps {
-  statusMap: Record<string, StageStatus>;
-  changeCount: number;
-  shelfCount?: number;
-  unshelfCount?: number;
-  onStageClick?: (stage: FlowStage) => void;
-  selectedKey?: string;
-}
-
-const LifecycleFlowGraph = ({
-  statusMap,
-  changeCount,
-  shelfCount = 0,
-  unshelfCount = 0,
-  onStageClick,
-  selectedKey
-}: FlowGraphProps) => {
-  const nodeCenter = (key: string) => POS[key];
-
-  /** 计算连线路径（端点在节点边框处裁切，走向随连线类型变化） */
-  const edgePath = (e: FlowEdge): string => {
-    const a = nodeCenter(e.from);
-    const b = nodeCenter(e.to);
-    const halfW = NODE_W / 2;
-    const halfH = NODE_H / 2;
-    if (e.kind === 'forward') {
-      // 主干：源节点右缘 → 目标节点左缘
-      return 'M ' + (a.x + halfW) + ' ' + a.y + ' L ' + (b.x - halfW) + ' ' + b.y;
-    }
-    if (e.kind === 'down') {
-      // 向下分支：源节点底缘 → 目标节点顶缘
-      const x1 = a.x;
-      const y1 = a.y + halfH;
-      const x2 = b.x;
-      const y2 = b.y - halfH;
-      const dy = (y2 - y1) / 2;
-      return 'M ' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1 + dy) + ', ' + x2 + ' ' + (y2 - dy) + ', ' + x2 + ' ' + y2;
-    }
-    if (e.kind === 'loop') {
-      // 变更回流：变更节点左缘 → 安全审查节点底缘（体现可反复多次）
-      const x1 = a.x - halfW;
-      const y1 = a.y;
-      const x2 = b.x;
-      const y2 = b.y + halfH;
-      return 'M ' + x1 + ' ' + y1 + ' C ' + (x1 - 130) + ' ' + y1 + ', ' + x2 + ' ' + (y2 + 170) + ', ' + x2 + ' ' + y2;
-    }
-    // 撤销（skip）：登记顶缘 → 撤销顶缘，从主干上方绕行，表示直接终止
-    const x1 = a.x;
-    const y1 = a.y - halfH;
-    const x2 = b.x;
-    const y2 = b.y - halfH;
-    const top = Math.min(y1, y2) - 60;
-    return 'M ' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + top + ', ' + x2 + ' ' + top + ', ' + x2 + ' ' + y2;
-  };
-
-  const renderEdge = (e: FlowEdge, idx: number) => {
-    const isLoop = e.kind === 'loop';
-    const isSkip = e.kind === 'skip';
-    const d = edgePath(e);
-    const a = nodeCenter(e.from);
-    const b = nodeCenter(e.to);
-    let lx = 0;
-    let ly = 0;
-    if (e.kind === 'forward') {
-      // 主干节点间距较窄，标签上移至节点上方向，避免压到相邻节点
-      lx = (a.x + b.x) / 2;
-      ly = a.y - NODE_H / 2 - 10;
-    } else if (e.kind === 'down') {
-      lx = (a.x + b.x) / 2;
-      ly = (a.y + b.y) / 2;
-    } else if (isLoop) {
-      lx = 528;
-      ly = 322;
-    } else {
-      lx = (a.x + b.x) / 2;
-      ly = 56;
-    }
-    const stroke = isLoop ? '#fa541c' : isSkip ? '#f5222d' : '#c2ccdb';
-    const marker = isLoop
-      ? 'url(#life-graph-arrow-loop)'
-      : isSkip
-        ? 'url(#life-graph-arrow-skip)'
-        : 'url(#life-graph-arrow)';
-    return (
-      <g key={'e-' + idx}>
-        <path
-          d={d}
-          fill="none"
-          stroke={stroke}
-          strokeWidth={isLoop || isSkip ? 2 : 1.6}
-          strokeDasharray={isLoop || isSkip ? '7 5' : undefined}
-          markerEnd={marker}
-        />
-        {e.label && (
-          <g>
-            <rect
-              x={lx - (labelWidth(e.label) + 10) / 2}
-              y={ly - 11.5}
-              width={labelWidth(e.label) + 10}
-              height={16}
-              rx={3}
-              fill="#f7f8fb"
-            />
-            <text
-              x={lx}
-              y={ly}
-              textAnchor="middle"
-              className={'life-edge-label' + (isLoop ? ' loop' : '') + (isSkip ? ' skip' : '')}
-            >
-              {e.label}
-            </text>
-          </g>
-        )}
-      </g>
-    );
-  };
-
-  const renderNode = (stage: FlowStage, idx: number) => {
-    const pos = nodeCenter(stage.key);
-    const style = CAT_STYLE[stage.cat];
-    const status = statusMap[stage.key] || 'future';
-    const isSelected = selectedKey === stage.key;
-    const isCurrent = status === 'current';
-    const isFuture = status === 'future';
-    const isAvailable = status === 'available';
-    const nodeNo = stage.key === 'change' ? '↻' : String((STAGE_INDEX[stage.key] ?? idx) + 1);
-    const halfW = NODE_W / 2;
-    const halfH = NODE_H / 2;
-    const x = pos.x - halfW;
-    const y = pos.y - halfH;
-    return (
-      <g
-        key={'n-' + stage.key}
-        className={'life-node life-cat-' + stage.cat + (isSelected ? ' selected' : '') + (isCurrent ? ' is-current' : '') + (isFuture ? ' is-future' : '') + (isAvailable ? ' is-available' : '')}
-        transform={'translate(' + x + ', ' + y + ')'}
-        onClick={() => onStageClick && onStageClick(stage)}
-        style={{ cursor: onStageClick ? 'pointer' : 'default' }}
-      >
-        <title>{stage.label}</title>
-        <rect
-          width={NODE_W}
-          height={NODE_H}
-          rx={8}
-          fill={style.fill}
-          stroke={isSelected || isCurrent ? style.accent : style.stroke}
-          strokeWidth={isSelected || isCurrent ? 2.5 : 1.4}
-          strokeDasharray={isFuture || isAvailable ? '5 4' : undefined}
-        />
-        <text x={12} y={22} className="life-node-index" fill={style.accent}>{nodeNo}</text>
-        <text x={NODE_W / 2} y={34} textAnchor="middle" className="life-node-name" fill={style.accent}>{clipText(stage.label, 6)}</text>
-        <text x={NODE_W / 2} y={52} textAnchor="middle" className="life-node-cat" fill={style.accent}>{CAT_LABEL[stage.cat]}</text>
-        {stage.key === 'change' && (
-          <g transform={'translate(' + (NODE_W - 26) + ', 11)'}>
-            <circle r={11} fill={style.accent} />
-            <text x={0} y={4} textAnchor="middle" className="life-node-badge">×{changeCount}</text>
-          </g>
-        )}
-        {stage.key === 'shelf' && shelfCount > 0 && (
-          <g transform={'translate(' + (NODE_W - 26) + ', 11)'}>
-            <circle r={11} fill={style.accent} />
-            <text x={0} y={4} textAnchor="middle" className="life-node-badge">×{shelfCount}</text>
-          </g>
-        )}
-        {stage.key === 'unshelf' && unshelfCount > 0 && (
-          <g transform={'translate(' + (NODE_W - 26) + ', 11)'}>
-            <circle r={11} fill={style.accent} />
-            <text x={0} y={4} textAnchor="middle" className="life-node-badge">×{unshelfCount}</text>
-          </g>
-        )}
-      </g>
-    );
-  };
-
-  return (
-    <svg className="life-graph-svg" viewBox={'0 0 ' + DESIGN_W + ' ' + DESIGN_H} width={DESIGN_W} height={DESIGN_H} role="img" aria-label="产品生命周期流转图谱">
-      <defs>
-        <marker id="life-graph-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="4.5" orient="auto">
-          <path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa7bd" />
-        </marker>
-        <marker id="life-graph-arrow-loop" markerWidth="10" markerHeight="10" refX="8.5" refY="4.5" orient="auto">
-          <path d="M0,0 L9,4.5 L0,9 Z" fill="#fa541c" />
-        </marker>
-        <marker id="life-graph-arrow-skip" markerWidth="10" markerHeight="10" refX="8.5" refY="4.5" orient="auto">
-          <path d="M0,0 L9,4.5 L0,9 Z" fill="#f5222d" />
-        </marker>
-      </defs>
-      {EDGES.map((e, i) => renderEdge(e, i))}
-      {STAGES.map((s, i) => renderNode(s, i))}
-    </svg>
-  );
-};
-
-/* ---------------- 运营周期面板（多次上架 / 下架 / 再上架甘特时间轴） ---------------- */
-
-const CYCLE_STATE_TEXT: Record<CycleState, string> = {
-  none: '尚未上架',
-  selling: '在售（上架中）',
-  suspended: '停售（下架中）'
-};
-
-const ServiceCyclePanel = ({
-  record,
-  cycles,
-  shelfCount,
-  unshelfCount,
-  currentState
-}: {
-  record: LifecycleRecord;
-  cycles: ServiceCycle[];
-  shelfCount: number;
-  unshelfCount: number;
-  currentState: CycleState;
-}) => {
-  if (currentState === 'none' || cycles.length === 0) {
-    return (
-      <div className="life-cycles life-cycles-empty">
-        <div className="empty-state-icon">📭</div>
-        <p className="life-cycles-empty-text">该数据产品尚未上架，暂无运营周期记录。</p>
-      </div>
-    );
-  }
-
-  const baseDate = new Date(
-    Number(record.updateTime.slice(0, 4)),
-    Number(record.updateTime.slice(5, 7)) - 1,
-    Number(record.updateTime.slice(8, 10))
-  );
-  const nowT = baseDate.getTime();
-  const starts = cycles.map((c) => new Date(c.start).getTime());
-  const ends = cycles.filter((c) => c.end).map((c) => new Date(c.end as string).getTime());
-  const minT = Math.min(...starts);
-  const maxClosedT = ends.length ? Math.max(...ends) : minT;
-  const maxT = Math.max(maxClosedT, nowT);
-  const span = Math.max(1, maxT - minT);
-  const leftPct = (t: number) => ((t - minT) / span) * 100;
-  const widthPct = (a: number, b: number) => Math.max(2.5, ((b - a) / span) * 100);
-
-  return (
-    <div className="life-cycles">
-      <div className="life-cycles-head">
-        <div className="life-cycles-title">运营周期</div>
-        <div className="life-cycles-summary">
-          共 <b>{shelfCount}</b> 次上架 · <b>{unshelfCount}</b> 次下架
-          <span className={'life-cycles-state state-' + currentState}>{CYCLE_STATE_TEXT[currentState]}</span>
-        </div>
-      </div>
-
-      <div className="life-cycles-legend">
-        <span className="life-cycle-legend-item"><i className="life-cycle-swatch sw-shelf" />在售（上架）</span>
-        <span className="life-cycle-legend-item"><i className="life-cycle-swatch sw-unshelf" />停售（下架）</span>
-        <span className="life-cycle-legend-item"><i className="life-cycle-swatch sw-current" />进行中</span>
-      </div>
-
-      {/* 时间轴甘特条：完整呈现每一次上架 / 下架的区间与先后顺序 */}
-      <div className="life-cycles-track-wrap">
-        <div className="life-cycles-axis">
-          <span className="life-axis-label">{cycles[0].start}</span>
-          <span className="life-axis-label">{fmtTs(maxT)}</span>
-        </div>
-        <div className="life-cycles-bars">
-          <div className="life-cycles-baseline" />
-          {cycles.map((c, i) => {
-            const sT = new Date(c.start).getTime();
-            const eT = c.end ? new Date(c.end).getTime() : nowT;
-            const above = i % 2 === 0;
-            return (
-              <div
-                key={c.seq}
-                className={
-                  'life-cycle-bar bar-' + c.type + (c.status === 'current' ? ' is-current' : '') + (above ? ' above' : ' below')
-                }
-                style={{ left: leftPct(sT) + '%', width: widthPct(sT, eT) + '%' }}
-              >
-                <span className="life-cycle-bar-label">第{c.seq}次{c.type === 'shelf' ? '上架' : '下架'}</span>
-                <span className="life-cycle-bar-range">{c.start}{c.end ? ' ~ ' + c.end : ' ~ 至今'}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 明细表：清晰区分不同生命周期阶段 */}
-      <div className="life-cycles-table-wrap">
-        <table className="life-cycles-table">
-          <thead>
-            <tr>
-              <th>序号</th>
-              <th>类型</th>
-              <th>起始日期</th>
-              <th>结束日期</th>
-              <th>持续</th>
-              <th>状态</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cycles.map((c) => (
-              <tr key={c.seq}>
-                <td>{c.seq}</td>
-                <td>
-                  <span className={'life-cycle-chip chip-' + c.type}>
-                    {c.type === 'shelf' ? '上架（在售）' : '下架（停售）'}
-                  </span>
-                </td>
-                <td className="life-cycle-mono">{c.start}</td>
-                <td className="life-cycle-mono">{c.end || '进行中'}</td>
-                <td>{c.durationDays} 天</td>
-                <td>
-                  {c.status === 'current' ? (
-                    <span className="life-cycle-status current">进行中</span>
-                  ) : (
-                    <span className="life-cycle-status done">已结束</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p className="life-cycles-hint">
-          说明：产品在登记上架后可能经历多次「上架 → 下架 → 再上架」循环。绿色为在售区间，灰色为停售区间；末段为当前进行中的开放区间（在售或停售）。
-        </p>
-      </div>
-    </div>
-  );
-};
 
 /* ---------------- 页面 ---------------- */
 
@@ -792,8 +609,8 @@ const OriginalComponent = () => {
     [record, currentIndex]
   );
 
-  /** 视图切换：流转图谱 / 运营周期 */
-  const [viewMode, setViewMode] = useState<'flow' | 'cycles'>('flow');
+  /** 视图切换：运营周期 / 操作记录 */
+  const [viewMode, setViewMode] = useState<'cycles' | 'records'>('cycles');
 
   const [selectedStage, setSelectedStage] = useState<FlowStage | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -959,7 +776,7 @@ const OriginalComponent = () => {
           <span className="lineage-back-arrow">‹</span>
           返回产品生命周期
         </a>
-        <div className="life-graph-title">生命图谱</div>
+        <div className="life-graph-title">生命周期</div>
         <div className="life-graph-summary">
           <span className="life-summary-code" title={record?.productCode}>{record?.productCode}</span>
           <span className="life-summary-sep">·</span>
@@ -968,64 +785,53 @@ const OriginalComponent = () => {
         </div>
         <div className="life-graph-viewswitch">
           <button
-            className={'life-view-btn' + (viewMode === 'flow' ? ' active' : '')}
-            onClick={() => setViewMode('flow')}
-          >
-            流转图谱
-          </button>
-          <button
             className={'life-view-btn' + (viewMode === 'cycles' ? ' active' : '')}
             onClick={() => setViewMode('cycles')}
           >
             运营周期
           </button>
+          <button
+            className={'life-view-btn' + (viewMode === 'records' ? ' active' : '')}
+            onClick={() => setViewMode('records')}
+          >
+            操作记录
+          </button>
         </div>
         <div className="life-graph-legend">
-          {(['pre', 'core', 'loop', 'end'] as StageCat[]).map((cat) => {
-            const style = CAT_STYLE[cat];
-            return (
-              <span key={cat} className="lineage-legend-item">
-                <i className="lineage-legend-swatch" style={{ background: style.fill, borderColor: style.stroke }} />
-                {CAT_LABEL[cat]}
-              </span>
-            );
-          })}
+          {viewMode === 'cycles' ? (
+            (['待处理', '审核不通过', '审核通过'] as const).map((st) => {
+              const s = TRACK_STATUS_STYLE[st];
+              return (
+                <span key={st} className="lineage-legend-item">
+                  <i className="lineage-legend-swatch" style={{ background: s.fill, borderColor: s.stroke }} />
+                  {st}
+                </span>
+              );
+            })
+          ) : (
+            (['pre', 'core', 'loop', 'end'] as StageCat[]).map((cat) => {
+              const style = CAT_STYLE[cat];
+              return (
+                <span key={cat} className="lineage-legend-item">
+                  <i className="lineage-legend-swatch" style={{ background: style.fill, borderColor: style.stroke }} />
+                  {CAT_LABEL[cat]}
+                </span>
+              );
+            })
+          )}
         </div>
       </div>
 
-      {viewMode === 'flow' ? (
-        <div className="lineage-canvas-fullscreen" ref={canvasRef}>
-          <div
-            className="lineage-viewport"
-            onPointerDown={onPointerDown}
-            style={{
-              transform: 'translate(' + transform.x + 'px, ' + transform.y + 'px) scale(' + transform.scale + ')'
-            }}
-          >
-            <LifecycleFlowGraph
-              statusMap={statusMap}
-              changeCount={changeCount}
-              shelfCount={serviceCycles.shelfCount}
-              unshelfCount={serviceCycles.unshelfCount}
-              onStageClick={handleStageClick}
-              selectedKey={selectedStage?.key}
-            />
-          </div>
-
-          <div className="lineage-view-tools">
-            <button className="lineage-view-btn" onClick={() => zoomByButton(1.2)} title="放大" aria-label="放大">＋</button>
-            <div className="lineage-view-zoom">{Math.round(transform.scale * 100)}%</div>
-            <button className="lineage-view-btn" onClick={() => zoomByButton(1 / 1.2)} title="缩小" aria-label="缩小">－</button>
-            <button className="lineage-view-btn lineage-view-reset" onClick={fitView} title="重置视图（快捷键 R）" aria-label="重置视图">⟳</button>
-          </div>
-        </div>
+      {viewMode === 'cycles' ? (
+        /* 运营周期视图：内容完整替换为「生命周期1」全部内容（复用其共享组件 LifecycleTrackView，保证与生命周期1完全一致；原甘特时间轴面板已整体移除，不保留任何原有内容） */
+        <LifecycleTrackView record={record} />
       ) : (
-        <ServiceCyclePanel
+        /* 操作记录视图：7 环节固定顺序切换 + 对应环节操作记录列表 */
+        <StageRecordsView
           record={record}
-          cycles={serviceCycles.cycles}
-          shelfCount={serviceCycles.shelfCount}
-          unshelfCount={serviceCycles.unshelfCount}
-          currentState={serviceCycles.currentState}
+          statusMap={statusMap}
+          currentIndex={currentIndex}
+          serviceCycles={serviceCycles}
         />
       )}
 

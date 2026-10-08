@@ -158,6 +158,242 @@
   fill: #6b7280;
 }
 
+/* 左上角可搜索筛选框（固定定位，不随画布平移 / 缩放变换） */
+.lineage-filter {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 30;
+  width: 264px;
+  font-size: 13px;
+}
+
+.lineage-filter-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
+  background: #ffffff;
+  border: 1px solid #d8dfe8;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(18, 36, 77, 0.10);
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.lineage-filter-box:focus-within {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.12), 0 4px 16px rgba(18, 36, 77, 0.10);
+}
+
+.lineage-filter-icon {
+  flex: 0 0 auto;
+  color: #8a95a6;
+}
+
+.lineage-filter-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  font-size: 13px;
+  color: #1f2329;
+  background: transparent;
+}
+
+.lineage-filter-input::placeholder {
+  color: #a8b1c1;
+}
+
+.lineage-filter-clear {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #8a95a6;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .16s ease;
+}
+
+.lineage-filter-clear:hover {
+  color: #4b5563;
+}
+
+.lineage-filter-count {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 6px;
+  padding: 2px 8px;
+  background: #ffffff;
+  border: 1px solid #e4e9f2;
+  border-radius: 4px;
+  color: #1677ff;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(18, 36, 77, 0.08);
+}
+
+.lineage-filter-count.zero {
+  color: #fa541c;
+}
+
+.lineage-filter-dropdown {
+  margin: 6px 0 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e4e9f2;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(18, 36, 77, 0.14);
+}
+
+.lineage-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 4px;
+  color: #1f2329;
+  cursor: pointer;
+  transition: background .12s ease;
+}
+
+.lineage-filter-option:hover {
+  background: #f2f7ff;
+}
+
+.lineage-filter-option.active {
+  background: #e8f1ff;
+  color: #1677ff;
+}
+
+.lineage-filter-option-swatch {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border: 1px solid;
+  border-radius: 2px;
+}
+
+.lineage-filter-option-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lineage-filter-option-type {
+  flex: 0 0 auto;
+  color: #8a95a6;
+  font-size: 12px;
+}
+
+.lineage-filter-empty {
+  padding: 10px 8px;
+  color: #a8b1c1;
+  text-align: center;
+}
+
+/* 缩略图（概览） */
+.lineage-minimap {
+  position: absolute;
+  right: 16px;
+  bottom: 72px; /* 位于右下角缩放工具栏上方，二者互不重叠 */
+  z-index: 30; /* 高于画布节点连线，低于抽屉弹窗（90 / 100） */
+  border: 1px solid #d8dfe8;
+  border-radius: 4px;
+  background: #f7f8fa;
+  box-shadow: 0 4px 16px rgba(18, 36, 77, 0.12);
+  overflow: hidden;
+}
+
+.lineage-minimap-svg {
+  display: block;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.lineage-minimap-canvas-bg {
+  fill: none;
+  stroke: #e4e9f2;
+  stroke-width: 1;
+}
+
+.lineage-minimap-edge {
+  stroke: #c2ccdb;
+  stroke-width: 1;
+}
+
+.lineage-minimap-node {
+  stroke-width: 1;
+}
+
+.lineage-minimap-viewport {
+  fill: rgba(22, 119, 255, 0.10);
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  cursor: move;
+}
+
+.lineage-minimap-collapse {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 2;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  line-height: 1;
+  color: #606a78;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #e4e9f2;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: color .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.lineage-minimap-collapse:hover {
+  color: #fa541c;
+  border-color: #fa541c;
+  background: #fff;
+}
+
+.lineage-minimap-restore {
+  position: absolute;
+  right: 16px;
+  bottom: 72px; /* 与缩略图位置对齐（右下角、缩放工具栏上方），收起时填补缩略图空白且不重叠 */
+  z-index: 30;
+  height: 32px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  color: #4b5563;
+  background: #ffffff;
+  border: 1px solid #d8dfe8;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(18, 36, 77, 0.12);
+  cursor: pointer;
+  transition: color .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.lineage-minimap-restore:hover {
+  color: #1677ff;
+  border-color: #1677ff;
+  background: #f2f7ff;
+}
+
 /* 画布交互控制条（缩放 / 重置） */
 .lineage-view-tools {
   position: absolute;

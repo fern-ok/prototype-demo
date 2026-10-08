@@ -1,0 +1,134 @@
+/* 资源授权单查看弹窗（公共组件 AuthRecordViewModal）样式 */
+
+.view-modal .modal-body {
+  padding-top: 6px;
+}
+
+.view-tabs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.view-tabs {
+  display: inline-flex;
+  border: 1px solid #dfe5ef;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.view-tab {
+  height: 30px;
+  padding: 0 18px;
+  border: 0;
+  background: #fff;
+  color: #4b5563;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.view-tab + .view-tab {
+  border-left: 1px solid #dfe5ef;
+}
+
+.view-tab.active {
+  color: #0f63f4;
+  background: #f5f9ff;
+  font-weight: 600;
+}
+
+/* 描述栅格（label/value 四列） */
+.view-desc-grid {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) 170px minmax(0, 1fr);
+  border-top: 1px solid #e8edf5;
+  border-left: 1px solid #e8edf5;
+}
+
+.view-desc-grid .desc-label {
+  padding: 11px 14px;
+  background: #fafbfd;
+  color: #4b5563;
+  font-size: 13px;
+  border-right: 1px solid #e8edf5;
+  border-bottom: 1px solid #e8edf5;
+}
+
+.view-desc-grid .desc-value {
+  padding: 11px 14px;
+  color: #1f2329;
+  font-size: 13px;
+  border-right: 1px solid #e8edf5;
+  border-bottom: 1px solid #e8edf5;
+  word-break: break-all;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.view-desc-grid .desc-value-full {
+  grid-column: span 3;
+}
+
+.view-desc-grid .desc-value-table {
+  display: block;
+  padding: 0;
+}
+
+/* 描述栅格内的资源表格 */
+.desc-resource-table th {
+  height: 38px;
+  background: #f0f4fa;
+}
+
+.desc-resource-table td {
+  height: 40px;
+}
+
+.desc-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+}
+
+/* 审核信息流程表 */
+.review-flow-table th,
+.review-flow-table td {
+  white-space: nowrap;
+}
+
+.cell-ellipsis {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 文件chip（附件展示） */
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 3px;
+  background: #eef4ff;
+  color: #0052d9;
+  font-size: 12px;
+  line-height: 26px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+/* 文件chip旁的绿色存证盾标 */
+.file-shield {
+  color: #179b55;
+  flex: 0 0 auto;
+}

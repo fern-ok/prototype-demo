@@ -784,6 +784,181 @@
   flex: 0 0 auto;
 }
 
+/* 授权/申请新增弹窗 - 两列表单 */
+.auth-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 28px;
+}
+
+.auth-form-grid .form-item {
+  margin-bottom: 0;
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  align-items: start;
+}
+
+.auth-form-grid .form-item > label {
+  margin-bottom: 0;
+  padding-top: 7px;
+  padding-right: 10px;
+  text-align: right;
+  font-weight: 400;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+.auth-form-grid .form-item > label .required {
+  margin-left: 0;
+  margin-right: 2px;
+}
+
+.auth-form-grid .form-item .field-wrap {
+  min-width: 0;
+}
+
+.auth-form-grid .form-item-full {
+  grid-column: 1 / -1;
+}
+
+.auth-form-grid select {
+  appearance: auto;
+}
+
+/* 授权期限：单边框内双日期 */
+.auth-date-range {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  border: 1px solid #cfd6e3;
+  border-radius: 3px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.auth-date-range.has-error {
+  border-color: #f5222d;
+}
+
+.auth-date-range input[type="date"] {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 30px;
+  padding: 0 6px;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  color: #4b5563;
+  outline: none;
+  box-shadow: none;
+}
+
+/* 授权期限禁用态：与其他禁用字段一致的灰色底色 */
+.auth-date-range.is-disabled {
+  background: #f5f7fa;
+  cursor: not-allowed;
+}
+
+.auth-date-range.is-disabled input[type="date"] {
+  color: #8b95a5;
+  cursor: not-allowed;
+}
+
+/* 下拉框禁用态：灰色底色 */
+.form-item select:disabled {
+  color: #8b95a5;
+  background: #f5f7fa;
+  cursor: not-allowed;
+}
+
+/* 文件chip（已上传附件展示） */
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 3px;
+  background: #eef4ff;
+  color: #0052d9;
+  font-size: 12px;
+  line-height: 26px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+/* 数据资源目录选择行 */
+.catalog-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+}
+
+.catalog-selected {
+  color: #4b5563;
+  font-size: 13px;
+}
+
+.catalog-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0f63f4;
+  cursor: pointer;
+}
+
+.catalog-add-btn:hover {
+  color: #2f7cff;
+}
+
+.catalog-delete-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #d54941;
+  cursor: pointer;
+}
+
+.catalog-delete-btn:hover {
+  color: #f5222d;
+}
+
+/* 上传行与提示 */
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-hint {
+  margin-top: 6px;
+  color: #8b95a5;
+  font-size: 12px;
+}
+
+.btn-success {
+  color: #fff;
+  background: #00b42a;
+  border-color: #00b42a;
+}
+
+.btn-success:hover {
+  background: #23c34a;
+  border-color: #23c34a;
+}
+
+
 /* Empty state */
 .empty-state {
   padding: 60px 20px;

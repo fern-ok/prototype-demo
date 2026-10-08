@@ -11,6 +11,7 @@ import specContent from './spec.md?raw';
 import changeLogContent from './change.md?raw';
 import messageTemplateTable from '../../database/message-templates.json';
 import PasswordGuard from '../../common/PasswordGuard';
+import AuthRecordViewModal from '../../common/AuthRecordViewModal';
 import './style.css';
 import '../../common/backend-list.css';
 
@@ -578,99 +579,6 @@ const OriginalComponent = () => {
     </div>
   );
 
-  const renderViewModal = () => (
-    <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
-      <div className="modal-large" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>查看详情</h3>
-          <button className="modal-close" onClick={() => setShowViewModal(false)}>×</button>
-        </div>
-        <div className="modal-body">
-          <div className="section-title"><span className="title-bar"></span>基本信息</div>
-          <div className="view-info-grid">
-            <div className="info-row">
-              <div className="info-label">资源授权单名称</div>
-              <div className="info-value">{currentRecord?.authName}</div>
-            </div>
-            <div className="info-row">
-              <div className="info-label">授权发起方</div>
-              <div className="info-value">{currentRecord?.initiator}</div>
-            </div>
-            <div className="info-row">
-              <div className="info-label">数据资源目录</div>
-              <div className="info-value">{currentRecord?.resourceCatalog.split(';').join('、')}</div>
-            </div>
-            <div className="info-row">
-              <div className="info-label">审核状态</div>
-              <div className="info-value">
-                <span className={'status-tag ' + getStatusClass(currentRecord?.reviewStatus || '')}>{currentRecord?.reviewStatus}</span>
-              </div>
-            </div>
-            <div className="info-row">
-              <div className="info-label">创建时间</div>
-              <div className="info-value">{currentRecord?.createTime}</div>
-            </div>
-            <div className="info-row">
-              <div className="info-label">更新时间</div>
-              <div className="info-value">{currentRecord?.updateTime}</div>
-            </div>
-          </div>
-
-          {currentRecord?.initialResult && (
-            <>
-              <div className="section-title"><span className="title-bar"></span>初审信息</div>
-              <div className="view-info-grid">
-                <div className="info-row">
-                  <div className="info-label">初审结果</div>
-                  <div className="info-value">{currentRecord.initialResult}</div>
-                </div>
-                <div className="info-row">
-                  <div className="info-label">初审人</div>
-                  <div className="info-value">{currentRecord.initialReviewer}</div>
-                </div>
-                <div className="info-row">
-                  <div className="info-label">初审时间</div>
-                  <div className="info-value">{currentRecord.initialReviewTime}</div>
-                </div>
-                <div className="info-row">
-                  <div className="info-label">初审意见</div>
-                  <div className="info-value">{currentRecord.initialOpinion || '—'}</div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {currentRecord?.recheckResult && (
-            <>
-              <div className="section-title"><span className="title-bar"></span>复审信息</div>
-              <div className="view-info-grid">
-                <div className="info-row">
-                  <div className="info-label">复审结果</div>
-                  <div className="info-value">{currentRecord.recheckResult}</div>
-                </div>
-                <div className="info-row">
-                  <div className="info-label">复审人</div>
-                  <div className="info-value">{currentRecord.recheckReviewer}</div>
-                </div>
-                <div className="info-row">
-                  <div className="info-label">复审时间</div>
-                  <div className="info-value">{currentRecord.recheckTime}</div>
-                </div>
-                <div className="info-row">
-                  <div className="info-label">复审意见</div>
-                  <div className="info-value">{currentRecord.recheckOpinion || '—'}</div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-default" onClick={() => setShowViewModal(false)}>关闭</button>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <Layout
       activeMenu={activeMenu}
@@ -712,7 +620,26 @@ const OriginalComponent = () => {
       {renderTable()}
 
       {showRecheckModal && renderRecheckModal()}
-      {showViewModal && renderViewModal()}
+      {/* 查看弹窗：复用公共组件 AuthRecordViewModal，按该条数据的授权发起方区分版式（初审字段映射为公共组件的 review* 字段） */}
+      {showViewModal && currentRecord && (
+        <AuthRecordViewModal
+          record={{
+            authName: currentRecord.authName,
+            initiator: currentRecord.initiator,
+            createTime: currentRecord.createTime,
+            reviewResult: currentRecord.initialResult,
+            reviewOpinion: currentRecord.initialOpinion,
+            reviewer: currentRecord.initialReviewer,
+            reviewTime: currentRecord.initialReviewTime,
+            recheckResult: currentRecord.recheckResult,
+            recheckOpinion: currentRecord.recheckOpinion,
+            recheckReviewer: currentRecord.recheckReviewer,
+            recheckTime: currentRecord.recheckTime
+          }}
+          isOperator={currentRecord.initiator === '运营机构'}
+          onClose={() => setShowViewModal(false)}
+        />
+      )}
     </Layout>
   );
 };

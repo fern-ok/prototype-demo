@@ -56,13 +56,14 @@ const SIDEBAR_MENU: NavEntry[] = [
       { key: 'product-service-filing', label: '产品和服务清单备案' },
       { key: 'operation-agreement-filing', label: '运营协议备案' },
       { key: 'implementation-plan-joint-review', label: '实施方案联审' },
+      { key: 'other-entity-filing', label: '其他经营主体备案' },
       { key: 'auth-record', label: '授权记录', kind: 'action' }
     ]
   },
   { type: 'link', key: 'product-security-review', label: '产品安全审查', icon: ShieldCheck, href: '/prototypes/product-security-review.html' },
   { type: 'link', key: 'product-registration', label: '产品登记', icon: ClipboardList, href: '/prototypes/product-registration.html' },
   { type: 'link', key: 'data-resource-catalog', label: '数据资源目录', icon: ListTree, href: '/prototypes/data-resource-catalog.html' },
-  { type: 'link', key: 'data-resource-auth', label: '数据资源授权', icon: KeyRound, href: '/prototypes/data-resource-auth.html' },
+  { type: 'link', key: 'data-resource-auth', label: '数据资源授权/申请', icon: KeyRound, href: '/prototypes/data-resource-auth.html' },
   { type: 'link', key: 'data-resource-review', label: '数据资源初审', icon: FileSearch, href: '/prototypes/data-resource-review.html' },
   { type: 'link', key: 'data-resource-recheck', label: '数据资源复审', icon: FileCheck, href: '/prototypes/data-resource-recheck.html' },
   { type: 'link', key: 'product-lifecycle', label: '产品生命周期', icon: Workflow, href: '/prototypes/product-lifecycle.html' },
@@ -91,7 +92,7 @@ const SIDEBAR_MENU: NavEntry[] = [
 
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'unified-catalog-query' | 'monitoring-dashboard';
+  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'other-entity-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'unified-catalog-query' | 'monitoring-dashboard';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;

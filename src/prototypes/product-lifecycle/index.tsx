@@ -12,24 +12,51 @@ import changeLogContent from './change.md?raw';
 import PasswordGuard from '../../common/PasswordGuard';
 import {
   LifecycleRecord,
-  TimelineItem,
   seedRecords,
   buildTimeline,
-  regionLabel,
+  buildProductDetail,
+  buildDatasetFields,
+  buildApiInfo,
   getStageStatusClass,
   PRODUCT_TYPE_OPTIONS,
   PRODUCT_STAGE_OPTIONS,
-  STAGE_OPTIONS,
-  STAGE_STATUS_OPTIONS
+  STAGE_STATUS_OPTIONS,
+  STAGE_STATUS_OPTIONS_BY_STAGE
 } from './lifecycle-shared';
 import './style.css';
 import '../../common/backend-list.css';
+
+/** 附件展示：回形针 + 文件名 + 绿色签章图标；无附件时不渲染（单元格留空） */
+const FileChip = ({ name }: { name: string }) => {
+  if (!name) return null;
+  return (
+    <span className="file-chip" title={name}>
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#0f63f4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+      </svg>
+      <span className="file-chip-name">{name}</span>
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M12 22s8-3.6 8-10V5.4L12 2 4 5.4V12c0 6.4 8 10 8 10z" />
+        <path d="M9 12l2 2 4-4" />
+      </svg>
+    </span>
+  );
+};
+
+/** 列表页「流程节点」展示口径：将 产品上架 / 产品下架 合并为 产品上下架。
+ * 仅作用于列表筛选与列展示，底层数据模型（STAGE_OPTIONS / STAGE_FLOW）仍保留上架、下架，时间轴与图谱不受影响。 */
+const LIST_STAGE_OPTIONS = ['安全审查', '产品登记', '产品上下架', '产品交易'];
 
 const OriginalComponent = () => {
   const [activeMenu] = useState<'product-lifecycle'>('product-lifecycle');
   const [role, setRole] = useState('运营机构');
 
-  const [records] = useState<LifecycleRecord[]>(seedRecords);
+  // 列表工作集：按需求「去掉节点状态未已终止的数据」，默认仅保留节点状态为「已终止」的产品；
+  // 源数据 seedRecords（48 条）完整保留，仅过滤列表展示工作集：去掉「已终止」记录、保留其余状态，
+  // 重置 / 下拉筛选均不会重新引入「已终止」记录。
+  const [records] = useState<LifecycleRecord[]>(() =>
+    seedRecords.filter((r) => r.stageStatus !== '已终止')
+  );
 
   // 筛选条件
   const [searchCode, setSearchCode] = useState('');
@@ -46,10 +73,11 @@ const OriginalComponent = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // 弹窗（查看、时间轴）；数据血缘、生命图谱均已改为独立整页，不再使用弹窗
+  // 弹窗（查看、时间轴）；数据血缘、生命周期均已改为独立整页，不再使用弹窗
   const [showViewModal, setShowViewModal] = useState(false);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<LifecycleRecord | null>(null);
+  const [viewTab, setViewTab] = useState<'basic' | 'config'>('basic');
 
   /** 筛选后统一按「更新时间」倒序排列（最新在前） */
   const filteredList = useMemo(() => {
@@ -59,7 +87,13 @@ const OriginalComponent = () => {
       if (searchProductType && r.productType !== searchProductType) return false;
       if (searchProductStage && r.productStage !== searchProductStage) return false;
       if (searchProvider && !r.provider.includes(searchProvider.trim())) return false;
-      if (searchStage && r.currentStage !== searchStage) return false;
+      if (searchStage) {
+        if (searchStage === '产品上下架') {
+          if (r.currentStage !== '产品上架' && r.currentStage !== '产品下架') return false;
+        } else if (r.currentStage !== searchStage) {
+          return false;
+        }
+      }
       if (searchStatus && r.stageStatus !== searchStatus) return false;
       if (startDate && r.updateTime.slice(0, 10) < startDate) return false;
       if (endDate && r.updateTime.slice(0, 10) > endDate) return false;
@@ -92,8 +126,23 @@ const OriginalComponent = () => {
 
   const timeline = useMemo(() => (currentRecord ? buildTimeline(currentRecord) : []), [currentRecord]);
 
+  /** 查看弹窗「基本信息」页签：复用血缘详情同口径的 16 项产品详情 */
+  const viewDetail = useMemo(
+    () => (currentRecord ? buildProductDetail(currentRecord, currentRecord.productName, currentRecord.id) : null),
+    [currentRecord]
+  );
+
+  /** 查看弹窗「配置信息」：按产品类型分别取数据集字段信息 / API 接口信息（完整保留，不得删除或覆盖） */
+  const viewConfig = useMemo(() => {
+    if (!currentRecord) return null;
+    return currentRecord.productType === 'API产品'
+      ? { kind: 'api' as const, api: buildApiInfo(currentRecord) }
+      : { kind: 'dataset' as const, fields: buildDatasetFields(currentRecord) };
+  }, [currentRecord]);
+
   const handleView = (record: LifecycleRecord) => {
     setCurrentRecord(record);
+    setViewTab('basic');
     setShowViewModal(true);
   };
 
@@ -144,16 +193,21 @@ const OriginalComponent = () => {
         </div>
         <div className="filter-item filter-item-select">
           <label>流程节点</label>
-          <select value={searchStage} onChange={(e) => setSearchStage(e.target.value)}>
+          <select value={searchStage} onChange={(e) => { setSearchStage(e.target.value); setSearchStatus(''); }}>
             <option value="">请选择</option>
-            {STAGE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+            {LIST_STAGE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div className="filter-item filter-item-select">
           <label>节点状态</label>
-          <select value={searchStatus} onChange={(e) => setSearchStatus(e.target.value)}>
-            <option value="">请选择</option>
-            {STAGE_STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+          <select
+            value={searchStage ? searchStatus : ''}
+            disabled={!searchStage}
+            onChange={(e) => setSearchStatus(e.target.value)}
+          >
+            {!searchStage && <option value="">请先选择流程节点</option>}
+            {searchStage && <option value="">请选择</option>}
+            {searchStage && (STAGE_STATUS_OPTIONS_BY_STAGE[searchStage] || []).map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div className="filter-item filter-item-range">
@@ -202,7 +256,6 @@ const OriginalComponent = () => {
               </tr>
             ) : (
               paginatedList.map((record, index) => {
-                const isFirstRow = index === 0 && currentPage === 1;
                 return (
                 <tr key={record.id}>
                   <td className="col-index">{(safePage - 1) * pageSize + index + 1}</td>
@@ -211,13 +264,13 @@ const OriginalComponent = () => {
                   <td className="col-product-type"><span className="type-tag">{record.productType}</span></td>
                   <td className="col-product-stage">{record.productStage}</td>
                   <td className="col-provider" title={record.provider}>{record.provider}</td>
-                  <td className="col-stage">{record.currentStage}</td>
+                  <td className="col-stage">{record.currentStage === '产品上架' || record.currentStage === '产品下架' ? '产品上下架' : record.currentStage}</td>
                   <td className="col-status"><span className={'status-tag ' + getStageStatusClass(record.stageStatus)}>{record.stageStatus}</span></td>
                   <td className="col-update-time">{record.updateTime}</td>
                   <td className="col-action">
                     <div className="action-buttons">
                       <button className="action-btn" onClick={() => handleView(record)}>查看</button>
-                      <button className="action-btn" onClick={() => handleTimeline(record)}>时间轴</button>
+                      <button className="action-btn" onClick={() => handleTimeline(record)} style={{ display: 'none' }}>时间轴</button>
                       <a
                         className="action-btn"
                         href={'/prototypes/product-lifecycle-lineage.html?code=' + encodeURIComponent(record.productCode)}
@@ -225,13 +278,7 @@ const OriginalComponent = () => {
                       <a
                         className="action-btn"
                         href={'/prototypes/product-lifecycle-graph.html?code=' + encodeURIComponent(record.productCode)}
-                      >生命图谱</a>
-                      {isFirstRow && (
-                        <a
-                          className="action-btn"
-                          href={'/prototypes/product-lifecycle-graph1.html?code=' + encodeURIComponent(record.productCode)}
-                        >生命图谱1</a>
-                      )}
+                      >生命周期</a>
                     </div>
                   </td>
                 </tr>
@@ -270,38 +317,208 @@ const OriginalComponent = () => {
 
   const renderViewModal = () => (
     <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
-      <div className="modal-medium" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-large" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>产品详情</h3>
           <button className="modal-close" onClick={() => setShowViewModal(false)}>×</button>
         </div>
         <div className="modal-body">
-          <div className="section-title"><span className="title-bar"></span>基本信息</div>
-          <div className="view-info-grid">
-            <div className="info-label">数据产品标识码</div>
-            <div className="info-value">{currentRecord?.productCode}</div>
-            <div className="info-label">产品名称</div>
-            <div className="info-value" title={currentRecord?.productName}>{currentRecord?.productName}</div>
-            <div className="info-label">产品类型</div>
-            <div className="info-value"><span className="type-tag">{currentRecord?.productType}</span></div>
-            <div className="info-label">产品阶段</div>
-            <div className="info-value">{currentRecord?.productStage}</div>
-            <div className="info-label">产品提供方</div>
-            <div className="info-value-span" title={currentRecord?.provider}>{currentRecord?.provider}</div>
-          </div>
-          <div className="section-title"><span className="title-bar"></span>流程信息</div>
-          <div className="view-info-grid">
-            <div className="info-label">流程节点</div>
-            <div className="info-value">{currentRecord?.currentStage}</div>
-            <div className="info-label">节点状态</div>
-            <div className="info-value"><span className={'status-tag ' + getStageStatusClass(currentRecord?.stageStatus || '')}>{currentRecord?.stageStatus}</span></div>
-            <div className="info-label">更新时间</div>
-            <div className="info-value">{currentRecord?.updateTime}</div>
-            <div className="info-label">所属地域</div>
-            <div className="info-value">{currentRecord ? regionLabel(currentRecord.region) : ''}</div>
-          </div>
-          <div className="section-title"><span className="title-bar"></span>产品简介</div>
-          <div className="desc-block">{currentRecord?.productDesc}</div>
+          {viewDetail && (
+            <>
+              <div className="view-tabs">
+                <button
+                  className={'view-tab' + (viewTab === 'basic' ? ' active' : '')}
+                  onClick={() => setViewTab('basic')}
+                >基本信息</button>
+                <button
+                  className={'view-tab' + (viewTab === 'config' ? ' active' : '')}
+                  onClick={() => setViewTab('config')}
+                >配置信息</button>
+              </div>
+
+              {viewTab === 'basic' && (
+                <>
+                  <div className="section-title"><span className="title-bar"></span>基本信息</div>
+                  <div className="view-info-grid">
+                    <div className="info-label">产品名称</div>
+                    <div className="info-value" title={viewDetail.productName}>{viewDetail.productName}</div>
+                    <div className="info-label">产品类型</div>
+                    <div className="info-value"><span className="type-tag">{viewDetail.productType}</span></div>
+                    <div className="info-label">覆盖时间范围</div>
+                    <div className="info-value">{viewDetail.coverage}</div>
+                    <div className="info-label">行业分类</div>
+                    <div className="info-value">{viewDetail.industry}</div>
+                    <div className="info-label">地域分类</div>
+                    <div className="info-value">{viewDetail.region}</div>
+                    <div className="info-label">是否涉及个人信息</div>
+                    <div className="info-value">{viewDetail.involvesPersonal}</div>
+                    <div className="info-label">交付方式</div>
+                    <div className="info-value">{viewDetail.deliveryMethod}</div>
+                    <div className="info-label">授权使用</div>
+                    <div className="info-value">{viewDetail.authorizedUse}</div>
+                    <div className="info-label">数据主体</div>
+                    <div className="info-value">{viewDetail.dataSubject}</div>
+                    <div className="info-label">数据规模</div>
+                    <div className="info-value">{viewDetail.dataScale}</div>
+                    <div className="info-label">更新频率</div>
+                    <div className="info-value">{viewDetail.updateFreq}</div>
+                    <div className="info-label">个人或企业授权使用</div>
+                    <div className="info-value">{viewDetail.personalOrEnterpriseAuth}</div>
+                    <div className="info-label">数据资源标识码</div>
+                    <div className="info-value-span code-text">{viewDetail.productCode}</div>
+                    <div className="info-label">产品简介</div>
+                    <div className="info-value-span" title={viewDetail.productDesc}>{viewDetail.productDesc}</div>
+                    <div className="info-label">使用限制</div>
+                    <div className="info-value-span" title={viewDetail.usageLimit}>{viewDetail.usageLimit}</div>
+                    <div className="info-label">产品开发方案</div>
+                    <div className="info-value"><FileChip name={viewDetail.devPlanFile} /></div>
+                    <div className="info-label">运营协议</div>
+                    <div className="info-value"><FileChip name={viewDetail.opAgreementFile} /></div>
+                    <div className="info-label">实施方案</div>
+                    <div className="info-value"><FileChip name={viewDetail.implPlanFile} /></div>
+                    <div className="info-label">领域名称</div>
+                    <div className="info-value">{viewDetail.domainName}</div>
+                  </div>
+
+                  <div className="section-title"><span className="title-bar"></span>提供方信息</div>
+                  <div className="view-info-grid">
+                    <div className="info-label">提供方名称</div>
+                    <div className="info-value" title={viewDetail.providerName}>{viewDetail.providerName}</div>
+                    <div className="info-label">提供方主体类型</div>
+                    <div className="info-value">{viewDetail.providerType}</div>
+                    <div className="info-label">身份标识码</div>
+                    <div className="info-value">{viewDetail.providerIdCode}</div>
+                    <div className="info-label">法人经办人姓名</div>
+                    <div className="info-value">{viewDetail.providerContact}</div>
+                    <div className="info-label">法人经办人电话</div>
+                    <div className="info-value">{viewDetail.providerPhone}</div>
+                    <div className="info-label">授权委托书</div>
+                    <div className="info-value"><FileChip name={viewDetail.entrustFile} /></div>
+                    <div className="info-label">提供方简介</div>
+                    <div className="info-value-span" title={viewDetail.providerIntro}>{viewDetail.providerIntro}</div>
+                  </div>
+
+                  <div className="section-title"><span className="title-bar"></span>声明信息</div>
+                  <div className="view-info-grid">
+                    <div className="info-label">数据样例</div>
+                    <div className="info-value">{viewDetail.dataSample}</div>
+                    <div className="info-label">合法合规声明</div>
+                    <div className="info-value"><FileChip name={viewDetail.complianceFile} /></div>
+                    <div className="info-label">数据来源声明</div>
+                    <div className="info-value"><FileChip name={viewDetail.sourceDeclareFile} /></div>
+                    <div className="info-label">安全分级分类</div>
+                    <div className="info-value">{viewDetail.securityLevel}</div>
+                    <div className="info-label">数据质量产品价值评估报告</div>
+                    <div className="info-value-span">{viewDetail.qualityReport}</div>
+                  </div>
+                </>
+              )}
+
+              {viewTab === 'config' && viewConfig?.kind === 'dataset' && (
+                <>
+                  <div className="section-title"><span className="title-bar"></span>字段信息</div>
+                  <div className="detail-table-section">
+                    <div className="table-wrapper">
+                      <table className="config-table dataset-table">
+                        <thead>
+                          <tr>
+                            <th className="col-seq">序号</th>
+                            <th className="col-name">字段名称</th>
+                            <th className="col-cn">字段中文名</th>
+                            <th className="col-type">数据类型</th>
+                            <th className="col-pk">主键</th>
+                            <th className="col-null">允许为空</th>
+                            <th className="col-desc">描述</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {viewConfig.fields.map((f) => (
+                            <tr key={f.seq}>
+                              <td>{f.seq}</td>
+                              <td>{f.name}</td>
+                              <td>{f.cnName}</td>
+                              <td>{f.dataType}</td>
+                              <td>{f.primaryKey}</td>
+                              <td>{f.nullable}</td>
+                              <td>{f.desc}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {viewTab === 'config' && viewConfig?.kind === 'api' && (
+                <>
+                  <div className="section-title"><span className="title-bar"></span>API接口信息</div>
+                  <div className="view-info-grid">
+                    <div className="info-label">接口名称</div>
+                    <div className="info-value-span" title={viewConfig.api.name}>{viewConfig.api.name}</div>
+                    <div className="info-label">请求方式</div>
+                    <div className="info-value">{viewConfig.api.method}</div>
+                    <div className="info-label">返回格式</div>
+                    <div className="info-value">{viewConfig.api.returnFormat}</div>
+                    <div className="info-label">接口地址</div>
+                    <div className="info-value-span code-text" title={viewConfig.api.url}>{viewConfig.api.url}</div>
+                    <div className="info-label">接口描述</div>
+                    <div className="info-value-span" title={viewConfig.api.desc}>{viewConfig.api.desc}</div>
+                  </div>
+                  <div className="sub-section-title">请求参数</div>
+                  <div className="detail-table-section">
+                    <div className="table-wrapper">
+                      <table className="config-table api-request-table">
+                        <thead>
+                          <tr>
+                            <th className="col-name">参数名</th>
+                            <th className="col-pos">参数位置</th>
+                            <th className="col-req">必填</th>
+                            <th className="col-type">字段类型</th>
+                            <th className="col-desc">说明</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {viewConfig.api.requestParams.map((p, i) => (
+                            <tr key={p.name + '_' + i}>
+                              <td>{p.name}</td>
+                              <td>{p.position}</td>
+                              <td>{p.required}</td>
+                              <td>{p.fieldType}</td>
+                              <td>{p.desc}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div className="sub-section-title">返回参数</div>
+                  <div className="detail-table-section">
+                    <div className="table-wrapper">
+                      <table className="config-table api-response-table">
+                        <thead>
+                          <tr>
+                            <th className="col-name">参数名</th>
+                            <th className="col-type">字段类型</th>
+                            <th className="col-desc">说明</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {viewConfig.api.responseParams.map((p, i) => (
+                            <tr key={p.name + '_' + i}>
+                              <td>{p.name}</td>
+                              <td>{p.fieldType}</td>
+                              <td>{p.desc}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
+          )}
         </div>
         <div className="modal-footer">
           <button className="btn btn-default" onClick={() => setShowViewModal(false)}>关闭</button>

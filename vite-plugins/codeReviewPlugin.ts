@@ -825,7 +825,7 @@ function buildListPreview(
     return createMissingListPreview();
   }
 
-  const property = handleObject.properties.find((node) => {
+  const property = handleObject.properties.find((node): node is ts.PropertyAssignment | ts.ShorthandPropertyAssignment => {
     if (!ts.isPropertyAssignment(node) && !ts.isShorthandPropertyAssignment(node)) {
       return false;
     }

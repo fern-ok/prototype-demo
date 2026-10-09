@@ -582,8 +582,6 @@ const OriginalComponent = () => {
       <div className="drawer-info-value">湖南省卫生健康委信息统计中心</div>
       <div className="drawer-info-label">运营机构</div>
       <div className="drawer-info-value">湖南数据产业集团</div>
-      <div className="drawer-info-label">授权发起方</div>
-      <div className="drawer-info-value">运营机构</div>
       <div className="drawer-info-label">授权时间</div>
       <div className="drawer-info-value">2026-06-15 14:20:00</div>
       <div className="drawer-info-label">授权期限</div>
@@ -609,19 +607,22 @@ const OriginalComponent = () => {
           selectedNode.type === '数据资源' ? (
             renderResourceAuthInfo()
           ) : (
-            <DrawerList
-              rows={authList}
-              columns={[{ key: 'org', title: '运营机构', cls: 'col-org' }, { key: 'authTime', title: '授权时间', cls: 'col-time' }]}
-              page={listPage}
-              pageSize={pageSize}
-              onPageChange={setListPage}
-              onPageSizeChange={(n) => { setPageSize(n); setListPage(1); }}
-            />
+            <div>
+              <div className="drawer-auth-tip">获取基础产品授权后，可依托该产品进行再开发。</div>
+              <DrawerList
+                rows={authList}
+                columns={[{ key: 'org', title: '其他经营主体', cls: 'col-org' }, { key: 'authTime', title: '授权时间', cls: 'col-time' }]}
+                page={listPage}
+                pageSize={pageSize}
+                onPageChange={setListPage}
+                onPageSizeChange={(n) => { setPageSize(n); setListPage(1); }}
+              />
+            </div>
           )
         ) : (
           <DrawerList
             rows={tradeList}
-            columns={[{ key: 'demander', title: '数据需求方', cls: 'col-demander' }, { key: 'createdAt', title: '创建时间', cls: 'col-time' }]}
+            columns={[{ key: 'demander', title: '数据需求方', cls: 'col-demander' }, { key: 'createdAt', title: '订单创建时间', cls: 'col-time' }]}
             page={listPage}
             pageSize={pageSize}
             onPageChange={setListPage}

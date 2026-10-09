@@ -1,3 +1,6 @@
+## 2026-10-08（运营周期当前节点唯一化，状态分三色）
+「运营周期」视图中当前进行中环节仅保留一个；其余已执行完成节点显示「审核通过」（绿），当前阶段被驳回时显示「审核不通过」（红），正常进行中显示「待处理」（蓝）。由复用组件 `product-lifecycle-graph1/index.tsx` 的 `trackNodeStatus(stageStatus)` 与 `buildLinearNodes` current 标记逻辑共同实现。
+
 ## 2026-10-08（运营周期节点显示名调整）
 「运营周期」视图中节点显示名调整：登记→「首次登记」、变更→「变更登记」、撤销→「撤销登记」，由复用组件 `product-lifecycle-graph1/index.tsx` 的 `STAGES` label 改动生效。
 

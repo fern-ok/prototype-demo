@@ -166,3 +166,41 @@
   stroke: #1677ff;
   stroke-width: 2;
 }
+
+/* 运营周期 — 交易环节抽屉加宽（仅交易节点），避免订单表格出现横向滚动条 */
+.life-drawer.trade-wide {
+  width: 700px;
+  max-width: 96vw;
+}
+
+/* 运营周期 — 交易环节订单信息表 */
+.life-orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: #1f2329;
+}
+
+.life-orders-table th,
+.life-orders-table td {
+  padding: 8px 10px;
+  border: 1px solid #e6eaf2;
+  text-align: left;
+  /* 允许必要时换行，杜绝横向（底部）滚动条；常规宽度下仍单行展示 */
+  white-space: normal;
+  word-break: break-word;
+}
+
+.life-orders-table thead th {
+  background: #f5f7fb;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.life-orders-table tbody tr:nth-child(even) {
+  background: #fafbfd;
+}
+
+.life-orders-table td {
+  font-variant-numeric: tabular-nums;
+}

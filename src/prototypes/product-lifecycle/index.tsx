@@ -5,7 +5,7 @@
  * 运营机构角色的产品生命周期跟踪页，后台一级菜单
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Layout from '../../common/Layout';
 import specContent from './spec.md?raw';
 import changeLogContent from './change.md?raw';
@@ -45,7 +45,12 @@ const FileChip = ({ name }: { name: string }) => {
 
 /** 列表页「流程节点」展示口径：将 产品上架 / 产品下架 合并为 产品上下架。
  * 仅作用于列表筛选与列展示，底层数据模型（STAGE_OPTIONS / STAGE_FLOW）仍保留上架、下架，时间轴与图谱不受影响。 */
-const LIST_STAGE_OPTIONS = ['安全审查', '产品登记', '产品上下架', '产品交易'];
+const CASCADE_OPTIONS = [
+  { value: '安全审查', label: '安全审查', children: STAGE_STATUS_OPTIONS_BY_STAGE['安全审查'] },
+  { value: '产品登记', label: '产品登记', children: STAGE_STATUS_OPTIONS_BY_STAGE['产品登记'] },
+  { value: '产品上下架', label: '产品上下架', children: STAGE_STATUS_OPTIONS_BY_STAGE['产品上下架'] },
+  { value: '产品交易', label: '产品交易', children: STAGE_STATUS_OPTIONS_BY_STAGE['产品交易'] }
+];
 
 const OriginalComponent = () => {
   const [activeMenu] = useState<'product-lifecycle'>('product-lifecycle');
@@ -160,6 +165,98 @@ const OriginalComponent = () => {
     </div>
   );
 
+  /** 流程节点级联选择：第一级为流程节点，第二级为节点状态；支持只选第一级或两级都选 */
+  const StageCascadeSelect = ({
+    stage,
+    status,
+    onChange
+  }: {
+    stage: string;
+    status: string;
+    onChange: (stage: string, status: string) => void;
+  }) => {
+    const [open, setOpen] = useState(false);
+    const [hoverStage, setHoverStage] = useState<string | null>(null);
+    const [expandStage, setExpandStage] = useState<string | null>(null);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      if (!open) return;
+      const handleClick = (e: MouseEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node)) {
+          setOpen(false);
+          setExpandStage(null);
+        }
+      };
+      document.addEventListener('mousedown', handleClick);
+      return () => document.removeEventListener('mousedown', handleClick);
+    }, [open]);
+
+    const activeStage = expandStage || hoverStage || stage || null;
+
+    const displayText = () => {
+      if (!stage) return '请选择';
+      if (!status) return stage;
+      return `${stage} / ${status}`;
+    };
+
+    return (
+      <div className="stage-cascade" ref={ref}>
+        <div className="stage-cascade-trigger" onClick={() => setOpen(!open)}>
+          <span className={stage ? 'stage-cascade-value' : 'stage-cascade-placeholder'}>{displayText()}</span>
+          <span className={'stage-cascade-arrow' + (open ? ' open' : '')}>⌄</span>
+        </div>
+        {open && (
+          <div className="stage-cascade-dropdown">
+            <div className="stage-cascade-level stage-cascade-level-1">
+              {CASCADE_OPTIONS.map((opt) => (
+                <div
+                  key={opt.value}
+                  className={
+                    'stage-cascade-item' +
+                    (stage === opt.value ? ' active' : '') +
+                    (activeStage === opt.value ? ' hovered' : '')
+                  }
+                  onMouseEnter={() => setHoverStage(opt.value)}
+                  onMouseLeave={() => setHoverStage((prev) => (prev === opt.value ? null : prev))}
+                >
+                  <span
+                    className="stage-cascade-label"
+                    onClick={() => { onChange(opt.value, ''); setOpen(false); setExpandStage(null); }}
+                  >
+                    {opt.label}
+                  </span>
+                  <span
+                    className="stage-cascade-expand"
+                    onClick={(e) => { e.stopPropagation(); setExpandStage(opt.value); }}
+                  >
+                    ›
+                  </span>
+                </div>
+              ))}
+            </div>
+            {activeStage && (
+              <div className="stage-cascade-level stage-cascade-level-2">
+                {(CASCADE_OPTIONS.find((o) => o.value === activeStage)?.children || []).map((child) => (
+                  <div
+                    key={child}
+                    className={
+                      'stage-cascade-item' +
+                      (status === child && stage === activeStage ? ' active' : '')
+                    }
+                    onClick={() => { onChange(activeStage, child); setOpen(false); setExpandStage(null); }}
+                  >
+                    {child}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderFilter = () => (
     <div className="filter-section">
       <div className="filter-row">
@@ -191,24 +288,13 @@ const OriginalComponent = () => {
           <label>产品提供方</label>
           <input type="text" placeholder="请输入" value={searchProvider} onChange={(e) => setSearchProvider(e.target.value)} />
         </div>
-        <div className="filter-item filter-item-select">
+        <div className="filter-item filter-item-cascade">
           <label>流程节点</label>
-          <select value={searchStage} onChange={(e) => { setSearchStage(e.target.value); setSearchStatus(''); }}>
-            <option value="">请选择</option>
-            {LIST_STAGE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-        <div className="filter-item filter-item-select">
-          <label>节点状态</label>
-          <select
-            value={searchStage ? searchStatus : ''}
-            disabled={!searchStage}
-            onChange={(e) => setSearchStatus(e.target.value)}
-          >
-            {!searchStage && <option value="">请先选择流程节点</option>}
-            {searchStage && <option value="">请选择</option>}
-            {searchStage && (STAGE_STATUS_OPTIONS_BY_STAGE[searchStage] || []).map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <StageCascadeSelect
+            stage={searchStage}
+            status={searchStatus}
+            onChange={(s, st) => { setSearchStage(s); setSearchStatus(st); }}
+          />
         </div>
         <div className="filter-item filter-item-range">
           <label>更新时间</label>

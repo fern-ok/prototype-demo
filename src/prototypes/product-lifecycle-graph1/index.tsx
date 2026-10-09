@@ -35,7 +35,7 @@ const LIST_PAGE_URL = '/prototypes/product-lifecycle.html';
 
 type StageCat = 'pre' | 'core' | 'loop' | 'end';
 
-type StageStatus = 'done' | 'current';
+type StageStatus = 'done' | 'current' | 'rejected';
 
 const CAT_LABEL: Record<StageCat, string> = {
   pre: '前置阶段',
@@ -58,8 +58,17 @@ export const TRACK_STATUS_STYLE: Record<string, { fill: string; stroke: string; 
   审核通过: { fill: '#f6ffed', stroke: '#b7eb8f', accent: '#52c41a' }
 };
 
-/** 由环节执行状态推导运营周期展示状态：当前进行中的环节记为「待处理」，已执行完成环节记为「审核通过」 */
-export const trackNodeStatus = (status: StageStatus): string => (status === 'current' ? '待处理' : '审核通过');
+/** 由环节执行状态推导运营周期展示状态：当前进行中的环节记为「待处理」（若当前阶段状态为驳回则显示「审核不通过」），
+ * 已驳回节点显示「审核不通过」，其余已执行完成环节记为「审核通过」。 */
+export const trackNodeStatus = (status: StageStatus, stageStatus?: string): '待处理' | '审核通过' | '审核不通过' => {
+  if (status === 'rejected') return '审核不通过';
+  if (status === 'current') {
+    const s = stageStatus || '';
+    if (s.includes('不通过') || s.includes('未通过')) return '审核不通过';
+    return '待处理';
+  }
+  return '审核通过';
+};
 
 interface FlowStage {
   key: string;
@@ -211,15 +220,15 @@ const buildLinearNodes = (record: LifecycleRecord): LinearNode[] => {
   });
 
   // 2) 上架生命周期：严格线性展开每一次上架 / 下架 / 变更
+  // 注：当前进行中的环节只应有一个。currentKey === 'shelf' 时仅把当前这一次上架标为 current；
+  // currentKey === 'trade' 时所有上架 / 下架 / 变更均已执行完成；currentKey === 'unshelf' 时仅当前这一次下架标为 current。
   if (currentIndex >= STAGE_INDEX.shelf) {
     const rounds = record.id % 3;
     const shelfCount = rounds + 1;
-    const openShelf = currentKey === 'shelf' || currentKey === 'trade';
-    const openUnshelf = currentKey === 'unshelf';
-    const unshelfCount = openUnshelf ? rounds + 1 : rounds;
+    const unshelfCount = currentKey === 'unshelf' ? rounds + 1 : rounds;
 
     // 首次上架
-    push('shelf', openShelf && shelfCount === 1 ? 'current' : 'done', 1);
+    push('shelf', currentKey === 'shelf' && shelfCount === 1 ? 'current' : 'done', 1);
 
     // 变更集中发生在首次上架之后（每次变更作为一个独立线性节点）
     for (let c = 0; c < changeCount; c++) {
@@ -228,16 +237,16 @@ const buildLinearNodes = (record: LifecycleRecord): LinearNode[] => {
 
     // 后续循环：下架 → 再上架
     for (let i = 0; i < rounds; i++) {
-      const isLastUnshelf = openUnshelf && i === unshelfCount - 1;
+      const isLastUnshelf = currentKey === 'unshelf' && i === unshelfCount - 1;
       push('unshelf', isLastUnshelf ? 'current' : 'done', i + 1);
-      const isLastShelf = openShelf && i + 2 === shelfCount;
+      const isLastShelf = currentKey === 'shelf' && i + 2 === shelfCount;
       push('shelf', isLastShelf ? 'current' : 'done', i + 2);
     }
   }
 
   // 3) 交易 / 撤销（若已执行）
   if (currentIndex >= STAGE_INDEX.trade) push('trade', currentKey === 'trade' ? 'current' : 'done');
-  if (currentIndex >= STAGE_INDEX.revoke) push('revoke', 'done');
+  if (currentIndex >= STAGE_INDEX.revoke) push('revoke', currentKey === 'revoke' ? 'current' : 'done');
 
   return nodes;
 };
@@ -261,7 +270,7 @@ const buildFixedDemoNodes = (record: LifecycleRecord): LinearNode[] => {
     { key: 'trade', seq: 1, status: 'done' },
     { key: 'unshelf', seq: 1, status: 'done' },
     { key: 'shelf', seq: 2, status: 'done' },
-    { key: 'change', seq: 3, status: 'done' },
+    { key: 'change', seq: 3, status: 'rejected' },
     { key: 'trade', seq: 2, status: 'done' },
     { key: 'unshelf', seq: 2, status: 'done' },
     { key: 'shelf', seq: 3, status: 'done' },
@@ -364,11 +373,12 @@ const computeTrackLayout = (nodes: LinearNode[]): TrackLayout => {
 
 interface TrackGraphProps {
   layout: TrackLayout;
+  stageStatus?: string;
   onNodeClick?: (node: LinearNode) => void;
   selectedKey?: string | null;
 }
 
-const TrackLifecycleGraph = ({ layout, onNodeClick, selectedKey }: TrackGraphProps) => {
+const TrackLifecycleGraph = ({ layout, stageStatus, onNodeClick, selectedKey }: TrackGraphProps) => {
   const { rows, positions, folds, DESIGN_W, DESIGN_H, X0, X1, rowY } = layout;
   const mmScale = MM_W / DESIGN_W;
   const mmH = DESIGN_H * mmScale;
@@ -474,7 +484,7 @@ const TrackLifecycleGraph = ({ layout, onNodeClick, selectedKey }: TrackGraphPro
 
       {/* 跑道按环节状态分段着色（低饱和底色）：待处理(蓝) / 审核不通过(红) / 审核通过(绿) */}
       {positions.map((p) => {
-        const tStyle = TRACK_STATUS_STYLE[trackNodeStatus(p.status)];
+        const tStyle = TRACK_STATUS_STYLE[trackNodeStatus(p.status, stageStatus)];
         return (
           <rect
             key={'seg-' + p.idx}
@@ -517,7 +527,7 @@ const TrackLifecycleGraph = ({ layout, onNodeClick, selectedKey }: TrackGraphPro
 
       {/* 业务节点卡片：配色改为按环节状态（待处理蓝 / 审核不通过红 / 审核通过绿），不再区分前置 / 核心 / 变更 / 终止 */}
       {positions.map((p) => {
-        const tStyle = TRACK_STATUS_STYLE[trackNodeStatus(p.status)];
+        const tStyle = TRACK_STATUS_STYLE[trackNodeStatus(p.status, stageStatus)];
         const isSelected = selectedKey === p.key + '-' + p.idx;
         const isCurrent = p.status === 'current';
         const badge = ['shelf', 'unshelf', 'change'].includes(p.key) && (p.seq || 1) > 1;
@@ -542,7 +552,7 @@ const TrackLifecycleGraph = ({ layout, onNodeClick, selectedKey }: TrackGraphPro
             <text x={14} y={32} className="track-card-index" fill={tStyle.accent}>{p.no}</text>
             <text x={NODE_W / 2} y={56} textAnchor="middle" className="track-card-name">{clipText(p.label, 6)}</text>
             <text x={NODE_W / 2} y={80} textAnchor="middle" className="track-card-time">{p.time.slice(5, 16)}</text>
-            <text x={NODE_W / 2} y={80} textAnchor="middle" className="track-card-cat" fill={tStyle.accent}>{trackNodeStatus(p.status)}</text>
+            <text x={NODE_W / 2} y={80} textAnchor="middle" className="track-card-cat" fill={tStyle.accent}>{trackNodeStatus(p.status, stageStatus)}</text>
             {badge && (
               <g transform={'translate(' + (NODE_W - 24) + ', 16)'}>
                 <circle r={12} fill={tStyle.accent} />
@@ -563,9 +573,10 @@ interface MinimapProps {
   transform: { x: number; y: number; scale: number };
   canvasRef: React.RefObject<HTMLDivElement | null>;
   onNavigate: (t: { x: number; y: number; scale: number }) => void;
+  stageStatus?: string;
 }
 
-const LifecycleMinimap = ({ layout, transform, canvasRef, onNavigate }: MinimapProps) => {
+const LifecycleMinimap = ({ layout, transform, canvasRef, onNavigate, stageStatus }: MinimapProps) => {
   const mmRef = useRef<SVGSVGElement>(null);
   const mmScale = MM_W / layout.DESIGN_W;
   const mmH = layout.DESIGN_H * mmScale;
@@ -637,7 +648,7 @@ const LifecycleMinimap = ({ layout, transform, canvasRef, onNavigate }: MinimapP
           <rect key={'mf-' + f.fromIdx} x={f.x - TRACK_H / 2} y={f.yTop} width={TRACK_H} height={f.yBottom - f.yTop} fill="#e7edf5" />
         ))}
         {layout.positions.map((p) => (
-          <rect key={'mn-' + p.idx} x={p.x - NODE_W / 2} y={p.y - NODE_H / 2} width={NODE_W} height={NODE_H} rx={6} fill={TRACK_STATUS_STYLE[trackNodeStatus(p.status)].accent} opacity={0.55} />
+          <rect key={'mn-' + p.idx} x={p.x - NODE_W / 2} y={p.y - NODE_H / 2} width={NODE_W} height={NODE_H} rx={6} fill={TRACK_STATUS_STYLE[trackNodeStatus(p.status, stageStatus)].accent} opacity={0.55} />
         ))}
         <rect
           className="life-minimap-viewport"
@@ -673,7 +684,8 @@ const buildStagePartyInfo = (record: LifecycleRecord, node: LinearNode): StagePa
   const approvalStages = ['review', 'register', 'shelf', 'trade', 'unshelf', 'change', 'revoke'];
   const seed = hashStr(record.productCode + '|' + node.key + '|' + (node.seq || 0));
   const pick = (salt: number) => HANDLER_POOL[(seed + salt) % HANDLER_POOL.length];
-  const effStatus = node.status === 'current' ? record.stageStatus : '已完成';
+  const effStatus =
+    node.status === 'current' ? record.stageStatus : node.status === 'rejected' ? '已驳回' : '已完成';
   const passed = effStatus === '已完成';
   const rejected = effStatus === '已驳回';
 
@@ -873,6 +885,7 @@ export const LifecycleTrackView = ({ record }: { record: LifecycleRecord }) => {
           >
             <TrackLifecycleGraph
               layout={layout}
+              stageStatus={effectiveRecord.stageStatus}
               onNodeClick={handleNodeClick}
               selectedKey={selectedNode ? selectedNode.key + '-' + nodes.findIndex((n) => n === selectedNode) : null}
             />
@@ -885,11 +898,11 @@ export const LifecycleTrackView = ({ record }: { record: LifecycleRecord }) => {
             <button className="lineage-view-btn lineage-view-reset" onClick={fitView} title="重置视图（快捷键 R）" aria-label="重置视图">⟳</button>
           </div>
 
-          <LifecycleMinimap layout={layout} transform={transform} canvasRef={canvasRef} onNavigate={setBoth} />
+          <LifecycleMinimap layout={layout} transform={transform} canvasRef={canvasRef} onNavigate={setBoth} stageStatus={effectiveRecord.stageStatus} />
         </div>
 
         {drawerOpen && <div className="lineage-drawer-mask" onClick={closeDrawer} />}
-        <aside className={'life-drawer ' + (drawerOpen ? 'open' : '')}>
+        <aside className={'life-drawer ' + (drawerOpen ? 'open' : '') + (selectedNode?.key === 'trade' ? ' trade-wide' : '')}>
           <div className="lineage-drawer-header">
             <h3>{selectedNode ? selectedNode.label : '阶段说明'}</h3>
             <button className="lineage-drawer-close" onClick={closeDrawer} aria-label="关闭">×</button>
@@ -900,12 +913,54 @@ export const LifecycleTrackView = ({ record }: { record: LifecycleRecord }) => {
                 <div className="timeline-head">
                   <span className="timeline-index">{selectedNode.no}</span>
                   <span className="timeline-stage">{selectedNode.label}</span>
-                  <span className={'status-tag ' + (selectedNode.status === 'current' ? getStageStatusClass(record.stageStatus) : 'status-approved')}>
-                    {selectedNode.status === 'current' ? record.stageStatus : '已完成'}
+                  <span className={'status-tag ' + (selectedNode.status === 'current' ? getStageStatusClass(record.stageStatus) : selectedNode.status === 'rejected' ? getStageStatusClass('已驳回') : 'status-approved')} style={{ display: 'none' }}>
+                    {selectedNode.status === 'current' ? record.stageStatus : selectedNode.status === 'rejected' ? '已驳回' : '已完成'}
                   </span>
                 </div>
 
-                {party ? (
+                {selectedNode.key === 'trade' ? (
+                  <>
+                    <div className="timeline-block trade-stats-block">
+                      <div className="timeline-block-title">交易统计</div>
+                      <div className="timeline-fields">
+                        <div className="timeline-field"><span className="timeline-field-label">产品提供方</span><span className="timeline-field-value">湖南数据产业集团有限公司</span></div>
+                        <div className="timeline-field"><span className="timeline-field-label">调用成功次数（次）</span><span className="timeline-field-value">12,684,500</span></div>
+                        <div className="timeline-field"><span className="timeline-field-label">订单总额（元）</span><span className="timeline-field-value">45,365,700</span></div>
+                      </div>
+                    </div>
+
+                    <div className="timeline-block">
+                      <div className="timeline-block-title">订单信息</div>
+                      <table className="life-orders-table">
+                        <thead>
+                          <tr>
+                            <th style={{ width: 48 }}>序号</th>
+                            <th>订单编号</th>
+                            <th>数据需求方</th>
+                            <th>订单状态</th>
+                            <th>更新时间</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>1</td>
+                            <td>CPDY2026090900000002</td>
+                            <td>湖南乐途科技有限公司</td>
+                            <td><span className="audit-tag audit-pass">已完成</span></td>
+                            <td>2026-06-05 14:20:15</td>
+                          </tr>
+                          <tr>
+                            <td>2</td>
+                            <td>CPDY2026090900000003</td>
+                            <td>湖南天河国云科技有限公司</td>
+                            <td><span className="audit-tag audit-pass">已完成</span></td>
+                            <td>2026-06-01 09:30:22</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                ) : party ? (
                   <>
                     <div className="timeline-block">
                       <div className="timeline-block-title">发起信息</div>
@@ -963,9 +1018,11 @@ const OriginalComponent = () => {
   }, [record, isFixedDemo]);
 
   const currentStageLabel = effectiveRecord
-    ? CURRENT_MAP[effectiveRecord.currentStage]
-      ? (STAGES.find((s) => s.key === CURRENT_MAP[effectiveRecord.currentStage])?.label || effectiveRecord.currentStage)
-      : effectiveRecord.currentStage
+    ? effectiveRecord.currentStage === '产品上架' || effectiveRecord.currentStage === '产品下架'
+      ? '产品上下架'
+      : CURRENT_MAP[effectiveRecord.currentStage]
+        ? (STAGES.find((s) => s.key === CURRENT_MAP[effectiveRecord.currentStage])?.label || effectiveRecord.currentStage)
+        : effectiveRecord.currentStage
     : '';
 
   const renderNotFound = () => (
@@ -994,7 +1051,7 @@ const OriginalComponent = () => {
             <span className="life-summary-name" title={effectiveRecord.productName}>{effectiveRecord.productName}</span>
             <span className="life-summary-tag">当前阶段：{currentStageLabel}</span>
           </div>
-          <div className="life-graph-legend">
+          <div className="life-graph-legend" style={{ display: 'none' }}>
             {(['待处理', '审核不通过', '审核通过'] as const).map((st) => {
               const s = TRACK_STATUS_STYLE[st];
               return (

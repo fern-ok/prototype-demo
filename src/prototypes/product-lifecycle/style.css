@@ -397,6 +397,163 @@
   white-space: nowrap;
 }
 
+/* 流程节点级联选择：将流程节点与节点状态融合为一个级联组件 */
+/* 级联筛选项：覆盖 backend-list.css 中 .filter-item 的 overflow:hidden，
+   避免绝对定位的级联下拉面板被 32px 高的筛选项容器整体裁剪（此前表现为下拉无任何可选值） */
+.filter-item.filter-item-cascade {
+  position: relative;
+  overflow: visible;
+}
+
+.stage-cascade {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  height: 30px;
+}
+
+.stage-cascade-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 30px;
+  padding: 0 4px;
+  font-size: 12px;
+  color: #1f2329;
+  cursor: pointer;
+  user-select: none;
+}
+
+.stage-cascade-placeholder {
+  color: #a8b1c1;
+}
+
+.stage-cascade-value {
+  color: #1f2329;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage-cascade-arrow {
+  margin-left: 4px;
+  font-size: 14px;
+  color: #8a95a6;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.stage-cascade-arrow.open {
+  transform: rotate(180deg);
+}
+
+.stage-cascade-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 100;
+  display: flex;
+  min-width: 280px;
+  background: #ffffff;
+  border: 1px solid #dfe5ef;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(18, 36, 77, 0.12);
+  overflow: hidden;
+}
+
+.stage-cascade-level {
+  min-width: 120px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.stage-cascade-level:not(:last-child) {
+  border-right: 1px solid #eef0f5;
+}
+
+.stage-cascade-level-1 {
+  flex: 0 0 120px;
+}
+
+.stage-cascade-level-2 {
+  flex: 1;
+  min-width: 160px;
+}
+
+.stage-cascade-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: #1f2329;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.stage-cascade-item:hover,
+.stage-cascade-item.hovered {
+  background: #f5f7fb;
+}
+
+.stage-cascade-item.active {
+  color: #1677ff;
+  background: #e6f4ff;
+}
+
+.stage-cascade-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage-cascade-expand {
+  margin-left: 8px;
+  padding: 0 2px;
+  color: #8a95a6;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.stage-cascade-item:hover .stage-cascade-expand,
+.stage-cascade-item.hovered .stage-cascade-expand {
+  color: #1677ff;
+}
+
+/* 交易统计：一行三列展示，控制字段间距 */
+.trade-stats-block .timeline-fields {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.trade-stats-block .timeline-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.trade-stats-block .timeline-field-label {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.trade-stats-block .timeline-field-value {
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+  text-overflow: clip;
+}
+
 /* 审核结果标签 */
 .audit-tag {
   display: inline-block;

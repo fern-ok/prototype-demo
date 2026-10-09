@@ -1,3 +1,11 @@
+## 2026-10-08（运营周期当前节点唯一化，状态分待处理/审核通过/审核不通过）
+「运营周期」跑道时间轴中，当前进行中的环节仅有一个；其余已执行完成节点统一为「审核通过」（绿），当前节点若当前阶段状态含“不通过/未通过”则显示「审核不通过」（红），否则显示「待处理」（蓝）。
+1、`index.tsx`：
+   - `trackNodeStatus(status, stageStatus?)` 扩展为返回「待处理 / 审核通过 / 审核不通过」：仅当前节点根据 `stageStatus` 判断是否驳回；已执行完成节点固定为「审核通过」。
+   - `buildLinearNodes` 修正 current 标记逻辑：仅当前阶段对应节点为 `current`；`currentKey === 'trade'` 时不再把最后一次上架也标为 current；`revoke` 节点在当前阶段为撤销时也标为 current。
+   - `TrackLifecycleGraph` / `LifecycleMinimap` 均新增 `stageStatus` prop，使跑道分段、卡片、缩略图节点的状态色与当前阶段状态联动。
+2、同步更新 `product-lifecycle-graph1/spec.md` 与 `product-lifecycle-graph/spec.md`：补充“当前进行中环节仅有一个”及驳回态为红色的规则。
+
 ## 2026-10-08（运营周期节点显示名调整）
 「运营周期」跑道时间轴（`LifecycleTrackView`）中三个节点的卡片显示名调整：登记 →「首次登记」、变更 →「变更登记」、撤销 →「撤销登记」（仅改展示文案，节点语义/分类/数据映射不变）。
 1、`index.tsx`：`STAGES` 中 `register` / `change` / `revoke` 三项的 `label` 分别改为「首次登记」「变更登记」「撤销登记」，卡片、抽屉标题、顶栏当前阶段名等展示同步生效。

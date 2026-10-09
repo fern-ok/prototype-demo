@@ -264,6 +264,14 @@ export const seedRecords: LifecycleRecord[] = (function build() {
         '，用于支撑' + domain + '领域的数据分析与业务协同。'
     });
   }
+
+  // 原型演示：固定将「DP43020020260019」置为产品下架 / 下架不通过
+  const dp43020020260019 = list.find((r) => r.productCode === 'DP43020020260019');
+  if (dp43020020260019) {
+    dp43020020260019.currentStage = '产品下架';
+    dp43020020260019.stageStatus = '下架不通过';
+  }
+
   return list;
 })();
 
@@ -609,7 +617,13 @@ export const buildApiInfo = (record: LifecycleRecord): ApiInfo => ({
 export const getRecordByCode = (code: string): LifecycleRecord | undefined => {
   if (!code) return undefined;
   const target = code.trim();
-  return seedRecords.find(function (r) { return r.productCode === target; });
+  const found = seedRecords.find(function (r) { return r.productCode === target; });
+  if (!found) return undefined;
+  // 原型演示：固定将「DP4302020260019」的当前阶段置为产品登记
+  if (target === 'DP4302020260019') {
+    return { ...found, currentStage: '产品登记', stageStatus: '首次登记待审核' };
+  }
+  return found;
 };
 
 /* ---------------- 节点详情列表（授权信息 / 交易信息） ---------------- */
@@ -617,8 +631,10 @@ export const getRecordByCode = (code: string): LifecycleRecord | undefined => {
 export interface AuthRecord {
   /** 全局序号（按授权时间倒序后 1 起） */
   seq: number;
-  /** 运营机构 */
+  /** 被授权方（接收授权的运营机构） */
   org: string;
+  /** 授权用途（基础产品：产品再开发） */
+  purpose: string;
   /** 授权时间，格式 yyyy-MM-dd */
   authTime: string;
 }
@@ -682,16 +698,18 @@ const pickDate = (rand: () => number) => {
 };
 
 /**
- * 生成「授权信息」列表：序号、运营机构、授权时间，按授权时间倒序排列。
+ * 生成「授权信息」列表：序号、被授权方、授权用途、授权时间，按授权时间倒序排列。
+ * 语义：当前节点（基础产品）被授权给这些机构，用于产品再开发（purpose 由调用方传入）。
  * 由节点名派生种子，保证同一节点的演示数据稳定且各节点互不相同。
  */
-export const buildAuthList = (seed: string, count = 17): AuthRecord[] => {
+export const buildAuthList = (seed: string, purpose = '产品再开发', count = 17): AuthRecord[] => {
   const rand = seededRand(hashSeed(seed + '|auth'));
   const list: AuthRecord[] = [];
   for (let i = 0; i < count; i++) {
     list.push({
       seq: 0,
       org: AUTH_ORGS[Math.floor(rand() * AUTH_ORGS.length)],
+      purpose,
       authTime: pickDate(rand)
     });
   }

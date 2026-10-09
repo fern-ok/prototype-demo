@@ -655,6 +655,18 @@
   gap: 12px;
 }
 
+/* 基础产品授权信息列表上方的业务提示 */
+.drawer-auth-tip {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #d8e6ff;
+  background: #eef4ff;
+  color: #0052d9;
+  font-size: 12px;
+  line-height: 20px;
+}
+
 .drawer-table {
   width: 100%;
   border-collapse: collapse;
@@ -699,6 +711,7 @@
 
 .drawer-table .col-org { min-width: 130px; }
 .drawer-table .col-demander { min-width: 150px; }
+.drawer-table .col-purpose { min-width: 96px; }
 .drawer-table .col-time { min-width: 110px; }
 
 .drawer-table-empty {

@@ -717,3 +717,10 @@
   background: #f3f5f9;
   border: 1px solid #d6dce6;
 }
+
+.life-record-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}

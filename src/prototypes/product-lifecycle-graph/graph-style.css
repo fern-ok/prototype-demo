@@ -574,83 +574,97 @@
   flex-direction: column;
 }
 
-/* 环节流程图条带：节点横向依次排列 + 箭头连线，支持窄屏横向滚动 */
+/* 环节流程图条带：浅蓝色渐变底，节点横向滚动 */
 .life-records-flow {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
-  gap: 6px;
-  padding: 14px 16px 18px;
-  margin-bottom: 16px;
-  background: #f7f8fb;
-  border: 1px solid #e4e9f2;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #a9daf8 0%, #c5e6fa 45%, #edf7ff 100%);
+  box-shadow: 0 4px 14px rgba(22, 119, 255, 0.08);
   overflow-x: auto;
   flex: 0 0 auto;
 }
 
 .life-flow-node {
+  position: relative;
   display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px 8px 8px;
-  border: 1px solid #d6dce6;
-  border-radius: 8px;
-  background: #fff;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 140px;
+  padding: 14px 22px 14px 18px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
   cursor: pointer;
-  transition: box-shadow .15s ease, transform .15s ease, opacity .15s ease;
+  transition: transform .2s ease, opacity .2s ease;
   flex: 0 0 auto;
   text-align: left;
 }
 
 .life-flow-node:hover {
-  box-shadow: 0 2px 8px rgba(22, 119, 255, .18);
+  transform: translateY(-2px);
 }
 
-.life-flow-node.active {
-  box-shadow: 0 0 0 2px #1677ff;
+.life-flow-node.current {
+  transform: translateY(-2px);
 }
 
-/* 尚未流转到的环节：弱化显示（灰调 + 虚线描边 + 降透明度） */
+.life-flow-node.active .life-flow-node-label {
+  font-weight: 600;
+}
+
+/* 尚未流转到的环节：弱化显示（降透明度 + 灰字） */
 .life-flow-node.future {
-  background: #f7f8fb;
-  border-style: dashed;
-  border-color: #d6dce6;
   opacity: .55;
+}
+
+.life-flow-node.future:hover {
+  transform: none;
 }
 
 .life-flow-node.future .life-flow-node-label {
   color: #8a95a6;
 }
 
-.life-flow-node-no {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  background: #d6dce6;
-  color: #fff;
-  font-size: 12px;
-  flex: 0 0 auto;
+/* 已进行过的步骤（非当前）：文字绿色 */
+.life-flow-node.occurred:not(.current) .life-flow-node-label {
+  color: #2ba471;
 }
 
 .life-flow-node.future .life-flow-node-no {
-  background: #e4e9f2;
-  color: #8a95a6;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.55);
+}
+
+.life-flow-node-no {
+  position: relative;
+  z-index: 0;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px #fff;
+  opacity: 0.9;
+  pointer-events: none;
+  margin-bottom: 2px;
 }
 
 .life-flow-node-text {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   line-height: 1.25;
 }
 
 .life-flow-node-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1f2329;
+  font-size: 20px;
+  font-weight: 500;
+  color: #1677ff;
   white-space: nowrap;
 }
 
@@ -664,19 +678,20 @@
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
-  color: #d6dce6;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 0 4px;
 }
 
-.life-flow-arrow svg line {
-  stroke: currentColor;
+.life-flow-arrow svg {
+  display: block;
 }
 
-.life-flow-arrow svg polygon {
+.life-flow-arrow svg path {
   fill: currentColor;
 }
 
 .life-flow-arrow.on {
-  color: #91c6fd;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .life-records-empty {

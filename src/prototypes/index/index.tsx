@@ -14,6 +14,7 @@ import v20260824 from './versions/20260824.md?raw';
 import v20260904 from './versions/20260904.md?raw';
 import v20260924 from './versions/20260924.md?raw';
 import v20261023 from './versions/20261023.md?raw';
+import v20261019 from './versions/20261019.md?raw';
 import v20261107 from './versions/20261107.md?raw';
 import changeFlowImg from './images/变更撤销.svg';
 import shengImg from './images/省本级备案.png';
@@ -22,6 +23,11 @@ import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
 
 const versions = [
+      {
+    version: '20261019',
+    title: '20261019版本',
+    content: v20261019,
+  },
     {
     version: '20261023',
     title: '20261023版本',

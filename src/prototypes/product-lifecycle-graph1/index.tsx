@@ -2,8 +2,8 @@
  * @name 生命周期1（蛇形回折跑道时间轴 · 独立整页）
  * @mode axure
  *
- * 由「产品生命周期」列表页「生命周期1」按钮跳转进入的独立整页，
- * 与「生命周期」并列，但采用全新的「蛇形回折跑道时间轴」形态呈现产品生命周期：
+ * 由「产品库」列表页「生命周期1」按钮跳转进入的独立整页，
+ * 与「生命周期」并列，但采用全新的「蛇形回折跑道时间轴」形态呈现产品库：
  *   - 时间主线从画布左上起始，向右延伸，到达画布边界时平滑向下折返，继续向右排布，
  *     形成蛇形回折的连续时间带（跑道）；
  *   - 跑道按业务阶段使用不同低饱和底色分段，白色竖刻度线标记各步骤的操作时间；
@@ -452,7 +452,7 @@ const TrackLifecycleGraph = ({ layout, stageStatus, onNodeClick, selectedKey }: 
       width={DESIGN_W}
       height={DESIGN_H}
       role="img"
-      aria-label="产品生命周期蛇形跑道时间轴"
+      aria-label="产品库蛇形跑道时间轴"
     >
       <defs>
         <marker id="track-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="4.5" orient="auto">
@@ -924,7 +924,7 @@ export const LifecycleTrackView = ({ record }: { record: LifecycleRecord }) => {
                       <div className="timeline-block-title">交易统计</div>
                       <div className="timeline-fields">
                         <div className="timeline-field"><span className="timeline-field-label">产品提供方</span><span className="timeline-field-value">湖南数据产业集团有限公司</span></div>
-                        <div className="timeline-field"><span className="timeline-field-label">调用成功次数（次）</span><span className="timeline-field-value">12,684,500</span></div>
+                        <div className="timeline-field"><span className="timeline-field-label">有效交易订单（笔）</span><span className="timeline-field-value">{2}</span></div>
                         <div className="timeline-field"><span className="timeline-field-label">订单总额（元）</span><span className="timeline-field-value">45,365,700</span></div>
                       </div>
                     </div>
@@ -1031,7 +1031,7 @@ const OriginalComponent = () => {
       <p className="lineage-not-found-text">
         {code ? '未找到对应的数据产品（标识码：' + code + '）' : '缺少数据产品标识码参数'}
       </p>
-      <a className="btn btn-primary" href={LIST_PAGE_URL}>返回产品生命周期</a>
+      <a className="btn btn-primary" href={LIST_PAGE_URL}>返回产品库</a>
     </div>
   );
 
@@ -1042,7 +1042,7 @@ const OriginalComponent = () => {
         <div className="life-graph-topbar">
           <a className="lineage-back" href={LIST_PAGE_URL}>
             <span className="lineage-back-arrow">‹</span>
-            返回产品生命周期
+            返回产品库
           </a>
           <div className="life-graph-title">生命周期1</div>
           <div className="life-graph-summary">
@@ -1072,7 +1072,7 @@ const OriginalComponent = () => {
   return (
     <Layout
       activeMenu="product-lifecycle"
-      breadcrumb="产品生命周期"
+      breadcrumb="产品库"
       role="运营机构"
       onRoleChange={() => {}}
       roleOptions={['运营机构']}

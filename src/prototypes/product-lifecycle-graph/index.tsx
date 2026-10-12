@@ -2,10 +2,10 @@
  * @name 生命周期（独立整页）
  * @mode axure
  *
- * 由「产品生命周期」列表页「生命周期」按钮跳转进入的独立整页。
- * 通过 URL 参数 ?code=数据产品标识码 定位记录，以「运营周期 / 操作记录」双视图展示产品生命周期；
+ * 由「产品库」列表页「生命周期」按钮跳转进入的独立整页。
+ * 通过 URL 参数 ?code=数据产品标识码 定位记录，以「运营周期 / 操作记录」双视图展示产品库；
  * 提供阶段状态、运营周期（上架 / 下架区间）与操作记录等信息，点击节点从右侧滑出抽屉展示阶段说明。
- * 交互与展示方式参照「数据血缘」独立整页（节点抽屉、返回入口）。
+ * 交互与展示方式参照「血缘」独立整页（节点抽屉、返回入口）。
  */
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -796,9 +796,8 @@ const StageRecordsView = ({
             <Fragment key={s.key}>
               {i > 0 && (
                 <span className={'life-flow-arrow' + (prevOccurred && occurred ? ' on' : '')} aria-hidden="true">
-                  <svg width="36" height="12" viewBox="0 0 36 12">
-                    <line x1="0" y1="6" x2="26" y2="6" strokeWidth="2" />
-                    <polygon points="25,1 36,6 25,11" />
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M4 2.5C4 1.7 4.85 1.25 5.5 1.7L12.5 6.7C13.1 7.1 13.1 8 12.5 8.4L5.5 13.4C4.85 13.85 4 13.4 4 12.6V2.5Z" />
                   </svg>
                 </span>
               )}
@@ -809,22 +808,13 @@ const StageRecordsView = ({
                   (isCurrent ? ' current' : '') +
                   (isActive ? ' active' : '')
                 }
-                style={
-                  occurred
-                    ? {
-                        background: style.fill,
-                        borderColor: isCurrent ? style.accent : style.stroke,
-                        borderWidth: isCurrent ? 2 : 1
-                      }
-                    : undefined
-                }
                 onClick={() => setActiveKey(s.key)}
               >
-                <span className="life-flow-node-no" style={occurred ? { background: style.accent } : undefined}>
-                  {i + 1}
+                <span className="life-flow-node-no">
+                  {String(i + 1).padStart(2, '0')}
                 </span>
                 <span className="life-flow-node-text">
-                  <span className="life-flow-node-label" style={occurred ? { color: style.accent } : undefined}>
+                  <span className="life-flow-node-label">
                     {s.label}
                   </span>
                   <span className="life-flow-node-cat" style={{ display: 'none' }}>{displayStatus}</span>
@@ -841,7 +831,7 @@ const StageRecordsView = ({
             <div className="timeline-block-title">交易统计</div>
             <div className="timeline-fields">
               <div className="timeline-field"><span className="timeline-field-label">产品提供方</span><span className="timeline-field-value">湖南数据产业集团有限公司</span></div>
-              <div className="timeline-field"><span className="timeline-field-label">调用成功次数（次）</span><span className="timeline-field-value">12,684,500</span></div>
+              <div className="timeline-field"><span className="timeline-field-label">有效交易订单（笔）</span><span className="timeline-field-value">{TRADE_ORDER_DATA.length}</span></div>
               <div className="timeline-field"><span className="timeline-field-label">订单总额（元）</span><span className="timeline-field-value">45,365,700</span></div>
             </div>
           </div>
@@ -850,6 +840,7 @@ const StageRecordsView = ({
             <table className="life-orders-table">
               <thead>
                 <tr>
+                  <th style={{ width: 48 }}>序号</th>
                   <th>订单编号</th>
                   <th>数据需求方</th>
                   <th>订单状态</th>
@@ -858,8 +849,9 @@ const StageRecordsView = ({
                 </tr>
               </thead>
               <tbody>
-                {tradePagedOrders.map((o) => (
+                {tradePagedOrders.map((o, idx) => (
                   <tr key={o.code}>
+                    <td>{(tradePage - 1) * tradePageSize + idx + 1}</td>
                     <td>{o.code}</td>
                     <td>{o.buyer}</td>
                     <td><span className="life-record-result pass">{o.status}</span></td>
@@ -1239,7 +1231,7 @@ const OriginalComponent = () => {
       <p className="lineage-not-found-text">
         {code ? '未找到对应的数据产品（标识码：' + code + '）' : '缺少数据产品标识码参数'}
       </p>
-      <a className="btn btn-primary" href={LIST_PAGE_URL}>返回产品生命周期</a>
+      <a className="btn btn-primary" href={LIST_PAGE_URL}>返回产品库</a>
     </div>
   );
 
@@ -1268,7 +1260,7 @@ const OriginalComponent = () => {
       <div className="life-graph-topbar">
         <a className="lineage-back" href={LIST_PAGE_URL}>
           <span className="lineage-back-arrow">‹</span>
-          返回产品生命周期
+          返回产品库
         </a>
         <div className="life-graph-title">生命周期</div>
         <div className="life-graph-summary">
@@ -1442,7 +1434,7 @@ const OriginalComponent = () => {
   return (
     <Layout
       activeMenu="product-lifecycle"
-      breadcrumb="产品生命周期"
+      breadcrumb="产品库"
       role="运营机构"
       onRoleChange={() => {}}
       roleOptions={['运营机构']}

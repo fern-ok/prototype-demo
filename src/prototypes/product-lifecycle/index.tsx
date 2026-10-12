@@ -1,8 +1,8 @@
 /**
- * @name 产品生命周期
+ * @name 产品库
  * @mode axure
  *
- * 运营机构角色的产品生命周期跟踪页，后台一级菜单
+ * 运营机构角色的产品库跟踪页，后台一级菜单
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -78,7 +78,7 @@ const OriginalComponent = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // 弹窗（查看、时间轴）；数据血缘、生命周期均已改为独立整页，不再使用弹窗
+  // 弹窗（查看、时间轴）；血缘、生命周期均已改为独立整页，不再使用弹窗
   const [showViewModal, setShowViewModal] = useState(false);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<LifecycleRecord | null>(null);
@@ -289,7 +289,7 @@ const OriginalComponent = () => {
           <input type="text" placeholder="请输入" value={searchProvider} onChange={(e) => setSearchProvider(e.target.value)} />
         </div>
         <div className="filter-item filter-item-cascade">
-          <label>流程节点</label>
+          <label>当前状态</label>
           <StageCascadeSelect
             stage={searchStage}
             status={searchStatus}
@@ -326,8 +326,7 @@ const OriginalComponent = () => {
               <th className="col-product-type">产品类型</th>
               <th className="col-product-stage">产品阶段</th>
               <th className="col-provider">产品提供方</th>
-              <th className="col-stage">流程节点</th>
-              <th className="col-status">节点状态</th>
+              <th className="col-current-status">当前状态</th>
               <th className="col-update-time">更新时间</th>
               <th className="col-action">操作</th>
             </tr>
@@ -335,7 +334,7 @@ const OriginalComponent = () => {
           <tbody>
             {            paginatedList.length === 0 ? (
               <tr>
-                <td colSpan={10} className="empty-state">
+                <td colSpan={9} className="empty-state">
                   <div className="empty-state-icon">📭</div>
                   暂无数据
                 </td>
@@ -350,8 +349,10 @@ const OriginalComponent = () => {
                   <td className="col-product-type"><span className="type-tag">{record.productType}</span></td>
                   <td className="col-product-stage">{record.productStage}</td>
                   <td className="col-provider" title={record.provider}>{record.provider}</td>
-                  <td className="col-stage">{record.currentStage === '产品上架' || record.currentStage === '产品下架' ? '产品上下架' : record.currentStage}</td>
-                  <td className="col-status"><span className={'status-tag ' + getStageStatusClass(record.stageStatus)}>{record.stageStatus}</span></td>
+                  <td className="col-current-status">
+                    <span className="current-stage-name">{record.currentStage === '产品上架' || record.currentStage === '产品下架' ? '产品上下架' : record.currentStage}</span>
+                    <span className={'status-tag ' + getStageStatusClass(record.stageStatus)}>{record.stageStatus}</span>
+                  </td>
                   <td className="col-update-time">{record.updateTime}</td>
                   <td className="col-action">
                     <div className="action-buttons">
@@ -360,7 +361,7 @@ const OriginalComponent = () => {
                       <a
                         className="action-btn"
                         href={'/prototypes/product-lifecycle-lineage.html?code=' + encodeURIComponent(record.productCode)}
-                      >数据血缘</a>
+                      >血缘</a>
                       <a
                         className="action-btn"
                         href={'/prototypes/product-lifecycle-graph.html?code=' + encodeURIComponent(record.productCode)}
@@ -697,11 +698,11 @@ const OriginalComponent = () => {
   return (
     <Layout
       activeMenu={activeMenu}
-      breadcrumb="产品生命周期"
+      breadcrumb="产品库"
       role={role}
       onRoleChange={setRole}
       roleOptions={['运营机构']}
-      title="产品生命周期"
+      title="产品库"
       specContent={specContent}
       changeLogContent={changeLogContent}
     >

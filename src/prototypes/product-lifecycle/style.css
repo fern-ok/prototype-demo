@@ -11,8 +11,13 @@
 .col-product-type { width: 100px; }
 .col-product-stage { width: 110px; }
 .col-provider { width: 190px; }
-.col-stage { width: 110px; }
-.col-status { width: 100px; }
+.col-current-status { width: 220px; }
+.col-current-status .current-stage-name {
+  display: inline-block;
+  margin-right: 8px;
+  color: #1f2329;
+  vertical-align: middle;
+}
 .col-update-time { width: 155px; }
 .col-action { width: 196px; }
 .col-node-type { width: 120px; }
@@ -573,7 +578,7 @@
   color: #e34d59;
 }
 
-/* 列表页「数据血缘」改为页面跳转链接，保持与兄弟按钮一致的视觉（去除下划线） */
+/* 列表页「血缘」改为页面跳转链接，保持与兄弟按钮一致的视觉（去除下划线） */
 a.action-btn {
   text-decoration: none;
   vertical-align: baseline;

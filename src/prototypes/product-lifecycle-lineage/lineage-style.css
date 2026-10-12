@@ -1,4 +1,4 @@
-/* 数据血缘独立整页 - 全屏自适应布局与抽屉交互样式 */
+/* 血缘独立整页 - 全屏自适应布局与抽屉交互样式 */
 
 .lineage-page {
   height: 100%;
@@ -463,7 +463,7 @@
   top: 58px;
   right: 0;
   bottom: 0;
-  width: 420px;
+  width: 660px;
   max-width: 90vw;
   z-index: 100;
   display: flex;
@@ -581,6 +581,14 @@
   line-height: 1.6;
 }
 
+/* 授权信息多个示例之间的分隔横线 */
+.drawer-section-divider {
+  height: 1px;
+  margin: 16px 0;
+  background: #e8edf4;
+  border: 0;
+}
+
 /* 未找到记录 */
 .lineage-not-found {
   flex: 1;
@@ -607,7 +615,7 @@
 /* 响应式适配 */
 @media (max-width: 1200px) {
   .lineage-drawer {
-    width: 380px;
+    width: 640px;
   }
 }
 
@@ -646,6 +654,19 @@
   .drawer-info-value {
     margin-bottom: 8px;
   }
+
+  /* 小屏抽屉占满宽度，放开列最小宽度约束，超出内容以省略号截断（悬停可见全文） */
+  .drawer-table .col-scenario,
+  .drawer-table .col-org,
+  .drawer-table .col-demander,
+  .drawer-table .col-status,
+  .drawer-table .col-amount,
+  .drawer-table .col-order-no,
+  .drawer-table .col-auth-term,
+  .drawer-table .col-dev-platform,
+  .drawer-table .col-time {
+    min-width: 0;
+  }
 }
 
 /* 抽屉内可翻页列表（授权信息 / 交易信息） */
@@ -667,8 +688,40 @@
   line-height: 20px;
 }
 
+/* 授权信息顶部「运营机构名称」信息行 */
+.drawer-auth-org {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.drawer-auth-org-label {
+  flex: 0 0 auto;
+  color: #8a95a6;
+  white-space: nowrap;
+}
+
+.drawer-auth-org-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #1f2329;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 已隐藏的字段行（原「提供方名称」，代码保留，仅隐藏展示） */
+.drawer-info-hidden {
+  display: none;
+}
+
 .drawer-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 13px;
   background: #fff;
@@ -704,15 +757,61 @@
 }
 
 .drawer-table .col-seq {
-  width: 52px;
+  width: 48px;
   text-align: center;
   color: #8a95a6;
 }
 
-.drawer-table .col-org { min-width: 130px; }
-.drawer-table .col-demander { min-width: 150px; }
-.drawer-table .col-purpose { min-width: 96px; }
-.drawer-table .col-time { min-width: 110px; }
+/* 授权信息（基础产品）列宽：固定布局，列宽之和 < 抽屉内容区，避免横向滚动 */
+.drawer-table .col-scenario { width: 110px; }
+.drawer-table .col-org { width: 120px; }
+.drawer-table .col-time { width: 92px; }
+.drawer-table .col-auth-term { width: 96px; }
+.drawer-table .col-dev-platform { width: 118px; }
+
+/* 交易信息（再开发产品）列宽：固定布局，与上面共用同一套约束 */
+.drawer-table .col-demander { width: 150px; }
+.drawer-table .col-status { width: 84px; }
+.drawer-table .col-amount { width: 108px; }
+.drawer-table .col-order-no { width: 100px; }
+
+/* 再开发产品「交易信息」总体统计卡片 */
+.drawer-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.drawer-summary .summary-card {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #e4ecfb;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #f5f9ff 0%, #eef4ff 100%);
+}
+
+.drawer-summary .summary-label {
+  font-size: 12px;
+  color: #6b7688;
+  line-height: 18px;
+  margin-bottom: 6px;
+}
+
+.drawer-summary .summary-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2329;
+  line-height: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.drawer-summary .summary-text {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .drawer-table-empty {
   text-align: center !important;

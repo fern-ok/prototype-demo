@@ -1,8 +1,8 @@
 /**
- * @name 产品生命周期 - 共享数据与血缘逻辑
+ * @name 产品库 - 共享数据与血缘逻辑
  * @mode axure
  *
- * 被「产品生命周期」列表页与「数据血缘」独立页面共同复用，
+ * 被「产品库」列表页与「血缘」独立页面共同复用，
  * 避免两份原型重复维护演示数据与图谱绘制逻辑。
  */
 
@@ -222,7 +222,7 @@ const pad = (n: number, len: number = 2) => String(n).padStart(len, '0');
 /** 地域在名称中的可读前缀：省本级统一展示为「湖南省」 */
 export const regionLabel = (region: string) => (region === '省本级' ? '湖南省' : region);
 
-/** 依据地域 / 领域 / 类型稳定生成产品生命周期演示数据（共 48 条） */
+/** 依据地域 / 领域 / 类型稳定生成产品库演示数据（共 48 条） */
 export const seedRecords: LifecycleRecord[] = (function build() {
   const list: LifecycleRecord[] = [];
   for (let i = 0; i < 48; i++) {
@@ -613,7 +613,7 @@ export const buildApiInfo = (record: LifecycleRecord): ApiInfo => ({
   ]
 });
 
-/** 依据数据产品标识码定位记录（供独立数据血缘页按参数加载） */
+/** 依据数据产品标识码定位记录（供独立血缘页按参数加载） */
 export const getRecordByCode = (code: string): LifecycleRecord | undefined => {
   if (!code) return undefined;
   const target = code.trim();
@@ -631,21 +631,43 @@ export const getRecordByCode = (code: string): LifecycleRecord | undefined => {
 export interface AuthRecord {
   /** 全局序号（按授权时间倒序后 1 起） */
   seq: number;
-  /** 被授权方（接收授权的运营机构） */
+  /** 场景名称（本次授权的应用场景） */
+  scenario: string;
+  /** 被授权方（接收授权的其他经营主体） */
   org: string;
   /** 授权用途（基础产品：产品再开发） */
   purpose: string;
   /** 授权时间，格式 yyyy-MM-dd */
   authTime: string;
+  /** 授权期限（如 2026-2028 / 长期有效） */
+  authTerm: string;
+  /** 数据开发平台（承载授权开发的应用平台） */
+  devPlatform: string;
 }
 
 export interface TradeRecord {
-  /** 全局序号（按创建时间倒序后 1 起） */
+  /** 全局序号（按更新时间倒序后 1 起） */
   seq: number;
+  /** 订单编号 */
+  orderNo: string;
   /** 数据需求方 */
   demander: string;
-  /** 创建时间，格式 yyyy-MM-dd */
-  createdAt: string;
+  /** 订单状态：已下单、交付中、已完成、已终止、已冻结 */
+  status: string;
+  /** 订单金额（元） */
+  amount: number;
+  /** 更新时间，格式 yyyy-MM-dd */
+  updatedAt: string;
+}
+
+/** 再开发产品「交易信息」总体统计 */
+export interface TradeSummary {
+  /** 产品提供方 */
+  provider: string;
+  /** 有效交易订单（笔）：与列表记录数量相等 */
+  validOrderCount: number;
+  /** 订单总额（元） */
+  totalAmount: number;
 }
 
 const AUTH_ORGS = [
@@ -659,6 +681,38 @@ const AUTH_ORGS = [
   '湖南省交通运输厅信息中心'
 ];
 
+/** 授权信息列表「场景名称」候选（演示用） */
+const AUTH_SCENARIOS = [
+  '城市治理数据分析',
+  '公共交通运行监测',
+  '医疗健康数据服务',
+  '政务服务流程优化',
+  '生态环境监测预警',
+  '教育资源数据共享',
+  '文化旅游智能推荐',
+  '应急指挥辅助决策',
+  '金融风险监测预警',
+  '农业产销数据分析'
+];
+
+/** 授权信息列表「授权期限」候选（演示用） */
+const AUTH_TERMS = [
+  '2026-2028',
+  '2026-2029',
+  '2026-2031',
+  '2026-2030',
+  '长期有效',
+  '2026-2027',
+  '2026-2032',
+  '2026-2028'
+];
+
+/** 授权信息列表「数据开发平台」候选（演示用） */
+const AUTH_PLATFORMS = [
+  '可信数据空间',
+  '数据开发中心'
+];
+
 const TRADE_DEMANDERS = [
   '湖南智医科技有限公司',
   '长沙云图数据服务有限公司',
@@ -669,6 +723,9 @@ const TRADE_DEMANDERS = [
   '常德市智慧城市建设公司',
   '湖南中科大数据分析中心'
 ];
+
+/** 交易信息订单状态枚举（与订阅订单监管保持一致） */
+const TRADE_STATUSES = ['已下单', '交付中', '已完成', '已终止', '已冻结'];
 
 /** 稳定的字符串散列（FNV-1a），用于由节点名派生可复现的演示数据 */
 const hashSeed = (s: string): number => {
@@ -698,19 +755,24 @@ const pickDate = (rand: () => number) => {
 };
 
 /**
- * 生成「授权信息」列表：序号、被授权方、授权用途、授权时间，按授权时间倒序排列。
+ * 生成「授权信息」列表：序号、场景名称、其他经营主体、授权时间、授权期限、数据开发平台，按授权时间倒序排列。
  * 语义：当前节点（基础产品）被授权给这些机构，用于产品再开发（purpose 由调用方传入）。
  * 由节点名派生种子，保证同一节点的演示数据稳定且各节点互不相同。
+ * 场景名称 / 授权期限 / 数据开发平台使用独立随机流，调整字段不影响既有「其他经营主体」「授权时间」演示数据。
  */
 export const buildAuthList = (seed: string, purpose = '产品再开发', count = 17): AuthRecord[] => {
   const rand = seededRand(hashSeed(seed + '|auth'));
+  const randExt = seededRand(hashSeed(seed + '|auth-ext'));
   const list: AuthRecord[] = [];
   for (let i = 0; i < count; i++) {
     list.push({
       seq: 0,
+      scenario: AUTH_SCENARIOS[Math.floor(randExt() * AUTH_SCENARIOS.length)],
       org: AUTH_ORGS[Math.floor(rand() * AUTH_ORGS.length)],
       purpose,
-      authTime: pickDate(rand)
+      authTime: pickDate(rand),
+      authTerm: AUTH_TERMS[Math.floor(randExt() * AUTH_TERMS.length)],
+      devPlatform: AUTH_PLATFORMS[Math.floor(randExt() * AUTH_PLATFORMS.length)]
     });
   }
   list.sort((a, b) => (a.authTime < b.authTime ? 1 : a.authTime > b.authTime ? -1 : 0));
@@ -719,7 +781,8 @@ export const buildAuthList = (seed: string, purpose = '产品再开发', count =
 };
 
 /**
- * 生成「交易信息」列表：序号、数据需求方、创建时间，按创建时间倒序排列。
+ * 生成「交易信息」列表：序号、数据需求方、订单状态、订单金额（元）、更新时间，按更新时间倒序排列。
+ * 由节点名派生种子，保证同一节点的演示数据稳定且各节点互不相同。
  */
 export const buildTradeList = (seed: string, count = 15): TradeRecord[] => {
   const rand = seededRand(hashSeed(seed + '|trade'));
@@ -727,13 +790,27 @@ export const buildTradeList = (seed: string, count = 15): TradeRecord[] => {
   for (let i = 0; i < count; i++) {
     list.push({
       seq: 0,
+      orderNo: 'CPDD' + (100000 + Math.floor(rand() * 900000)),
       demander: TRADE_DEMANDERS[Math.floor(rand() * TRADE_DEMANDERS.length)],
-      createdAt: pickDate(rand)
+      status: TRADE_STATUSES[Math.floor(rand() * TRADE_STATUSES.length)],
+      amount: (1 + Math.floor(rand() * 499)) * 100,
+      updatedAt: pickDate(rand)
     });
   }
-  list.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+  list.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0));
   list.forEach(function (r, idx) { r.seq = idx + 1; });
   return list;
+};
+
+/**
+ * 生成「交易信息」总体统计：产品提供方、有效交易订单（笔）、订单总额（元）。
+ * 有效交易订单 = 列表记录数量（list.length）；订单总额为列表各订单金额之和。
+ */
+export const buildTradeSummary = (seed: string, provider: string, list: TradeRecord[]): TradeSummary => {
+  const rand = seededRand(hashSeed(seed + '|trade-sum'));
+  const validOrderCount = list.length;
+  const totalAmount = list.reduce((sum, r) => sum + r.amount, 0);
+  return { provider, validOrderCount, totalAmount };
 };
 
 export const getStageStatusClass = (status: string) => {
@@ -774,7 +851,7 @@ export const computeLayerX = (layerCount: number, width: number, i: number): num
 
 /**
  * 计算辐射式血缘图谱中每个节点的坐标（内容坐标系，单位与画布像素一致）。
- * 主图（LineageGraph）与缩略图（数据血缘页 minimap）共用本函数，保证拓扑坐标一致。
+ * 主图（LineageGraph）与缩略图（血缘页 minimap）共用本函数，保证拓扑坐标一致。
  */
 export const computeNodePositions = (
   layers: LineageLayer[],
@@ -902,7 +979,7 @@ export const LineageGraph = ({ layers, edges, onNodeClick, selectedNodeName, hig
 
   return (
     <div ref={wrapRef} className="lineage-graph-wrap">
-      <svg className="lineage-svg" viewBox={'0 0 ' + width + ' ' + height} width={width} height={height} role="img" aria-label="数据血缘图谱">
+      <svg className="lineage-svg" viewBox={'0 0 ' + width + ' ' + height} width={width} height={height} role="img" aria-label="血缘图谱">
         <defs>
           <marker id="lineage-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
             <path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa7bd" />

@@ -84,7 +84,7 @@ const ResourceDetailModal = ({ item, onClose }: { item: CatalogRecord; onClose: 
           <tbody>{infoItems.length ? infoItems.map((row, idx) => <tr key={row.english}><td>{idx + 1}</td><td>{blank(row.english)}</td><td>{blank(row.name)}</td><td>{blank(row.type)}</td><td>{blank(row.length)}</td><td>{blank(row.desc)}</td></tr>) : <tr><td colSpan={6} className="detail-empty">暂无信息项数据</td></tr>}</tbody>
         </table>
       </div>
-      <div className="detail-pagination" aria-label="信息项分页预留区"><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
+      <div className="detail-pagination" aria-label="信息项分页预留区" style={{ display: 'none' }}><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
     </section>
   );
 
@@ -142,7 +142,9 @@ const ResourceDetailModal = ({ item, onClose }: { item: CatalogRecord; onClose: 
                 <table className="detail-readonly-table"><tbody>
                   <tr><th>资源名称</th><td>{blank(item.name)}</td><th>资源格式</th><td>xls</td></tr>
                   <tr><th>更新频率</th><td>每日</td><th>覆盖时间范围</th><td>2026-5-24 — 至今</td></tr>
-                  <tr><th>地域分类</th><td>湖南省</td><th>资源摘要</th><td>基础数据资源，用于支撑公共卫生服务、医疗机构管理及相关业务分析。</td></tr>
+                  {/* 与数据资源目录政务信息资源页签保持一致：最后两个字段各占一整行 */}
+                  <tr><th>地域分类</th><td colSpan={3}>湖南省</td></tr>
+                  <tr><th>资源摘要</th><td colSpan={3}>基础数据资源，用于支撑公共卫生服务、医疗机构管理及相关业务分析。</td></tr>
                 </tbody></table>
               </section>
               <section className="detail-section" aria-labelledby="gov-info-title">
@@ -153,7 +155,7 @@ const ResourceDetailModal = ({ item, onClose }: { item: CatalogRecord; onClose: 
                     <tbody>{infoItems.length ? infoItems.map((row, idx) => <tr key={row.english}><td>{idx + 1}</td><td>{blank(row.english)}</td><td>{blank(row.name)}</td><td>{blank(row.type)}</td><td>{blank(row.length)}</td></tr>) : <tr><td colSpan={5} className="detail-empty">暂无信息项数据</td></tr>}</tbody>
                   </table>
                 </div>
-                <div className="detail-pagination" aria-label="信息项分页预留区"><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
+                <div className="detail-pagination" aria-label="信息项分页预留区" style={{ display: 'none' }}><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
               </section>
             </>
           ) : activeTab === 'items' ? (

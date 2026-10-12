@@ -1,8 +1,8 @@
 /**
- * @name 数据血缘（独立整页）
+ * @name 血缘（独立整页）
  * @mode axure
  *
- * 由「产品生命周期」列表页「数据血缘」按钮跳转进入的独立整页。
+ * 由「产品库」列表页「血缘」按钮跳转进入的独立整页。
  * 通过 URL 参数 ?code=数据产品标识码 定位记录，全屏渲染血缘辐射图谱，
  * 点击节点从右侧滑出抽屉展示节点信息；支持直接访问与刷新。
  *
@@ -26,8 +26,10 @@ import {
   computeNodePositions,
   AuthRecord,
   TradeRecord,
+  TradeSummary,
   buildAuthList,
-  buildTradeList
+  buildTradeList,
+  buildTradeSummary
 } from '../product-lifecycle/lifecycle-shared';
 import '../product-lifecycle/style.css';
 import '../../common/backend-list.css';
@@ -87,6 +89,11 @@ const OriginalComponent = () => {
   /** 由节点名派生可复现的授权信息 / 交易信息演示数据（各节点互不相同） */
   const authList = useMemo<AuthRecord[]>(() => (selectedNode ? buildAuthList(selectedNode.name) : []), [selectedNode]);
   const tradeList = useMemo<TradeRecord[]>(() => (selectedNode ? buildTradeList(selectedNode.name) : []), [selectedNode]);
+  /** 再开发产品交易信息总体统计（产品提供方取当前产品，有效交易订单=列表记录数，订单总额由列表金额汇总） */
+  const tradeSummary = useMemo<TradeSummary>(() => {
+    if (!selectedNode) return { provider: record?.provider ?? '', validOrderCount: 0, totalAmount: 0 };
+    return buildTradeSummary(selectedNode.name, record?.provider ?? '', tradeList);
+  }, [selectedNode, record, tradeList]);
 
   /* ---------------- 节点筛选（按资源名称 / 产品名称） ---------------- */
   const [filterText, setFilterText] = useState('');
@@ -411,7 +418,7 @@ const OriginalComponent = () => {
   /** 抽屉内可翻页列表（授权信息 / 交易信息通用） */
   const DrawerList = <T extends { seq: number }>(props: {
     rows: T[];
-    columns: { key: Extract<keyof T, string>; title: string; cls?: string }[];
+    columns: { key: Extract<keyof T, string>; title: string; cls?: string; format?: (v: T[Extract<keyof T, string>]) => string }[];
     page: number;
     pageSize: number;
     onPageChange: (p: number) => void;
@@ -437,7 +444,11 @@ const OriginalComponent = () => {
             ) : pageRows.map((r, i) => (
               <tr key={r.seq}>
                 <td className="col-seq">{start + i + 1}</td>
-                {props.columns.map((c) => <td key={c.key} className={c.cls} title={String(r[c.key])}>{String(r[c.key])}</td>)}
+                {props.columns.map((c) => {
+                  const raw = r[c.key];
+                  const display = c.format ? c.format(raw) : String(raw);
+                  return <td key={c.key} className={c.cls} title={String(raw)}>{display}</td>;
+                })}
               </tr>
             ))}
           </tbody>
@@ -534,8 +545,9 @@ const OriginalComponent = () => {
           <div className="drawer-info-value drawer-info-desc">{productDetail.productDesc}</div>
           <div className="drawer-info-label">使用限制</div>
           <div className="drawer-info-value drawer-info-desc">{productDetail.usageLimit}</div>
-          <div className="drawer-info-label">提供方名称</div>
-          <div className="drawer-info-value" title={productDetail.providerName}>{productDetail.providerName}</div>
+          {/* 原始「提供方名称」字段（代码保留，仅隐藏展示；该信息移至「授权信息」顶部以「运营机构名称」呈现） */}
+          <div className="drawer-info-label drawer-info-hidden">提供方名称</div>
+          <div className="drawer-info-value drawer-info-hidden" title={productDetail.providerName}>{productDetail.providerName}</div>
         </div>
       );
     }
@@ -573,20 +585,37 @@ const OriginalComponent = () => {
     );
   };
 
-  /** 数据资源节点「授权信息」页签：展示固定六字段 */
+  /** 数据资源节点「授权信息」页签：展示两个授权示例，中间用横线分隔；第二个示例少一个「数源机构」字段 */
   const renderResourceAuthInfo = () => (
-    <div className="drawer-info-grid">
-      <div className="drawer-info-label">资源授权单名称</div>
-      <div className="drawer-info-value">省本级卫生健康第8批资源授权</div>
-      <div className="drawer-info-label">实施机构</div>
-      <div className="drawer-info-value">湖南省卫生健康委信息统计中心</div>
-      <div className="drawer-info-label">运营机构</div>
-      <div className="drawer-info-value">湖南数据产业集团</div>
-      <div className="drawer-info-label">授权时间</div>
-      <div className="drawer-info-value">2026-06-15 14:20:00</div>
-      <div className="drawer-info-label">授权期限</div>
-      <div className="drawer-info-value">2026-06-04 至 2031-06-04</div>
-    </div>
+    <>
+      <div className="drawer-info-grid drawer-auth-grid">
+        <div className="drawer-info-label">资源授权单名称</div>
+        <div className="drawer-info-value">省本级卫生健康第8批资源授权</div>
+        <div className="drawer-info-label">数源机构</div>
+        <div className="drawer-info-value">中南大学湘雅医院</div>
+        <div className="drawer-info-label">实施机构</div>
+        <div className="drawer-info-value">湖南省卫生健康委信息统计中心</div>
+        <div className="drawer-info-label">运营机构</div>
+        <div className="drawer-info-value">湖南数据产业集团</div>
+        <div className="drawer-info-label">授权时间</div>
+        <div className="drawer-info-value">2026-06-15 14:20:00</div>
+        <div className="drawer-info-label">授权期限</div>
+        <div className="drawer-info-value">2026-06-04 至 2031-06-04</div>
+      </div>
+      <div className="drawer-section-divider" />
+      <div className="drawer-info-grid drawer-auth-grid">
+        <div className="drawer-info-label">资源授权单名称</div>
+        <div className="drawer-info-value">省本级卫生健康第9批资源授权</div>
+        <div className="drawer-info-label">实施机构</div>
+        <div className="drawer-info-value">湖南省卫生健康委信息统计中心</div>
+        <div className="drawer-info-label">运营机构</div>
+        <div className="drawer-info-value">长沙数字科技有限公司</div>
+        <div className="drawer-info-label">授权时间</div>
+        <div className="drawer-info-value">2026-07-20 10:05:00</div>
+        <div className="drawer-info-label">授权期限</div>
+        <div className="drawer-info-value">2026-07-10 至 2031-07-10</div>
+      </div>
+    </>
   );
 
   const TAB_LABEL: Record<TabKey, string> = { basic: '基本信息', auth: '授权信息', trade: '交易信息' };
@@ -609,9 +638,20 @@ const OriginalComponent = () => {
           ) : (
             <div>
               <div className="drawer-auth-tip">获取基础产品授权后，可依托该产品进行再开发。</div>
+              {/* 授权信息顶部：运营机构名称（取当前产品提供方 / 运营机构，等同于原基本信息「提供方名称」） */}
+              <div className="drawer-auth-org">
+                <span className="drawer-auth-org-label">运营机构</span>
+                <span className="drawer-auth-org-value" title={record.provider}>{record.provider}</span>
+              </div>
               <DrawerList
                 rows={authList}
-                columns={[{ key: 'org', title: '其他经营主体', cls: 'col-org' }, { key: 'authTime', title: '授权时间', cls: 'col-time' }]}
+                columns={[
+                  { key: 'scenario', title: '场景名称', cls: 'col-scenario' },
+                  { key: 'org', title: '其他经营主体', cls: 'col-org' },
+                  { key: 'authTime', title: '授权时间', cls: 'col-time' },
+                  { key: 'authTerm', title: '授权期限', cls: 'col-auth-term' },
+                  { key: 'devPlatform', title: '数据开发平台', cls: 'col-dev-platform' }
+                ]}
                 page={listPage}
                 pageSize={pageSize}
                 onPageChange={setListPage}
@@ -620,14 +660,36 @@ const OriginalComponent = () => {
             </div>
           )
         ) : (
-          <DrawerList
-            rows={tradeList}
-            columns={[{ key: 'demander', title: '数据需求方', cls: 'col-demander' }, { key: 'createdAt', title: '订单创建时间', cls: 'col-time' }]}
-            page={listPage}
-            pageSize={pageSize}
-            onPageChange={setListPage}
-            onPageSizeChange={(n) => { setPageSize(n); setListPage(1); }}
-          />
+          <div>
+            <div className="drawer-summary">
+              <div className="summary-card">
+                <div className="summary-label">产品提供方</div>
+                <div className="summary-value summary-text" title={tradeSummary.provider}>{tradeSummary.provider}</div>
+              </div>
+              <div className="summary-card">
+                <div className="summary-label">有效交易订单（笔）</div>
+                <div className="summary-value">{tradeSummary.validOrderCount.toLocaleString('zh-CN')}</div>
+              </div>
+              <div className="summary-card">
+                <div className="summary-label">订单总额（元）</div>
+                <div className="summary-value">{tradeSummary.totalAmount.toLocaleString('zh-CN')}</div>
+              </div>
+            </div>
+            <DrawerList
+              rows={tradeList}
+              columns={[
+                { key: 'orderNo', title: '订单编号', cls: 'col-order-no' },
+                { key: 'demander', title: '数据需求方', cls: 'col-demander' },
+                { key: 'status', title: '订单状态', cls: 'col-status' },
+                { key: 'amount', title: '订单金额（元）', cls: 'col-amount', format: (v) => (v as number).toLocaleString('zh-CN') },
+                { key: 'updatedAt', title: '更新时间', cls: 'col-time' }
+              ]}
+              page={listPage}
+              pageSize={pageSize}
+              onPageChange={setListPage}
+              onPageSizeChange={(n) => { setPageSize(n); setListPage(1); }}
+            />
+          </div>
         )}
       </div>
     );
@@ -639,7 +701,7 @@ const OriginalComponent = () => {
       <p className="lineage-not-found-text">
         {code ? '未找到对应的数据产品（标识码：' + code + '）' : '缺少数据产品标识码参数'}
       </p>
-      <a className="btn btn-primary" href={LIST_PAGE_URL}>返回产品生命周期</a>
+      <a className="btn btn-primary" href={LIST_PAGE_URL}>返回产品库</a>
     </div>
   );
 
@@ -648,7 +710,7 @@ const OriginalComponent = () => {
       <div className="lineage-topbar">
         <a className="lineage-back" href={LIST_PAGE_URL}>
           <span className="lineage-back-arrow">‹</span>
-          返回产品生命周期
+          返回产品库
         </a>
         <div className="lineage-legend">
           {LINEAGE_LEGEND.map(function (type) {
@@ -863,7 +925,7 @@ const OriginalComponent = () => {
   return (
     <Layout
       activeMenu="product-lifecycle"
-      breadcrumb="产品生命周期"
+      breadcrumb="产品库"
       role="运营机构"
       onRoleChange={() => {}}
       roleOptions={['运营机构']}

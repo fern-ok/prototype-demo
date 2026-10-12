@@ -2,7 +2,7 @@ import { ReactNode, useState } from 'react';
 import { ChevronDown, FileText, History, Home, Mail, MapPin, Phone, Search, X } from 'lucide-react';
 import './portal-layout.css';
 
-type PortalNavKey = 'home' | 'resource' | 'product' | 'demand' | 'news' | 'help' | 'none';
+type PortalNavKey = 'home' | 'resource' | 'product' | 'demand' | 'news' | 'help' | 'city' | 'none';
 
 interface PortalLayoutProps {
   children: ReactNode;
@@ -19,6 +19,7 @@ const navItems: Array<{ key: PortalNavKey; label: string; href: string }> = [
   { key: 'demand', label: '发布需求', href: '/prototypes/publish-demand.html' },
   { key: 'news', label: '新闻公告', href: '#' },
   { key: 'help', label: '帮助中心', href: '#' },
+  { key: 'city', label: '城市专区', href: '/prototypes/city-zone.html' },
 ];
 
 const PortalLayout = ({ children, activeNav = 'none', specContent, changeLogContent, className }: PortalLayoutProps) => {

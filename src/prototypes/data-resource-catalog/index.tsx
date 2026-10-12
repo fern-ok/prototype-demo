@@ -569,7 +569,7 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
                 <Field label="是否涉及个人信息" required><div className="radio-group"><label><input type="radio" name="personal" checked={personal === '是'} onChange={() => setPersonal('是')} />是</label><label><input type="radio" name="personal" checked={personal === '否'} onChange={() => setPersonal('否')} />否</label></div></Field>
                 <Field label="资源格式" required><select value={format} onChange={e => setFormat(e.target.value)}><option>请选择</option><option>电子文件存储格式</option><option>数据库</option></select></Field>
                 <Field label="数据来源" required><select value={source} onChange={e => setSource(e.target.value)}><option>请选择</option><option>原始取得</option><option>收集取得</option><option>交易取得</option><option>其他</option></select></Field>
-                <Field label="更新频率" required><div className="joined-input"><input value={freqNum} onChange={e => setFreqNum(e.target.value)} placeholder="请输入" /><select value={freqUnit} onChange={e => setFreqUnit(e.target.value)}><option>次/天</option><option>次/周</option><option>次/月</option><option>次/年</option></select></div></Field>
+                <Field label="更新频率" required><div className="joined-input"><input value={freqNum} onChange={e => setFreqNum(e.target.value)} placeholder="请输入" /><select value={freqUnit} onChange={e => setFreqUnit(e.target.value)}><option>次/天</option><option>次/周</option><option>次/月</option><option>次/季度</option><option>次/年</option></select></div></Field>
                 <Field label="覆盖时间范围" required><div className="date-range"><input type="date" value={coverStart} onChange={e => setCoverStart(e.target.value)} /><span>~</span><input type="date" value={coverEnd} disabled={untilNow} onChange={e => setCoverEnd(e.target.value)} /><label><input type="checkbox" checked={untilNow} onChange={e => setUntilNow(e.target.checked)} />至今</label></div></Field>
                 <Field label="地域分类" required><select value={region} onChange={e => setRegion(e.target.value)}><option>请选择</option><option>湖南省</option><option>长沙市</option><option>株洲市</option></select></Field>
                 {/* 变更弹窗不展示扩展码；新增／编辑弹窗仍保留该字段的输入与提交 */}
@@ -664,7 +664,7 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
           <tbody>{infoItems.length ? infoItems.map((row, idx) => <tr key={row.english}><td>{idx + 1}</td><td>{blank(row.english)}</td><td>{blank(row.name)}</td><td>{blank(row.type)}</td><td>{blank(row.length)}</td><td>{blank(row.desc)}</td></tr>) : <tr><td colSpan={6} className="detail-empty">暂无信息项数据</td></tr>}</tbody>
         </table>
       </div>
-      <div className="detail-pagination" aria-label="信息项分页预留区"><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
+      <div className="detail-pagination" aria-label="信息项分页预留区" style={{ display: 'none' }}><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
     </section>
   );
 
@@ -716,9 +716,10 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
               <section className="detail-section" aria-labelledby="gov-basic-title">
                 <h4 id="gov-basic-title">基本信息</h4>
                 <table className="detail-readonly-table"><tbody>
-                  <tr><th>资源名称</th><td>{blank(item.govCatalog.name)}</td><th>数据所属领域</th><td>{blank(item.govCatalog.domain)}</td></tr>
-                  <tr><th>资源格式</th><td>xls</td><th>更新频率</th><td>每日</td></tr>
-                  <tr><th>覆盖时间范围</th><td>2026-5-24 — 至今</td><th>地域分类</th><td>湖南省</td></tr>
+                  {/* 「数据所属领域」字段已按要求移除（原单元格代码保留于注释）：<th>数据所属领域</th><td>{blank(item.govCatalog.domain)}</td>；其余字段相对顺序不变，最后两个字段各占一整行 */}
+                  <tr><th>资源名称</th><td>{blank(item.govCatalog.name)}</td><th>资源格式</th><td>xls</td></tr>
+                  <tr><th>更新频率</th><td>每日</td><th>覆盖时间范围</th><td>2026-5-24 — 至今</td></tr>
+                  <tr><th>地域分类</th><td colSpan={3}>湖南省</td></tr>
                   <tr><th>资源摘要</th><td colSpan={3}>{blank(item.govCatalog.summary)}</td></tr>
                 </tbody></table>
               </section>
@@ -730,7 +731,7 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
                     <tbody>{infoItems.length ? infoItems.map((row, idx) => <tr key={row.english}><td>{idx + 1}</td><td>{blank(row.english)}</td><td>{blank(row.name)}</td><td>{blank(row.type)}</td><td>{blank(row.length)}</td></tr>) : <tr><td colSpan={5} className="detail-empty">暂无信息项数据</td></tr>}</tbody>
                   </table>
                 </div>
-                <div className="detail-pagination" aria-label="信息项分页预留区"><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
+                <div className="detail-pagination" aria-label="信息项分页预留区" style={{ display: 'none' }}><span>共 {infoItems.length} 条记录</span><span>第 1 / 1 页</span></div>
               </section>
             </>
             ) : (

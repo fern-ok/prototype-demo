@@ -66,7 +66,7 @@ const SIDEBAR_MENU: NavEntry[] = [
   { type: 'link', key: 'data-resource-auth', label: '数据资源授权/申请', icon: KeyRound, href: '/prototypes/data-resource-auth.html' },
   { type: 'link', key: 'data-resource-review', label: '数据资源初审', icon: FileSearch, href: '/prototypes/data-resource-review.html' },
   { type: 'link', key: 'data-resource-recheck', label: '数据资源复审', icon: FileCheck, href: '/prototypes/data-resource-recheck.html' },
-  { type: 'link', key: 'product-lifecycle', label: '产品生命周期', icon: Workflow, href: '/prototypes/product-lifecycle.html' },
+  { type: 'link', key: 'product-lifecycle', label: '产品库', icon: Workflow, href: '/prototypes/product-lifecycle.html' },
   {
     type: 'group',
     key: '授权监管',

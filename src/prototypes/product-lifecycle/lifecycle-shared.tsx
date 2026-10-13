@@ -166,23 +166,25 @@ export const STAGE_OPTIONS = ['安全审查', '产品登记', '产品上架', '�
 /** 阶段流转顺序（时间轴与血缘均按此顺序推导） */
 const STAGE_FLOW = ['安全审查', '产品登记', '产品上架', '产品交易', '产品下架'];
 
-/** 各「流程节点」（按实际 currentStage 取值）允许出现的节点状态（新词表，按节点区分） */
+/** 各「流程节点」（按实际 currentStage 取值）允许出现的节点状态（新词表，按节点区分）。
+ * 安全审查不含「审查通过」：审查通过后系统自动流转至产品登记环节，列表数据中不会存在仍处于审查通过的记录。 */
 const STAGE_STATUS_MAP: Record<string, string[]> = {
-  安全审查: ['待审查', '审查通过', '审查不通过'],
+  安全审查: ['待审查', '审查不通过'],
   产品登记: ['首次登记待审核', '变更登记待审核', '撤销登记待审核', '首次登记未通过', '变更登记未通过', '撤销登记未通过', '已通过', '已撤销'],
-  产品上架: ['上架待审核', '上架已通过', '上架不通过'],
-  产品下架: ['下架待审核', '下架已通过', '下架不通过'],
+  产品上架: ['待审核', '已通过', '不通过'],
+  产品下架: ['待审核', '已通过', '不通过'],
   产品交易: ['已下单', '交付中', '已完成', '已冻结']
 };
 
 /** 节点状态全集（下拉未选流程节点时的兜底选项） */
 export const STAGE_STATUS_OPTIONS = Array.from(new Set(Object.values(STAGE_STATUS_MAP).flat()));
 
-/** 列表「流程节点」→「节点状态」级联映射（产品上下架 合并上架 / 下架 两套状态） */
+/** 列表「流程节点」→「节点状态」级联映射（产品上架 / 产品下架 为两个独立节点，状态词表均为 待审核 / 已通过 / 不通过） */
 export const STAGE_STATUS_OPTIONS_BY_STAGE: Record<string, string[]> = {
   安全审查: STAGE_STATUS_MAP['安全审查'],
   产品登记: STAGE_STATUS_MAP['产品登记'],
-  产品上下架: [...STAGE_STATUS_MAP['产品上架'], ...STAGE_STATUS_MAP['产品下架']],
+  产品上架: STAGE_STATUS_MAP['产品上架'],
+  产品下架: STAGE_STATUS_MAP['产品下架'],
   产品交易: STAGE_STATUS_MAP['产品交易']
 };
 
@@ -265,11 +267,11 @@ export const seedRecords: LifecycleRecord[] = (function build() {
     });
   }
 
-  // 原型演示：固定将「DP43020020260019」置为产品下架 / 下架不通过
+  // 原型演示：固定将「DP43020020260019」置为产品下架 / 不通过
   const dp43020020260019 = list.find((r) => r.productCode === 'DP43020020260019');
   if (dp43020020260019) {
     dp43020020260019.currentStage = '产品下架';
-    dp43020020260019.stageStatus = '下架不通过';
+    dp43020020260019.stageStatus = '不通过';
   }
 
   return list;

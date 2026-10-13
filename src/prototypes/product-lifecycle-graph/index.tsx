@@ -8,7 +8,7 @@
  * 交互与展示方式参照「血缘」独立整页（节点抽屉、返回入口）。
  */
 
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import Layout from '../../common/Layout';
 import PasswordGuard from '../../common/PasswordGuard';
 import {
@@ -386,13 +386,12 @@ const SHELF_UNSHELF_STAGE: FlowStage = {
   desc: '登记完成的产品在运营平台正式上架，或根据业务 / 合规要求下架，形成上架与下架的操作记录。'
 };
 
-/** 操作记录视图覆盖的 6 个环节 key（固定顺序：开发、编目、安全审查、登记、上下架、交易） */
-const RECORD_STAGE_KEYS = ['dev', 'catalog', 'review', 'register', 'shelf-unshelf', 'trade'];
+/** 操作记录视图覆盖的 6 个环节 key（固定顺序：开发、编目、安全审查、登记、上架、下架）。
+ * 「产品上下架」合并节点已拆分为 产品上架 / 产品下架 两个独立环节；「产品交易」环节已移除，原合并节点与交易相关代码保留不删。 */
+const RECORD_STAGE_KEYS = ['dev', 'catalog', 'review', 'register', 'shelf', 'unshelf'];
 
-/** 操作记录视图覆盖的 6 个环节（上下架为合并节点，其余取自 STAGES，保证固定顺序） */
-const RECORD_STAGES: FlowStage[] = RECORD_STAGE_KEYS.map((k) =>
-  k === 'shelf-unshelf' ? SHELF_UNSHELF_STAGE : STAGES.find((s) => s.key === k)!
-);
+/** 操作记录视图覆盖的 6 个环节（均取自 STAGES，保证固定顺序） */
+const RECORD_STAGES: FlowStage[] = RECORD_STAGE_KEYS.map((k) => STAGES.find((s) => s.key === k)!);
 
 /** 合并节点「上下架」的综合状态：上架或下架进行中则为 current；上架完成（含已变更）则为 done；否则 future */
 const getShelfUnshelfStatus = (statusMap: Record<string, StageStatus>): StageStatus => {
@@ -742,14 +741,20 @@ const StageRecordsView = ({
   record,
   statusMap,
   currentIndex,
-  serviceCycles
+  serviceCycles,
+  defaultActiveKey,
+  summarySlot
 }: {
   record: LifecycleRecord;
   statusMap: Record<string, StageStatus>;
   currentIndex: number;
   serviceCycles: { shelfCount: number; unshelfCount: number };
+  /** 初始选中的环节 key（缺省为「产品上架」） */
+  defaultActiveKey?: string;
+  /** 插槽：渲染在步骤条与操作记录列表之间（如标识码 / 产品名称概要） */
+  summarySlot?: ReactNode;
 }) => {
-  const [activeKey, setActiveKey] = useState<string>('shelf-unshelf');
+  const [activeKey, setActiveKey] = useState<string>(defaultActiveKey || 'shelf');
   const [tradePage, setTradePage] = useState<number>(1);
   const [tradePageSize, setTradePageSize] = useState<number>(10);
   const activeStage = RECORD_STAGES.find((s) => s.key === activeKey) || RECORD_STAGES[0];
@@ -796,8 +801,8 @@ const StageRecordsView = ({
             <Fragment key={s.key}>
               {i > 0 && (
                 <span className={'life-flow-arrow' + (prevOccurred && occurred ? ' on' : '')} aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M4 2.5C4 1.7 4.85 1.25 5.5 1.7L12.5 6.7C13.1 7.1 13.1 8 12.5 8.4L5.5 13.4C4.85 13.85 4 13.4 4 12.6V2.5Z" />
+                  <svg width="16" height="16" viewBox="0 0 16 16">
+                    <path d="M2 8h10.6M9.4 4.6 12.8 8l-3.4 3.4" />
                   </svg>
                 </span>
               )}
@@ -811,7 +816,7 @@ const StageRecordsView = ({
                 onClick={() => setActiveKey(s.key)}
               >
                 <span className="life-flow-node-no">
-                  {String(i + 1).padStart(2, '0')}
+                  {String(i + 1)}
                 </span>
                 <span className="life-flow-node-text">
                   <span className="life-flow-node-label">
@@ -824,6 +829,9 @@ const StageRecordsView = ({
           );
         })}
       </div>
+
+      {/* 步骤条与操作记录列表之间的插槽（如标识码 / 产品名称概要） */}
+      {summarySlot}
 
       {activeStage.key === 'trade' ? (
         <div className="life-records-table-wrap">
@@ -949,6 +957,43 @@ const StageRecordsView = ({
         </div>
       )}
     </div>
+  );
+};
+
+/* ---------------- 生命周期详情（复用导出：供产品库列表「生命周期」弹窗渲染） ---------------- */
+
+/** 依据记录自行推导变更次数 / 节点状态 / 当前序号 / 运营周期，直接渲染「操作记录」视图（步骤条 + 操作记录表） */
+export const LifecycleDetailView = ({
+  record,
+  summarySlot
+}: {
+  record: LifecycleRecord;
+  /** 插槽：渲染在步骤条与操作记录列表之间（如标识码 / 产品名称概要） */
+  summarySlot?: ReactNode;
+}) => {
+  const changeCount = useMemo(() => deriveChangeCount(record), [record]);
+  const statusMap = useMemo<Record<string, StageStatus>>(
+    () => buildStatusMap(record, changeCount),
+    [record, changeCount]
+  );
+  /** 当前阶段在主干中的序号（用于推导各阶段操作时间） */
+  const currentIndex = useMemo(() => {
+    const key = CURRENT_MAP[record.currentStage] || 'review';
+    return STAGE_INDEX[key] ?? 2;
+  }, [record]);
+  const serviceCycles = useMemo(
+    () => buildServiceCycles(record, currentIndex),
+    [record, currentIndex]
+  );
+  return (
+    <StageRecordsView
+      record={record}
+      statusMap={statusMap}
+      currentIndex={currentIndex}
+      serviceCycles={serviceCycles}
+      defaultActiveKey={CURRENT_MAP[record.currentStage] || 'review'}
+      summarySlot={summarySlot}
+    />
   );
 };
 
@@ -1236,11 +1281,9 @@ const OriginalComponent = () => {
   );
 
   const currentStageLabel = record
-    ? record.currentStage === '产品上架' || record.currentStage === '产品下架'
-      ? '产品上下架'
-      : CURRENT_MAP[record.currentStage]
-        ? STAGES.find((s) => s.key === CURRENT_MAP[record.currentStage])?.label
-        : record.currentStage
+    ? CURRENT_MAP[record.currentStage]
+      ? STAGES.find((s) => s.key === CURRENT_MAP[record.currentStage])?.label
+      : record.currentStage
     : '';
 
   /* 抽屉内容（参照时间轴：发起信息 / 审批信息） */

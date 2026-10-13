@@ -620,6 +620,12 @@ const OriginalComponent = () => {
 
   const TAB_LABEL: Record<TabKey, string> = { basic: '基本信息', auth: '授权信息', trade: '交易信息' };
 
+  /** 页签文案：数据资源节点为「资源授权信息」，基础产品节点为「产品授权信息」 */
+  const getTabLabel = (t: TabKey, nodeType: string): string => {
+    if (t === 'auth') return nodeType === '数据资源' ? '资源授权信息' : '产品授权信息';
+    return TAB_LABEL[t];
+  };
+
   const renderDrawerContent = () => {
     if (!selectedNode || !record) return null;
     const tabs = getTabs(selectedNode.type);
@@ -627,7 +633,7 @@ const OriginalComponent = () => {
       <div className="lineage-drawer-body">
         <div className="drawer-tabs">
           {tabs.map((t) => (
-            <button key={t} className={'drawer-tab ' + (activeTab === t ? 'active' : '')} onClick={() => setActiveTab(t)}>{TAB_LABEL[t]}</button>
+            <button key={t} className={'drawer-tab ' + (activeTab === t ? 'active' : '')} onClick={() => setActiveTab(t)}>{getTabLabel(t, selectedNode.type)}</button>
           ))}
         </div>
         {activeTab === 'basic' ? (

@@ -25,6 +25,7 @@ import {
 } from './lifecycle-shared';
 import './style.css';
 import '../../common/backend-list.css';
+import { LifecycleDetailView } from '../product-lifecycle-graph';
 
 /** 附件展示：回形针 + 文件名 + 绿色签章图标；无附件时不渲染（单元格留空） */
 const FileChip = ({ name }: { name: string }) => {
@@ -43,24 +44,27 @@ const FileChip = ({ name }: { name: string }) => {
   );
 };
 
-/** 列表页「流程节点」展示口径：将 产品上架 / 产品下架 合并为 产品上下架。
- * 仅作用于列表筛选与列展示，底层数据模型（STAGE_OPTIONS / STAGE_FLOW）仍保留上架、下架，时间轴与图谱不受影响。 */
+/** 列表页「流程节点」展示口径：将 产品上架 / 产品下架 拆分为两个独立节点（各自状态 待审核 / 已通过 / 不通过）；并移除「产品交易」节点及其状态值（已下单 / 交付中 / 已完成 / 已冻结），
+ * 使当前状态字段不再展示产品交易环节状态选项、筛选栏不再支持按产品交易环节状态筛选。
+ * 仅作用于列表筛选与列展示，底层数据模型（STAGE_OPTIONS / STAGE_FLOW / STAGE_STATUS_MAP / STAGE_STATUS_OPTIONS_BY_STAGE）仍保留产品交易，时间轴与图谱不受影响。 */
 const CASCADE_OPTIONS = [
   { value: '安全审查', label: '安全审查', children: STAGE_STATUS_OPTIONS_BY_STAGE['安全审查'] },
   { value: '产品登记', label: '产品登记', children: STAGE_STATUS_OPTIONS_BY_STAGE['产品登记'] },
-  { value: '产品上下架', label: '产品上下架', children: STAGE_STATUS_OPTIONS_BY_STAGE['产品上下架'] },
-  { value: '产品交易', label: '产品交易', children: STAGE_STATUS_OPTIONS_BY_STAGE['产品交易'] }
+  { value: '产品上架', label: '产品上架', children: STAGE_STATUS_OPTIONS_BY_STAGE['产品上架'] },
+  { value: '产品下架', label: '产品下架', children: STAGE_STATUS_OPTIONS_BY_STAGE['产品下架'] }
 ];
 
 const OriginalComponent = () => {
   const [activeMenu] = useState<'product-lifecycle'>('product-lifecycle');
   const [role, setRole] = useState('运营机构');
 
-  // 列表工作集：按需求「去掉节点状态未已终止的数据」，默认仅保留节点状态为「已终止」的产品；
-  // 源数据 seedRecords（48 条）完整保留，仅过滤列表展示工作集：去掉「已终止」记录、保留其余状态，
-  // 重置 / 下拉筛选均不会重新引入「已终止」记录。
+  // 列表工作集：
+  // 1) 按需求「去掉节点状态为「已终止」的数据」，默认仅保留「已终止」以外的产品；
+  // 2) 移除所有「产品交易」环节记录（currentStage === '产品交易'，其状态值 已下单 / 交付中 / 已完成 / 已冻结 仅在该环节出现），
+  //    使列表不再渲染产品交易状态数据，与已移除的产品交易筛选条件保持一致。
+  // 源数据 seedRecords（48 条）完整保留，仅过滤列表展示工作集；重置 / 下拉筛选均不会重新引入上述记录。
   const [records] = useState<LifecycleRecord[]>(() =>
-    seedRecords.filter((r) => r.stageStatus !== '已终止')
+    seedRecords.filter((r) => r.stageStatus !== '已终止' && r.currentStage !== '产品交易')
   );
 
   // 筛选条件
@@ -78,9 +82,10 @@ const OriginalComponent = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // 弹窗（查看、时间轴）；血缘、生命周期均已改为独立整页，不再使用弹窗
+  // 弹窗（查看、时间轴、生命周期）；血缘为独立整页，不再使用弹窗
   const [showViewModal, setShowViewModal] = useState(false);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
+  const [showLifecycleModal, setShowLifecycleModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<LifecycleRecord | null>(null);
   const [viewTab, setViewTab] = useState<'basic' | 'config'>('basic');
 
@@ -92,13 +97,7 @@ const OriginalComponent = () => {
       if (searchProductType && r.productType !== searchProductType) return false;
       if (searchProductStage && r.productStage !== searchProductStage) return false;
       if (searchProvider && !r.provider.includes(searchProvider.trim())) return false;
-      if (searchStage) {
-        if (searchStage === '产品上下架') {
-          if (r.currentStage !== '产品上架' && r.currentStage !== '产品下架') return false;
-        } else if (r.currentStage !== searchStage) {
-          return false;
-        }
-      }
+      if (searchStage && r.currentStage !== searchStage) return false;
       if (searchStatus && r.stageStatus !== searchStatus) return false;
       if (startDate && r.updateTime.slice(0, 10) < startDate) return false;
       if (endDate && r.updateTime.slice(0, 10) > endDate) return false;
@@ -154,6 +153,12 @@ const OriginalComponent = () => {
   const handleTimeline = (record: LifecycleRecord) => {
     setCurrentRecord(record);
     setShowTimelineModal(true);
+  };
+
+  /** 生命周期弹窗：复用生命周期图谱页的操作记录视图（步骤条 + 操作记录表） */
+  const handleLifecycle = (record: LifecycleRecord) => {
+    setCurrentRecord(record);
+    setShowLifecycleModal(true);
   };
 
   const renderSummaryBar = () => (
@@ -350,7 +355,7 @@ const OriginalComponent = () => {
                   <td className="col-product-stage">{record.productStage}</td>
                   <td className="col-provider" title={record.provider}>{record.provider}</td>
                   <td className="col-current-status">
-                    <span className="current-stage-name">{record.currentStage === '产品上架' || record.currentStage === '产品下架' ? '产品上下架' : record.currentStage}</span>
+                    <span className="current-stage-name">{record.currentStage}</span>
                     <span className={'status-tag ' + getStageStatusClass(record.stageStatus)}>{record.stageStatus}</span>
                   </td>
                   <td className="col-update-time">{record.updateTime}</td>
@@ -362,10 +367,7 @@ const OriginalComponent = () => {
                         className="action-btn"
                         href={'/prototypes/product-lifecycle-lineage.html?code=' + encodeURIComponent(record.productCode)}
                       >血缘</a>
-                      <a
-                        className="action-btn"
-                        href={'/prototypes/product-lifecycle-graph.html?code=' + encodeURIComponent(record.productCode)}
-                      >生命周期</a>
+                      <button className="action-btn" onClick={() => handleLifecycle(record)}>生命周期</button>
                     </div>
                   </td>
                 </tr>
@@ -695,6 +697,29 @@ const OriginalComponent = () => {
     </div>
   );
 
+  /** 生命周期弹窗：步骤条 + 操作记录列表（复用生命周期图谱页 LifecycleDetailView） */
+  const renderLifecycleModal = () => (
+    <div className="modal-overlay" onClick={() => setShowLifecycleModal(false)}>
+      <div className="modal-xlarge" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>生命周期</h3>
+          <button className="modal-close" onClick={() => setShowLifecycleModal(false)}>×</button>
+        </div>
+        <div className="modal-body life-modal-body">
+          {currentRecord && (
+            <LifecycleDetailView
+              record={currentRecord}
+              summarySlot={<div className="life-modal-summary">{renderSummaryBar()}</div>}
+            />
+          )}
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-default" onClick={() => setShowLifecycleModal(false)}>关闭</button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <Layout
       activeMenu={activeMenu}
@@ -711,6 +736,7 @@ const OriginalComponent = () => {
 
       {showViewModal && renderViewModal()}
       {showTimelineModal && renderTimelineModal()}
+      {showLifecycleModal && renderLifecycleModal()}
     </Layout>
   );
 };

@@ -574,17 +574,18 @@
   flex-direction: column;
 }
 
-/* 环节流程图条带：浅蓝色渐变底，节点横向滚动 */
+/* 环节流程图条带：白底条带，节点为「圆形序号徽标 + 环节名称」横向排列 */
 .life-records-flow {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
-  gap: 10px;
-  padding: 18px 22px;
+  gap: 8px;
+  padding: 16px 22px;
   margin-bottom: 18px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #a9daf8 0%, #c5e6fa 45%, #edf7ff 100%);
-  box-shadow: 0 4px 14px rgba(22, 119, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid #eef1f5;
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.05);
   overflow-x: auto;
   flex: 0 0 auto;
 }
@@ -592,18 +593,80 @@
 .life-flow-node {
   position: relative;
   display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  min-width: 140px;
-  padding: 14px 22px 14px 18px;
-  border: none;
-  border-radius: 12px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 5px 14px 5px 6px;
+  border: 1px solid transparent;
+  border-radius: 999px;
   background: transparent;
   cursor: pointer;
-  transition: transform .2s ease, opacity .2s ease;
+  transition: transform .2s ease, box-shadow .2s ease;
   flex: 0 0 auto;
   text-align: left;
+}
+
+/* 已进行环节（未选中）：浅绿底 + 绿色椭圆边框 */
+.life-flow-node.occurred:not(.current):not(.active) {
+  background: #f4fbef;
+  border-color: #a9dd8c;
+}
+
+/* 当前环节（未选中）：白底 + 蓝色椭圆边框（加粗） */
+.life-flow-node.current:not(.active) {
+  background: #ffffff;
+  border-color: #1677ff;
+  box-shadow: inset 0 0 0 1px #1677ff, 0 2px 8px rgba(22, 119, 255, 0.15);
+}
+
+/* 未进行环节（未选中）：浅灰底 + 灰色椭圆边框 */
+.life-flow-node.future:not(.active) {
+  background: #fafbfc;
+  border-color: #ececec;
+}
+
+/* ===== 选中（active）节点：实心填充 + 白字 + 白色序号徽标，强对比区分已选 / 未选 ===== */
+.life-flow-node.active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(22, 119, 255, 0.25);
+}
+.life-flow-node.active.occurred {
+  background: #52c41a;
+  border-color: #52c41a;
+}
+.life-flow-node.active.current {
+  background: #1677ff;
+  border-color: #1677ff;
+}
+.life-flow-node.active.future {
+  background: #8c8c8c;
+  border-color: #8c8c8c;
+}
+/* 选中态标签：白字加粗（高特异性，覆盖下方各状态文字色规则） */
+.life-flow-node.active .life-flow-node-label,
+.life-flow-node.active.occurred .life-flow-node-label,
+.life-flow-node.active.current .life-flow-node-label,
+.life-flow-node.active.future .life-flow-node-label {
+  color: #ffffff;
+  font-weight: 700;
+}
+/* 选中态徽标：统一白底（高特异性，覆盖 .current 徽标蓝底与光圈） */
+.life-flow-node.active .life-flow-node-no,
+.life-flow-node.active.occurred .life-flow-node-no,
+.life-flow-node.active.current .life-flow-node-no,
+.life-flow-node.active.future .life-flow-node-no {
+  background: #ffffff;
+  box-shadow: none;
+}
+.life-flow-node.active.occurred .life-flow-node-no {
+  color: #52c41a;
+}
+.life-flow-node.active.current .life-flow-node-no {
+  color: #1677ff;
+}
+.life-flow-node.active.future .life-flow-node-no {
+  color: #8c8c8c;
 }
 
 .life-flow-node:hover {
@@ -611,46 +674,51 @@
 }
 
 .life-flow-node.current {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
-.life-flow-node.active .life-flow-node-label {
-  font-weight: 600;
-}
-
-/* 尚未流转到的环节：弱化显示（降透明度 + 灰字） */
-.life-flow-node.future {
-  opacity: .55;
+/* 尚未流转到的环节（未选中）：灰色徽标 + 灰字 */
+.life-flow-node.future:not(.active) .life-flow-node-no {
+  background: #d9d9d9;
 }
 
 .life-flow-node.future:hover {
   transform: none;
 }
 
-.life-flow-node.future .life-flow-node-label {
-  color: #8a95a6;
+.life-flow-node.future:not(.active) .life-flow-node-label {
+  color: #b9c0cc;
 }
 
-/* 已进行过的步骤（非当前）：文字绿色 */
-.life-flow-node.occurred:not(.current) .life-flow-node-label {
-  color: #2ba471;
+/* 已进行过的步骤（非当前、未选中）：绿色徽标 + 绿字 */
+.life-flow-node.occurred:not(.current):not(.active) .life-flow-node-label {
+  color: #52c41a;
 }
 
-.life-flow-node.future .life-flow-node-no {
-  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.55);
-}
-
+/* 序号徽标：圆形，已进行环节为绿色 */
 .life-flow-node-no {
-  position: relative;
-  z-index: 0;
-  font-size: 42px;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 600;
   line-height: 1;
-  color: transparent;
-  -webkit-text-stroke: 1.5px #fff;
-  opacity: 0.9;
+  color: #ffffff;
+  background: #52c41a;
+  flex: 0 0 auto;
   pointer-events: none;
-  margin-bottom: 2px;
+}
+
+/* 当前环节：蓝色徽标（略大 + 浅蓝光圈） */
+.life-flow-node.current .life-flow-node-no {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  background: #1677ff;
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.18);
 }
 
 .life-flow-node-text {
@@ -662,7 +730,7 @@
 }
 
 .life-flow-node-label {
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 500;
   color: #1677ff;
   white-space: nowrap;
@@ -678,8 +746,8 @@
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
-  color: rgba(255, 255, 255, 0.35);
-  padding: 0 4px;
+  color: #d9d9d9;
+  padding: 0 2px;
 }
 
 .life-flow-arrow svg {
@@ -687,11 +755,15 @@
 }
 
 .life-flow-arrow svg path {
-  fill: currentColor;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .life-flow-arrow.on {
-  color: rgba(255, 255, 255, 0.85);
+  color: #52c41a;
 }
 
 .life-records-empty {

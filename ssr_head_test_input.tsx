@@ -32,7 +32,7 @@ for (const [label, el] of [['A: 2 initial + 0 selection', A], ['B: 0 initial + 0
     const html = renderToStaticMarkup(el);
     console.log('=== ' + label + ' ===');
     console.log('len=' + html.length);
-    console.log('has_label:', html.includes('已关联政务信息资源目录'));
+    console.log('has_label:', html.includes('已关联政务数据目录'));
     console.log('has_chip_class:', html.includes('head-associated-chip'));
     console.log('RENDER_OK');
   } catch (e) {

@@ -832,3 +832,16 @@
   flex-wrap: wrap;
   justify-content: flex-end;
 }
+
+/* ============================================================
+   以下元素按需求隐藏（display:none 处理，原始代码 / DOM 保留不删除）：
+   1) 左上角搜索筛选框（.lineage-filter）
+   2) 右下角缩略图（概览，.lineage-minimap）及收起后的「显示概览」还原按钮（.lineage-minimap-restore）
+   3) 画布顶部的图层文字说明（数据资源 / 基础产品 / 再开发产品，.lineage-layer-title）
+   ============================================================ */
+.lineage-filter,
+.lineage-minimap,
+.lineage-minimap-restore,
+.lineage-layer-title {
+  display: none !important;
+}

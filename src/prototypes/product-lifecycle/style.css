@@ -180,6 +180,22 @@
   background: #fff;
 }
 
+/* 生命周期弹窗：内嵌生命周期详情视图的间距适配 */
+.life-modal-body .life-records {
+  flex: none;
+  padding: 0;
+  overflow: visible;
+}
+
+.life-modal-body .life-records-flow {
+  margin-bottom: 14px;
+}
+
+/* 标识码 / 产品名称概要：位于步骤条下方 */
+.life-modal-summary {
+  margin: 0 0 14px;
+}
+
 /* Section title in modal */
 .section-title {
   min-height: 32px;

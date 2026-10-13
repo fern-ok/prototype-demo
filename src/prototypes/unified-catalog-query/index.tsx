@@ -14,8 +14,8 @@ import changeLogContent from './change.md?raw';
 import './style.css';
 import '../../common/backend-list.css';
 
-type CatalogSource = '授权运营平台' | '资源登记平台' | '政务信息资源';
-const CATALOG_SOURCES: CatalogSource[] = ['授权运营平台', '资源登记平台', '政务信息资源'];
+type CatalogSource = '授权运营平台' | '资源登记平台' | '政务数据目录';
+const CATALOG_SOURCES: CatalogSource[] = ['授权运营平台', '资源登记平台', '政务数据目录'];
 
 interface CatalogRecord {
   id: number;
@@ -31,8 +31,8 @@ interface CatalogRecord {
 
 const SEED_RECORDS: CatalogRecord[] = [
   { id: 1, name: '221', provider: '湖南省卫生健康委统计信息中心', source: ['授权运营平台'], domain: '卫生健康', description: '医院基础信息登记数据，包含机构名称、等级、地址等基础属性。', updateTime: '2026-08-25 09:43:01' },
-  { id: 2, name: '测试0321-5', provider: '湖南省卫生健康委统计信息中心', source: ['授权运营平台', '政务信息资源'], domain: '卫生健康', description: '公共卫生应急资源数据，用于疾控和应急指挥场景。', updateTime: '2026-08-21 16:50:01' },
-  { id: 3, name: '测试0321-3', provider: '湖南省卫生健康委统计信息中心', source: ['政务信息资源'], domain: '卫生健康', description: '基层医疗机构人员花名册数据。', updateTime: '2026-08-21 16:09:01' },
+  { id: 2, name: '测试0321-5', provider: '湖南省卫生健康委统计信息中心', source: ['授权运营平台', '政务数据目录'], domain: '卫生健康', description: '公共卫生应急资源数据，用于疾控和应急指挥场景。', updateTime: '2026-08-21 16:50:01' },
+  { id: 3, name: '测试0321-3', provider: '湖南省卫生健康委统计信息中心', source: ['政务数据目录'], domain: '卫生健康', description: '基层医疗机构人员花名册数据。', updateTime: '2026-08-21 16:09:01' },
   { id: 4, name: '测试0321-1', provider: '湖南省卫生健康委统计信息中心', source: ['授权运营平台'], domain: '卫生健康', description: '处方流转与药品使用情况统计数据。', updateTime: '2026-08-21 15:25:03' },
   { id: 5, name: '测试武源0321-1', provider: '天融机构交通局', source: ['授权运营平台'], domain: '交通运输', description: '城市公共交通线路与车辆基础信息数据。', updateTime: '2026-08-21 14:40:01' },
   { id: 6, name: '长沙市开福区金融资源0729-4', provider: '长沙市开福区金融服务中心·工会委员会', source: ['授权运营平台'], domain: '金融服务', description: '区域金融机构名录及行业分类数据。', updateTime: '2026-07-29 17:27:01' },
@@ -56,15 +56,15 @@ type DetailTab = 'basic' | 'items' | 'gov' | 'audit';
 // 目录详情查看弹窗：结构/展示逻辑与「数据资源目录」列表查看弹窗完全一致。
 // Tab 根据目录来源动态渲染：
 //   仅含「授权运营平台」            → [基本信息, 审核信息]
-//   仅含「政务信息资源」            → [政务信息资源]
-//   同时含「授权运营平台+政务信息资源」→ [基本信息, 政务信息资源, 审核信息]
+//   仅含「政务数据目录」            → [政务数据目录]
+//   同时含「授权运营平台+政务数据目录」→ [基本信息, 政务数据目录, 审核信息]
 const ResourceDetailModal = ({ item, onClose }: { item: CatalogRecord; onClose: () => void }) => {
   const hasAuth = item.source.includes('授权运营平台');
-  const hasGov = item.source.includes('政务信息资源');
+  const hasGov = item.source.includes('政务数据目录');
   const showBasic = hasAuth;
   const showGov = hasGov;
   const showAudit = hasAuth; // 审核信息随「授权运营平台」来源出现
-  const showProofBtn = hasAuth; // 查看存证随「授权运营平台」来源出现；仅含「政务信息资源」时隐藏
+  const showProofBtn = hasAuth; // 查看存证随「授权运营平台」来源出现；仅含「政务数据目录」时隐藏
   const [activeTab, setActiveTab] = useState<DetailTab>(hasAuth ? 'basic' : 'gov');
   const [showProof, setShowProof] = useState(false);
 
@@ -99,7 +99,7 @@ const ResourceDetailModal = ({ item, onClose }: { item: CatalogRecord; onClose: 
           {/* 「信息项」页签已隐藏：其内容并入「基本信息」页签，展示在「资源持有方信息」下方。按钮与切换逻辑保留（仅 display:none），与数据资源目录保持结构一致 */}
           <button type="button" role="tab" aria-selected={activeTab === 'items'} className={activeTab === 'items' ? 'active' : ''} onClick={() => setActiveTab('items')} style={{ display: 'none' }}>信息项</button>
           {showGov && (
-            <button type="button" role="tab" aria-selected={activeTab === 'gov'} className={activeTab === 'gov' ? 'active' : ''} onClick={() => setActiveTab('gov')}>政务信息资源</button>
+            <button type="button" role="tab" aria-selected={activeTab === 'gov'} className={activeTab === 'gov' ? 'active' : ''} onClick={() => setActiveTab('gov')}>政务数据目录</button>
           )}
           {showAudit && (
             <button type="button" role="tab" aria-selected={activeTab === 'audit'} className={activeTab === 'audit' ? 'active' : ''} onClick={() => setActiveTab('audit')}>审核信息</button>
@@ -142,7 +142,7 @@ const ResourceDetailModal = ({ item, onClose }: { item: CatalogRecord; onClose: 
                 <table className="detail-readonly-table"><tbody>
                   <tr><th>资源名称</th><td>{blank(item.name)}</td><th>资源格式</th><td>xls</td></tr>
                   <tr><th>更新频率</th><td>每日</td><th>覆盖时间范围</th><td>2026-5-24 — 至今</td></tr>
-                  {/* 与数据资源目录政务信息资源页签保持一致：最后两个字段各占一整行 */}
+                  {/* 与数据资源目录政务数据目录页签保持一致：最后两个字段各占一整行 */}
                   <tr><th>地域分类</th><td colSpan={3}>湖南省</td></tr>
                   <tr><th>资源摘要</th><td colSpan={3}>基础数据资源，用于支撑公共卫生服务、医疗机构管理及相关业务分析。</td></tr>
                 </tbody></table>

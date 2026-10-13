@@ -1,0 +1,514 @@
+/* 实施机构备案页面样式（在 backend-list.css 基础上扩展弹窗 / 表单 / 详情 / 存证样式） */
+
+* {
+  box-sizing: border-box;
+}
+
+/* 输入框 / 下拉 / 文本域 通用控件（弹窗表单内） */
+.form-item input[type="text"],
+.form-item select,
+.form-item textarea {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  color: #1f2329;
+  background: #fff;
+  border: 1px solid #d8dfe9;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.form-item input:focus,
+.form-item select:focus,
+.form-item textarea:focus {
+  border-color: #3d8bff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
+}
+
+.form-item input:disabled,
+.form-item select:disabled {
+  color: #8b95a5;
+  background: #f5f7fa;
+  cursor: not-allowed;
+}
+
+.has-error {
+  border-color: #d54941 !important;
+}
+
+.error-text {
+  grid-column: 2;
+  margin-top: -3px;
+  color: #d54941;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.required {
+  color: #d54941;
+  margin-left: 2px;
+}
+
+/* 表单网格（两列） */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 18px;
+  padding: 4px 0 0;
+}
+
+.form-item {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+}
+
+.form-item label {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: #3f4652;
+  font-size: 13px;
+  line-height: 18px;
+  text-align: right;
+}
+
+.form-item-full {
+  grid-column: span 2;
+}
+
+.form-item-full label {
+  align-self: start;
+  margin-top: 6px;
+}
+
+.form-item-full textarea {
+  width: 100%;
+  height: auto;
+  min-height: 100px;
+  padding: 8px 10px;
+  border: 1px solid #d8dfe9;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #1f2329;
+  outline: none;
+  resize: vertical;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.form-item-full textarea:focus {
+  border-color: #3d8bff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
+}
+
+/* 弹窗通用结构 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 8vh 20px 32px;
+  background: rgba(0, 0, 0, .42);
+}
+
+.modal-medium,
+.modal-large {
+  max-width: calc(100vw - 48px);
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 3px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .18);
+  overflow: hidden;
+}
+
+.modal-medium {
+  width: 640px;
+}
+
+.modal-large {
+  width: 1200px;
+}
+
+.filing-form-modal {
+  width: 640px;
+}
+
+.view-modal {
+  width: 1200px;
+}
+
+.modal-header {
+  min-height: 54px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  background: #fff;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #1f2329;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.modal-close {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: #9097a3;
+  border: 0;
+  background: transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #4b5563;
+  background: #f3f6fb;
+}
+
+.modal-body {
+  flex: 1;
+  min-height: 0;
+  padding: 0 20px 18px;
+  overflow: auto;
+  background: #fff;
+}
+
+.filing-form-body {
+  padding-top: 8px;
+}
+
+.modal-footer {
+  min-height: 58px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid #edf0f5;
+  background: #fff;
+}
+
+/* 查看弹窗头部（右上角固定蓝色「查看存证」按钮） */
+.view-modal-header {
+  border-bottom: 0;
+  padding-bottom: 12px;
+}
+
+.view-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Tab 切换 */
+.tabs-row {
+  height: 41px;
+  display: flex;
+  align-items: flex-end;
+  padding: 0;
+  border-bottom: 1px solid #dfe5ef;
+}
+
+.tab-item {
+  height: 40px;
+  min-width: 92px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tab-item:hover {
+  color: #0f63f4;
+}
+
+.tab-item.active {
+  color: #0f63f4;
+  background: #fff;
+  border-color: #dfe5ef;
+  font-weight: 600;
+}
+
+/* 申请信息：两列信息表 */
+.view-info-table {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 120px minmax(0, 1fr);
+  border: 1px solid #dfe5ef;
+  border-bottom: 0;
+  margin-top: 14px;
+}
+
+.info-cell,
+.info-cell.full-width {
+  display: contents;
+}
+
+.info-label,
+.info-value {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-right: 1px solid #dfe5ef;
+  border-bottom: 1px solid #dfe5ef;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.info-label {
+  color: #4b5563;
+  background: #f5f7fb;
+  font-weight: 600;
+  text-align: left;
+}
+
+.info-value {
+  color: #1f2329;
+  background: #fff;
+  font-weight: 400;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.info-cell.full-width .info-value {
+  grid-column: span 3;
+  border-right: 0;
+}
+
+/* 审核信息：流程历史表 */
+.audit-table-wrapper {
+  padding: 16px 0 0;
+}
+
+.audit-table {
+  min-width: 980px;
+  border: 1px solid #e5e6eb;
+  border-radius: 2px;
+}
+
+.audit-table thead {
+  background: #f7f8fa;
+}
+
+.audit-table th {
+  height: 44px;
+  padding: 0 14px;
+  color: #1f2329;
+  font-weight: 700;
+  text-align: left;
+  border-bottom: 1px solid #dfe5ef;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.audit-table td {
+  height: 48px;
+  padding: 0 14px;
+  color: #111827;
+  border-bottom: 1px solid #eef1f6;
+  vertical-align: middle;
+  font-size: 13px;
+}
+
+.audit-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.audit-table .col-index {
+  width: 64px;
+}
+
+.org-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audit-opinion {
+  white-space: normal;
+  line-height: 20px;
+}
+
+/* 节点状态 / 确认结果 标签 */
+.node-status {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 2px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  color: #8b95a5;
+  background: #f2f3f5;
+}
+
+.node-status.completed {
+  color: #179b55;
+  background: #effaf4;
+  border-color: #cdebd9;
+}
+
+.result-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 2px;
+  font-size: 12px;
+  border: 1px solid transparent;
+}
+
+.result-pass {
+  color: #179b55;
+  background: #effaf4;
+  border-color: #cdebd9;
+}
+
+.result-reject {
+  color: #d54941;
+  background: #fff1f0;
+  border-color: #ffd8d3;
+}
+
+.result-none {
+  color: #8b95a5;
+  background: #f2f3f5;
+  border-color: #e5e6eb;
+}
+
+/* 列表：实施机构 / 信用代码 文本溢出缩略 */
+.impl-org-cell {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.credit-cell {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 状态标签补充：省级退回红色警示标签 */
+.status-province-rejected {
+  color: #d54941;
+  background: #fff1f0;
+  border-color: #ffd8d3;
+}
+
+/* 区块链存证凭证卡片 */
+.evidence-card {
+  padding: 18px;
+  border: 1px solid #dfe5ef;
+  background: #fff;
+  border-radius: 3px;
+}
+
+.evidence-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px dashed #dfe5ef;
+}
+
+.evidence-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: #eef4ff;
+  font-size: 24px;
+}
+
+.evidence-title {
+  color: #1f2329;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.evidence-content {
+  display: grid;
+  gap: 10px;
+}
+
+.evidence-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 10px;
+  font-size: 13px;
+  line-height: 22px;
+}
+
+.evidence-label {
+  color: #606a78;
+  text-align: right;
+}
+
+.evidence-value {
+  min-width: 0;
+  color: #1f2329;
+  word-break: break-all;
+}
+
+.evidence-value.success {
+  color: #179b55;
+}
+
+.evidence-value.hash {
+  font-family: Consolas, "Courier New", monospace;
+  color: #4b5563;
+}
+
+/* 空数据行 */
+.empty-row {
+  text-align: center;
+  color: #86909c;
+  padding: 40px 0;
+}
+
+@media (max-width: 1280px) {
+  .modal-large,
+  .view-modal {
+    width: calc(100vw - 48px);
+  }
+}
+
+@media (max-width: 900px) {
+  .filing-container {
+    min-width: 900px;
+  }
+}

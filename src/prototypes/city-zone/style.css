@@ -19,29 +19,201 @@
   font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
 }
 
+/* 〇、专区专属顶部栏（可信数据空间，仅本页面生效） */
+.cz-zone-bar {
+  position: sticky;
+  top: 60px; /* 吸附在门户全局导航（fixed 60px）正下方 */
+  z-index: 500;
+  margin-top: 60px; /* 避开全局固定导航，不与其重叠 */
+  height: 56px;
+  background: linear-gradient(90deg, #0a2b6b, #0f3d9c 55%, #0a2b6b);
+  box-shadow: 0 2px 8px rgba(6, 30, 80, .25);
+}
+
+.cz-zone-bar-inner {
+  height: 100%;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cz-zone-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.cz-zone-divider {
+  width: 1px;
+  height: 22px;
+  flex: 0 0 1px;
+  background: rgba(255, 255, 255, .35);
+}
+
+.cz-zone-switcher-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.cz-zone-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  max-width: 150px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, .5);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+.cz-zone-switcher:hover { background: rgba(255, 255, 255, .18); }
+.cz-zone-switcher > span {
+  max-width: 104px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cz-zone-switcher svg { flex: 0 0 auto; transition: transform .18s ease; }
+.cz-zone-switcher.open svg { transform: rotate(180deg); }
+
+/* 专区切换下拉面板 */
+.cz-zone-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 490; /* 低于顶栏（500），不遮挡顶栏与面板本身 */
+}
+
+.cz-zone-switcher-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 300px;
+  padding: 8px;
+  z-index: 20;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 26px rgba(8, 30, 80, .24);
+}
+
+.cz-zone-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #2c3c52;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+.cz-zone-option:hover { background: #f2f8ff; }
+.cz-zone-option + .cz-zone-option {
+  border-top: 1px solid #eef3fa;
+  border-radius: 0 0 6px 6px;
+}
+.cz-zone-opt-status {
+  margin-left: auto;
+  font-style: normal;
+  color: #98a4b3;
+  font-size: 12px;
+}
+.cz-zone-opt-tag {
+  flex: 0 0 auto;
+  font-style: normal;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #e8f1ff;
+  color: #2e6fd8;
+  font-size: 12px;
+}
+
+.cz-zone-nav {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.cz-zone-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 11px;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, .85);
+  font-size: 14px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .15s ease, color .15s ease;
+}
+.cz-zone-nav a:hover { color: #fff; background: rgba(255, 255, 255, .1); }
+.cz-zone-nav a.active { color: #fff; font-weight: 600; background: rgba(255, 255, 255, .16); }
+
+.cz-zone-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 0 0 auto;
+}
+.cz-zone-app-btn {
+  height: 30px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .14);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+.cz-zone-app-btn:hover { background: rgba(255, 255, 255, .24); }
+.cz-zone-auth {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 13px;
+}
+.cz-zone-auth a { color: #fff; text-decoration: none; }
+.cz-zone-auth a:hover { text-decoration: underline; }
+.cz-zone-auth i { color: rgba(255, 255, 255, .6); font-style: normal; }
+
 /* 一、专区头部 Banner */
 .cz-banner {
   position: relative;
   height: 360px;
   overflow: hidden;
-  padding-top: 60px;
   background: linear-gradient(120deg, #0b5fee, #1f79f4 60%, #2c88fb);
 }
 
 .cz-banner-bg {
   position: absolute;
-  inset: 60px 0 0;
+  inset: 0;
   background:
-    linear-gradient(90deg, rgba(11, 94, 238, .82), rgba(28, 111, 218, .5), rgba(12, 33, 59, .5)),
-    url("https://images.unsplash.com/photo-1527048678662-9c1f0a1d1e1e?auto=format&fit=crop&w=1800&q=80") center / cover;
-  filter: saturate(.95);
+    linear-gradient(90deg, rgba(11, 94, 238, .45), rgba(28, 111, 218, .18) 45%, rgba(12, 60, 140, .12)),
+    url("./images/banner-bg.jpg") center / cover no-repeat;
 }
 
 .cz-banner-bg::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(11, 94, 238, .05), rgba(24, 91, 170, .18));
+  background: linear-gradient(180deg, rgba(11, 94, 238, .05), rgba(13, 73, 158, .22));
 }
 
 .cz-banner-inner {
@@ -434,6 +606,115 @@
   transition: transform .16s ease, box-shadow .16s ease;
 }
 .cz-join-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 40, 110, .25); }
+
+/* 一〇、专区专属底部栏（可信数据空间，仅本页面生效，位于门户全局页脚之上） */
+.cz-zone-footer {
+  background: linear-gradient(180deg, #42618c, #334e6e);
+  color: #fff;
+}
+
+.cz-zone-footer-inner {
+  width: min(1220px, calc(100vw - 320px));
+  min-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 0 32px;
+  display: flex;
+  align-items: flex-start;
+  gap: 56px;
+}
+
+.cz-zone-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cz-zone-footer-logo {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border-radius: 10px;
+}
+.cz-zone-footer-brand strong {
+  display: block;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.4;
+}
+.cz-zone-footer-brand span {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, .85);
+}
+
+.cz-zone-footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.cz-zone-footer-links h4,
+.cz-zone-footer-contact h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, .6);
+}
+.cz-zone-footer-links a {
+  color: rgba(255, 255, 255, .85);
+  font-size: 13px;
+  text-decoration: none;
+}
+.cz-zone-footer-links a:hover { color: #fff; text-decoration: underline; }
+
+.cz-zone-footer-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.cz-zone-qr-box {
+  width: 88px;
+  height: 88px;
+  padding: 8px;
+  background: #fff;
+  border-radius: 6px;
+}
+.cz-zone-footer-qr > span {
+  font-size: 12px;
+  color: rgba(255, 255, 255, .75);
+}
+
+.cz-zone-footer-contact {
+  margin-left: auto;
+}
+.cz-zone-footer-contact strong {
+  display: block;
+  margin: 10px 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.cz-zone-footer-contact p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 7px 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .85);
+}
+.cz-zone-footer-contact p svg { flex: 0 0 auto; opacity: .8; }
+
+.cz-zone-footer-copyright {
+  border-top: 1px solid rgba(255, 255, 255, .14);
+  padding: 16px 24px;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, .6);
+}
 
 /* 浮动工具 */
 .cz-floating {

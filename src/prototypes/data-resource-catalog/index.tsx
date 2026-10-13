@@ -97,7 +97,7 @@ type GovCatalog = {
   summary: string;
 };
 
-// 政务信息资源目录（关联弹窗数据源）。所有数据资源默认关联其中一条，确保每条目录自动绑定对应政务目录资源。
+// 政务数据目录（关联弹窗数据源）。所有数据资源默认关联其中一条，确保每条目录自动绑定对应政务目录资源。
 const seedGovCatalogs: GovCatalog[] = [
   { id: 1, name: '气温变化', domain: '建筑领域', summary: '近十年城市气温变化趋势监测数据，包含月平均气温、极端高温与低温记录。' },
   { id: 2, name: '就诊记录', domain: '制造领域', summary: 'xxxx' },
@@ -549,10 +549,10 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
         <div className="modal-body add-body">
           {step === 1 ? (
             <>
-              {/* 变更弹窗不展示「关联政务信息资源目录」区块（入口按钮与已绑定资源标签一并隐藏）；新增／编辑弹窗仍保留 */}
+              {/* 变更弹窗不展示「关联政务数据目录」区块（入口按钮与已绑定资源标签一并隐藏）；新增／编辑弹窗仍保留 */}
               {mode !== 'change' && (
                 <div className="relate-link-row">
-                  <button type="button" className="relate-link" onClick={() => setShowRelate(true)}><Plus size={14} />关联政务信息资源目录</button>
+                  <button type="button" className="relate-link" onClick={() => setShowRelate(true)}><Plus size={14} />关联政务数据目录</button>
                   {relatedItems.length > 0 && (
                     <div className="relate-tags">
                       {relatedItems.map(item => (
@@ -677,8 +677,8 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
           {/* 「信息项」页签已隐藏：其内容并入「基本信息」页签，展示在「资源持有方信息」下方。
               按钮与切换逻辑保留（仅 display:none），如需恢复页签去掉 style 即可。 */}
           <button type="button" role="tab" aria-selected={activeTab === 'items'} className={activeTab === 'items' ? 'active' : ''} onClick={() => setActiveTab('items')} style={{ display: 'none' }}>信息项</button>
-          {/* 「政务信息资源」页签：置于「审核信息」之前，格式参考「基本信息」页签 */}
-          <button type="button" role="tab" aria-selected={activeTab === 'gov'} className={activeTab === 'gov' ? 'active' : ''} onClick={() => setActiveTab('gov')}>政务信息资源</button>
+          {/* 「政务数据目录」页签：置于「审核信息」之前，格式参考「基本信息」页签 */}
+          <button type="button" role="tab" aria-selected={activeTab === 'gov'} className={activeTab === 'gov' ? 'active' : ''} onClick={() => setActiveTab('gov')}>政务数据目录</button>
           <button type="button" role="tab" aria-selected={activeTab === 'audit'} className={activeTab === 'audit' ? 'active' : ''} onClick={() => setActiveTab('audit')}>审核信息</button>
           <div className="detail-tabs-actions">
             <button type="button" className="btn primary" onClick={() => setShowProof(true)}>查看存证</button>
@@ -736,8 +736,8 @@ const DetailModal = ({ item, onClose }: { item: Resource; onClose: () => void })
             </>
             ) : (
               <section className="detail-section" aria-labelledby="gov-basic-title">
-                <h4 id="gov-basic-title">已关联政务信息资源目录</h4>
-                <div className="detail-empty" style={{ padding: '40px 0' }}>该目录尚未关联政务信息资源目录</div>
+                <h4 id="gov-basic-title">已关联政务数据目录</h4>
+                <div className="detail-empty" style={{ padding: '40px 0' }}>该目录尚未关联政务数据目录</div>
               </section>
             )
           ) : activeTab === 'items' ? (
@@ -1178,7 +1178,7 @@ const RelateCatalogModal = ({
             const selectedItems = selected.map(id => seedGovCatalogs.find(c => c.id === id)).filter((c): c is GovCatalog => !!c);
             return (
               <div className="relate-associated-panel">
-                <span className="head-associated-label">已关联政务信息资源目录：</span>
+                <span className="head-associated-label">已关联政务数据目录：</span>
                 <div className="head-associated-list">
                   {selectedItems.map(item => (
                     <button

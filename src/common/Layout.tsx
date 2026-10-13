@@ -57,6 +57,8 @@ const SIDEBAR_MENU: NavEntry[] = [
       { key: 'operation-agreement-filing', label: '运营协议备案' },
       { key: 'implementation-plan-joint-review', label: '实施方案联审' },
       { key: 'other-entity-filing', label: '其他经营主体备案' },
+      { key: 'implementation-org-filing', label: '实施机构备案' },
+      { key: 'implementation-plan-filing', label: '实施方案备案' },
       { key: 'auth-record', label: '授权记录', kind: 'action' }
     ]
   },
@@ -92,7 +94,7 @@ const SIDEBAR_MENU: NavEntry[] = [
 
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'other-entity-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'unified-catalog-query' | 'monitoring-dashboard';
+  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'other-entity-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'unified-catalog-query' | 'monitoring-dashboard' | 'implementation-org-filing' | 'implementation-plan-filing';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;

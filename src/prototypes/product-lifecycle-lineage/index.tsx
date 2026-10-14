@@ -505,8 +505,9 @@ const OriginalComponent = () => {
           <div className="drawer-info-value">{detail!.coverage}</div>
           <div className="drawer-info-label">地域分类</div>
           <div className="drawer-info-value">{detail!.region}</div>
-          <div className="drawer-info-label">资源持有方</div>
-          <div className="drawer-info-value" title={detail!.holder}>{detail!.holder}</div>
+          {/* 原始「资源持有方」字段（代码保留，仅隐藏展示；按需求不再在「数据资源基本信息」中展示） */}
+          <div className="drawer-info-label drawer-info-hidden">资源持有方</div>
+          <div className="drawer-info-value drawer-info-hidden" title={detail!.holder}>{detail!.holder}</div>
           <div className="drawer-info-label">资源摘要</div>
           <div className="drawer-info-value drawer-info-desc">{detail!.summary}</div>
         </div>

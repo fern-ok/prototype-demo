@@ -81,6 +81,18 @@
   border-radius: 3px;
 }
 
+/* 图例「当前产品」：虚线边框色块，与图谱中当前查看产品的虚线外框对应 */
+.lineage-legend-swatch-current {
+  background: transparent;
+  border: 1.5px dashed #6b7280;
+}
+
+.lineage-topbar-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+}
+
 /* 全屏图谱容器 */
 .lineage-canvas-fullscreen {
   flex: 1;

@@ -145,8 +145,10 @@
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 20px;
+  text-align: left;
+  word-break: break-all;
   color: #8b95a5;
   font-size: 13px;
 }

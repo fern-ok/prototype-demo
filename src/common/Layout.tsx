@@ -53,12 +53,13 @@ const SIDEBAR_MENU: NavEntry[] = [
     label: '备案管理',
     icon: FolderOpen,
     items: [
-      { key: 'product-service-filing', label: '产品和服务清单备案' },
-      { key: 'operation-agreement-filing', label: '运营协议备案' },
-      { key: 'implementation-plan-joint-review', label: '实施方案联审' },
-      { key: 'other-entity-filing', label: '其他经营主体备案' },
       { key: 'implementation-org-filing', label: '实施机构备案' },
+      { key: 'implementation-plan-joint-review', label: '实施方案联审' },
       { key: 'implementation-plan-filing', label: '实施方案备案' },
+      { key: 'operation-org-filing', label: '运营机构备案' },
+      { key: 'operation-agreement-filing', label: '运营协议备案' },
+      { key: 'other-entity-filing', label: '其他经营主体备案' },
+      { key: 'product-service-filing', label: '产品和服务清单备案' },
       { key: 'auth-record', label: '授权记录', kind: 'action' }
     ]
   },
@@ -87,14 +88,15 @@ const SIDEBAR_MENU: NavEntry[] = [
     label: '系统管理',
     icon: Settings2,
     items: [
-      { key: 'domain-management', label: '领域管理' }
+      { key: 'domain-management', label: '领域管理' },
+      { key: 'industry-dept-management', label: '行业主管部门管理' }
     ]
   }
 ];
 
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'other-entity-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'unified-catalog-query' | 'monitoring-dashboard' | 'implementation-org-filing' | 'implementation-plan-filing';
+  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'other-entity-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'industry-dept-management' | 'unified-catalog-query' | 'monitoring-dashboard' | 'implementation-org-filing' | 'implementation-plan-filing' | 'operation-org-filing';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;
@@ -154,7 +156,7 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
   // 一级菜单（如统一目录查询）没有父级分类，面包屑直接展示 首页 / 当前页
   const parentMenu = (activeMenu === 'unified-catalog-query' || activeMenu === 'product-lifecycle')
     ? ''
-    : activeMenu === 'domain-management' ? '系统管理'
+    : (activeMenu === 'domain-management' || activeMenu === 'industry-dept-management') ? '系统管理'
       : (activeMenu === 'product-security-review' || activeMenu === 'product-registration' || activeMenu === 'data-resource-catalog' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理'
     : (activeMenu === 'implement-org-workbench' || activeMenu === 'other-entity-workbench') ? '工作台'
       : (activeMenu === 'product-subscription-supervision' || activeMenu === 'subscription-order-supervision' || activeMenu === 'redev-data-product-supervision') ? '授权监管'

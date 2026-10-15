@@ -754,7 +754,8 @@ const StageRecordsView = ({
   /** 插槽：渲染在步骤条与操作记录列表之间（如标识码 / 产品名称概要） */
   summarySlot?: ReactNode;
 }) => {
-  const [activeKey, setActiveKey] = useState<string>(defaultActiveKey || 'shelf');
+  // 默认选中：优先外部传入；否则取记录当前环节（必然已发生，避免默认落在不可点击的未进行环节上）
+  const [activeKey, setActiveKey] = useState<string>(defaultActiveKey || CURRENT_MAP[record.currentStage] || 'review');
   const [tradePage, setTradePage] = useState<number>(1);
   const [tradePageSize, setTradePageSize] = useState<number>(10);
   const activeStage = RECORD_STAGES.find((s) => s.key === activeKey) || RECORD_STAGES[0];
@@ -813,6 +814,7 @@ const StageRecordsView = ({
                   (isCurrent ? ' current' : '') +
                   (isActive ? ' active' : '')
                 }
+                disabled={!occurred}
                 onClick={() => setActiveKey(s.key)}
               >
                 <span className="life-flow-node-no">

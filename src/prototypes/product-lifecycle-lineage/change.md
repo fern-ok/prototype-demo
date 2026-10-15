@@ -1,5 +1,28 @@
 # 血缘独立整页 - 变更记录
 
+## 2026-10-15（当前产品标识调整：仅保留左上角标识，移除节点高亮与提示）
+按用户要求收窄「当前产品」视觉标识的展示范围，仅保留左上角面包屑 + 徽标，去掉图谱节点上的高亮与顶部右侧提示文字：
+1、`../product-lifecycle/lifecycle-shared.tsx`：回退本次新增的节点高亮渲染——移除 `LineageGraphProps.currentNodeName` 入参、模块级常量 `CURRENT_NODE_COLOR`，以及 `renderNode` 中当前节点的紫色外环、光晕、「当前」徽标、`current` 类名与 `<title>` 后缀；`LineageGraph` 恢复为仅支持选中（蓝）与筛选高亮（橙）的原状。
+2、`index.tsx`：`LineageGraph` 调用移除 `currentNodeName` 传参；顶部工具条移除右侧说明文字「当前产品已在图谱中以紫色边框 + 「当前」标识突出显示」，图例保持右侧展示不变；左上角面包屑 `产品库 / [当前产品徽标] <当前数据产品名称>` 保留不变。
+3、`lineage-style.css`：移除 `.lineage-current-hint` / `.lineage-current-hint-swatch` 提示样式、`.lineage-node.current .lineage-node-current-ring` / `.lineage-node-current-badge-text` 节点高亮样式及小屏隐藏提示的响应式规则；`.lineage-crumb` / `.lineage-current` / `.lineage-current-badge` / `.lineage-current-name` / `.lineage-topbar-right`（图例容器）样式保留。
+4、同步更新 `../product-lifecycle/spec.md` §8：「当前产品标识」改为仅描述左上角面包屑 + 徽标；删除「辐射式布局」中当前产品节点紫色高亮条目与「图例」中的紫色提示说明。
+未引入新依赖，未改动其他页面与既有逻辑。
+
+## 2026-10-15（当前产品视觉标识：面包屑 + 顶部徽标 + 图谱高亮）
+血缘页进入后用户无法判断当前查看的是哪个产品，本次新增三重「当前产品」视觉标识，确保随时清楚自己是从哪个产品进入的，并能清晰区分当前产品与其他关联产品：
+1、`index.tsx`：顶部工具条左侧由单一「返回产品库」链接改为**面包屑** `产品库 / [当前产品徽标] <当前数据产品名称>`——「产品库」为可点击返回入口，「当前产品」以紫色徽标（`#722ed1`）标记、产品名称加粗展示（超长省略号截断、悬停显示完整）；顶部右侧新增说明「当前产品已在图谱中以紫色边框 + 「当前」标识突出显示」，将顶部标识与图谱高亮关联。
+2、`../product-lifecycle/lifecycle-shared.tsx`：`LineageGraphProps` 新增可选入参 `currentNodeName?: string`（不传时行为与原状完全一致，不影响其他页面）；`renderNode` 对名称等于 `currentNodeName` 的节点（即中心节点）渲染紫色外环 + 光晕（`#722ed1`）+ 节点上方「当前」紫色徽标，并新增 `current` 类名与 `<title>` 后缀「（当前查看产品）」；该标识与节点类型配色、选中（蓝 `#1677ff`）、筛选高亮（橙 `#fa8c16`）均明显区分。新增模块级常量 `CURRENT_NODE_COLOR = '#722ed1'`。
+3、`lineage-style.css`：新增 `.lineage-crumb` / `.lineage-crumb-sep` / `.lineage-current` / `.lineage-current-badge` / `.lineage-current-name` / `.lineage-topbar-right` / `.lineage-current-hint` / `.lineage-current-hint-swatch` 顶部标识样式，以及 `.lineage-node.current .lineage-node-current-ring` / `.lineage-node-current-badge-text` 图谱节点高亮样式；≤768px 小屏隐藏 `.lineage-current-hint` 说明文字以避免顶栏拥挤。
+4、同步更新 `../product-lifecycle/spec.md` §8：新增「当前产品标识」说明，并在「辐射式布局·节点配色」与「图例」两节补充当前产品紫色高亮标记描述。
+未引入新依赖，未改动其他页面与既有逻辑。
+
+## 2026-10-15（基础产品授权信息数据格式约束对齐）
+依据「产品库血缘系统 - 基础产品授权信息数据格式约束」，对齐 `../product-lifecycle/lifecycle-shared.tsx` 中 `buildAuthList()` 生成的演示数据格式：
+1、`AuthRecord.authTime` 由 `yyyy-MM-dd` 改为 `yyyy-MM-dd HH:mm:ss`（时分秒由行索引确定性派生，不额外占用共享随机流，既有「其他经营主体」等演示数据保持不变）。
+2、`AuthRecord.authTerm` 候选 `AUTH_TERMS` 由「年-年」简写（如 2026-2028）及「长期有效」改为固定起止日期区间（如 `2026-06-04 至 2028-06-04`），并彻底移除「长期有效」类无固定期限值。
+3、同步更新 `AuthRecord` 字段注释（授权时间 / 授权期限格式说明）。
+血缘页基础产品节点「授权信息」列表的「授权时间」「授权期限」两列展示值随之更新为合规格式。未引入新依赖，未改动其他页面与既有逻辑。
+
 ## 2026-10-12（基础产品授权信息新增「场景名称」「运营机构」列 + 抽屉加宽）
 基础产品节点抽屉「授权信息」页签列表由 3 列扩充为 5 列，字段顺序为：序号、场景名称、运营机构、其他经营主体、授权时间；同步加宽抽屉，保证五列字段完整展示、不出现横向滚动条。
 1、`index.tsx`：`DrawerList`（基础产品授权信息）`columns` 由 `其他经营主体 / 授权时间` 扩充为 `场景名称 / 运营机构 / 其他经营主体 / 授权时间`，新增 `col-scenario` / `col-operator` 列样式类；再开发产品「交易信息」列保持不变。

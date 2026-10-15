@@ -47,6 +47,8 @@ interface AgreementFormData {
   opOrg: string;
   agreement: string;
   agreementFileName: string;
+  meetingMinutes: string;
+  meetingMinutesFileName: string;
   startDate: string;
   endDate: string;
   remark: string;
@@ -230,6 +232,8 @@ const createEmptyForm = (): AgreementFormData => ({
   opOrg: OP_ORG_NAME,
   agreement: '',
   agreementFileName: '',
+  meetingMinutes: '',
+  meetingMinutesFileName: '',
   startDate: '',
   endDate: '',
   remark: ''
@@ -342,6 +346,8 @@ const OriginalComponent = () => {
       opOrg: record.opOrg,
       agreement: record.agreement,
       agreementFileName: record.agreement,
+      meetingMinutes: '',
+      meetingMinutesFileName: '',
       startDate: record.startDate || '',
       endDate: record.endDate || '',
       remark: record.remark || ''
@@ -357,6 +363,8 @@ const OriginalComponent = () => {
       opOrg: record.opOrg,
       agreement: record.agreement,
       agreementFileName: record.agreement,
+      meetingMinutes: '',
+      meetingMinutesFileName: '',
       startDate: record.startDate || '',
       endDate: record.endDate || '',
       remark: record.remark || ''
@@ -411,6 +419,24 @@ const OriginalComponent = () => {
     }
   };
 
+  const handleMeetingMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        meetingMinutes: file.name,
+        meetingMinutesFileName: file.name
+      }));
+      if (formErrors.meetingMinutes) {
+        setFormErrors(prev => {
+          const next = { ...prev };
+          delete next.meetingMinutes;
+          return next;
+        });
+      }
+    }
+  };
+
   const handleFormChange = (field: keyof AgreementFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (formErrors[field]) {
@@ -425,6 +451,7 @@ const OriginalComponent = () => {
   const validateForm = () => {
     const errors: Record<string, string> = {};
     if (!formData.agreementFileName) errors.agreement = '请上传运营协议文件';
+    if (showAddModal && !formData.meetingMinutesFileName) errors.meetingMinutes = '请上传会议纪要';
     if (!formData.startDate) errors.startDate = '请选择授权开始日期';
     if (!formData.endDate) errors.endDate = '请选择授权结束日期';
     if (formData.startDate && formData.endDate && formData.startDate >= formData.endDate) {
@@ -441,7 +468,7 @@ const OriginalComponent = () => {
     }
   };
 
-  const renderFormModal = (title: string, showUpload: boolean = true) => (
+  const renderFormModal = (title: string, showUpload: boolean = true, isAddModal: boolean = false) => (
     <div className="modal-overlay" onClick={closeFormModals}>
       <div className="modal-large form-modal" onClick={(event) => event.stopPropagation()}>
         <div className="modal-header">
@@ -450,21 +477,23 @@ const OriginalComponent = () => {
         </div>
         <div className="modal-body form-modal-body">
           <div className="form-section">
-            <h4 className="section-title"><span className="title-bar"></span>基本信息</h4>
             <div className="form-grid">
               <div className="form-item">
-                <label>运营机构 <span className="required">*</span></label>
+                <label><span className="required">*</span> 运营机构</label>
                 <input type="text" value={formData.opOrg} disabled />
               </div>
-              <div className="form-item">
-                <label>运营协议 <span className="required">*</span></label>
-                <div className="file-upload-wrapper">
+              <div className="form-item upload-item">
+                <label><span className="required">*</span> 运营协议</label>
+                <div className="upload-control">
                   {showUpload ? (
                     <>
-                      <label className="btn btn-sm btn-primary file-upload-btn">
-                        上传运营协议
-                        <input type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }} onChange={handleFileChange} />
+                      <label className="upload-btn">
+                        选择文件
+                        <input type="file" accept="application/pdf" onChange={handleFileChange} />
                       </label>
+                      <span className={'upload-name ' + (formData.agreementFileName ? 'has-file' : '')}>
+                        {formData.agreementFileName || '请上传经 “三重一大” 决策机制审议通过的运营协议'}
+                      </span>
                     </>
                   ) : (
                     <input type="text" value={formData.agreementFileName} disabled />
@@ -472,8 +501,23 @@ const OriginalComponent = () => {
                 </div>
                 {formErrors.agreement && <span className="error-text">{formErrors.agreement}</span>}
               </div>
+              {isAddModal && (
+                <div className="form-item upload-item">
+                  <label><span className="required">*</span> 会议纪要</label>
+                  <div className="upload-control">
+                    <label className="upload-btn">
+                      选择文件
+                      <input type="file" accept="application/pdf" onChange={handleMeetingMinutesChange} />
+                    </label>
+                    <span className={'upload-name ' + (formData.meetingMinutesFileName ? 'has-file' : '')}>
+                      {formData.meetingMinutesFileName || '请上传会议纪要、盖章文件或者相关签批件'}
+                    </span>
+                  </div>
+                  {formErrors.meetingMinutes && <span className="error-text">{formErrors.meetingMinutes}</span>}
+                </div>
+              )}
               <div className="form-item">
-                <label>授权期限 <span className="required">*</span></label>
+                <label><span className="required">*</span> 授权期限</label>
                 <div className="date-range-wrapper">
                   <input
                     type="date"
@@ -493,7 +537,7 @@ const OriginalComponent = () => {
                   <span className="error-text">{formErrors.startDate || formErrors.endDate}</span>
                 )}
               </div>
-              <div className="form-item form-item-full">
+              <div className="form-item remark-item">
                 <label>情况说明</label>
                 <textarea
                   placeholder="请输入情况说明"
@@ -655,7 +699,7 @@ const OriginalComponent = () => {
             </div>
           </div>
           <div className="confirm-form-item">
-            <label>确认结果 <span className="required">*</span></label>
+            <label><span className="required">*</span> 确认结果</label>
             <select
               value={confirmResult}
               onChange={(e) => {
@@ -900,9 +944,9 @@ const OriginalComponent = () => {
         )}
       </Layout>
 
-      {showAddModal && renderFormModal('运营协议备案')}
-      {showEditModal && renderFormModal('运营协议备案编辑', true)}
-      {showChangeModal && renderFormModal('运营协议备案变更', true)}
+      {showAddModal && renderFormModal('运营协议备案', true, true)}
+      {showEditModal && renderFormModal('运营协议备案编辑', true, false)}
+      {showChangeModal && renderFormModal('运营协议备案变更', true, false)}
       {showViewModal && renderViewModal()}
       {showEvidenceModal && renderEvidenceModal()}
       {showConfirmModal && renderConfirmModal()}

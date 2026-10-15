@@ -501,7 +501,7 @@ const OriginalComponent = () => {
           <div className="form-grid">
             {renderUploadField('planFile', '实施方案', true, '请上传经 “三重一大” 决策机制审议通过的实施方案')}
             {renderUploadField('minutesFile', '会议纪要', true, '请上传会议纪要、盖章文件或者相关签批件')}
-            {renderUploadField('attachFile', '附件', true, '请上传 “湘办通” 联审通过的相关证明')}
+            {renderUploadField('attachFile', '附件', true, '请上传 “湘办通” 联审通过证明材料，含湘办通数据局、财政厅联审意见')}
             <div className="form-item form-item-full">
               <label>情况说明</label>
               <textarea

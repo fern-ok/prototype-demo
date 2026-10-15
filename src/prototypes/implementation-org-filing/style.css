@@ -108,6 +108,53 @@
   box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
 }
 
+/* 附件上传控件 */
+.upload-item .upload-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+}
+
+.upload-btn {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  color: #1f2329;
+  background: #fff;
+  border: 1px solid #d8dfe9;
+  border-radius: 2px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color .16s ease, color .16s ease, background .16s ease;
+}
+
+.upload-btn:hover {
+  color: #0f63f4;
+  border-color: #3d8bff;
+  background: #f5f9ff;
+}
+
+.upload-btn input[type="file"] {
+  display: none;
+}
+
+.upload-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8b95a5;
+  font-size: 13px;
+}
+
+.upload-name.has-file {
+  color: #1f2329;
+}
+
 /* 弹窗通用结构 */
 .modal-overlay {
   position: fixed;

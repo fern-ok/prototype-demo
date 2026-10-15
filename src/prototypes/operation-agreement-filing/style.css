@@ -545,7 +545,10 @@
   width: 640px;
 }
 
-.form-modal,
+.modal-large.form-modal {
+  width: 640px;
+}
+
 .view-modal {
   width: 1200px;
 }
@@ -665,15 +668,15 @@
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2px 18px;
+  grid-template-columns: 1fr;
+  gap: 16px 0;
   padding: 4px 0 0;
 }
 
 .form-item {
-  min-height: 48px;
+  min-height: 35px;
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
+  grid-template-columns: 120px minmax(0, 1fr);
   align-items: start;
   gap: 8px;
 }
@@ -691,7 +694,7 @@
 
 .required {
   color: var(--layout-danger);
-  margin-left: 2px;
+  margin-right: 2px;
 }
 
 .form-item input[type="text"],
@@ -1295,6 +1298,65 @@
   border-color: #0f63f4 !important;
 }
 
+.upload-file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #1f2329;
+  font-size: 13px;
+}
+
+/* 文件上传控件（参考实施方案备案样式） */
+.upload-item .upload-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+}
+
+.upload-btn {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  color: #1f2329;
+  background: #fff;
+  border: 1px solid #d8dfe9;
+  border-radius: 2px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color .16s ease, color .16s ease, background .16s ease;
+}
+
+.upload-btn:hover {
+  color: #0f63f4;
+  border-color: #3d8bff;
+  background: #f5f9ff;
+}
+
+.upload-btn input[type="file"] {
+  display: none;
+}
+
+.upload-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: normal;
+  line-height: 20px;
+  text-align: left;
+  word-break: break-all;
+  color: #8b95a5;
+  font-size: 13px;
+}
+
+.upload-name.has-file {
+  color: #1f2329;
+}
+
 /* 日期范围组件 */
 .date-range-wrapper {
   display: flex;
@@ -1354,6 +1416,32 @@
 }
 
 .form-item-full textarea:focus {
+  border-color: #3d8bff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
+}
+
+/* 情况说明半宽展示 */
+.remark-item label {
+  align-self: start;
+  margin-top: 6px;
+}
+
+.remark-item textarea {
+  width: 100%;
+  height: auto;
+  min-height: 100px;
+  padding: 8px 10px;
+  border: 1px solid #d8dfe9;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #1f2329;
+  outline: none;
+  resize: vertical;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.remark-item textarea:focus {
   border-color: #3d8bff;
   box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
 }

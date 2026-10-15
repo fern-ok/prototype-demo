@@ -242,7 +242,6 @@
 
 .catalog-table {
     width: 100%;
-    min-width: 1280px;
     border-collapse: collapse;
     table-layout: fixed;
     color: #111827;
@@ -274,32 +273,54 @@
 
 .catalog-table th:nth-child(1),
 .catalog-table td:nth-child(1) {
-    width: 62px
+    width: 64px
 }
 
-.catalog-table th:nth-child(2) {
-    width: 180px
+.catalog-table th:nth-child(2),
+.catalog-table td:nth-child(2) {
+    width: 160px
 }
 
-.catalog-table th:nth-child(3) {
-    width: 190px
+.catalog-table th:nth-child(3),
+.catalog-table td:nth-child(3) {
+    width: 170px
 }
 
-.catalog-table th:nth-child(4) {
-    width: 110px
-}
-
-.catalog-table th:nth-child(5) {
+.catalog-table th:nth-child(4),
+.catalog-table td:nth-child(4) {
     width: 130px
 }
 
-.catalog-table th:nth-child(6),
-.catalog-table th:nth-child(7) {
-    width: 165px
+.catalog-table th:nth-child(5),
+.catalog-table td:nth-child(5) {
+    width: 100px
 }
 
-.catalog-table th:nth-child(8) {
-    width: 280px
+.catalog-table th:nth-child(6),
+.catalog-table td:nth-child(6) {
+    width: 110px
+}
+
+/* 同步状态：窄列，居中对齐，缩小列宽使表格整体适配视口 */
+.catalog-table th:nth-child(7),
+.catalog-table td:nth-child(7) {
+    width: 96px;
+    text-align: center
+}
+
+.catalog-table th:nth-child(8),
+.catalog-table td:nth-child(8) {
+    width: 140px
+}
+
+.catalog-table th:nth-child(9),
+.catalog-table td:nth-child(9) {
+    width: 140px
+}
+
+.catalog-table th:nth-child(10),
+.catalog-table td:nth-child(10) {
+    width: 260px
 }
 
 .ellipsis {

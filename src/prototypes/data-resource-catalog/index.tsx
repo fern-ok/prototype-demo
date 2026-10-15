@@ -66,9 +66,11 @@ type Resource = {
   industry: string;
   reviewStatus: ReviewStatus;
   mountStatus: '已挂载' | '待挂载';
+  syncStatus: '是' | '否';
   createdAt: string;
   updatedAt: string;
   provider: string;
+  holder: string;
   changed?: boolean;
   changeRecords?: ChangeRecord[];
   govCatalog?: GovCatalog;
@@ -310,19 +312,19 @@ const changeSnapshotsForest: ChangeSnapshot[] = [
 ];
 
 const seedResources: Resource[] = [
-  { id: 1, name: '待登记-农业生产数据', industry: '稻谷种植,小麦种植,玉米种植', reviewStatus: '待登记', mountStatus: '待挂载', createdAt: '2026-08-24 18:36:42', updatedAt: '2026-08-24 18:38:02', provider: '湖南省农业农村厅', govCatalog: seedGovCatalogs[0] },
-  { id: 2, name: '首次登记待审核-耕地资源数据', industry: '稻谷种植', reviewStatus: '首次登记待审核', mountStatus: '待挂载', createdAt: '2026-06-25 10:55:59', updatedAt: '2026-08-24 10:17:13', provider: '长沙市农业农村局', govCatalog: seedGovCatalogs[1] },
-  { id: 3, name: '变更登记待审核-农作物分类数据', industry: '稻谷种植,小麦种植', reviewStatus: '变更登记待审核', mountStatus: '待挂载', createdAt: '2026-06-26 16:12:07', updatedAt: '2026-08-24 10:17:11', provider: '株洲市农业农村局', govCatalog: seedGovCatalogs[2] },
-  { id: 4, name: '撤销登记待审核-农业监测数据', industry: '稻谷种植', reviewStatus: '撤销登记待审核', mountStatus: '待挂载', createdAt: '2026-06-08 14:53:03', updatedAt: '2026-08-24 10:17:03', provider: '湘潭市农业农村局', govCatalog: seedGovCatalogs[3] },
-  { id: 5, name: '首次登记未通过-能源资源数据', industry: '烟煤和无烟煤开采洗选', reviewStatus: '首次登记未通过', mountStatus: '待挂载', createdAt: '2026-08-21 15:06:54', updatedAt: '2026-08-21 15:08:00', provider: '湖南省能源局', govCatalog: seedGovCatalogs[4] },
-  { id: 6, name: '变更登记未通过-豆类种植数据', industry: '豆类种植', reviewStatus: '变更登记未通过', mountStatus: '待挂载', createdAt: '2026-08-21 14:29:15', updatedAt: '2026-08-21 14:30:00', provider: '益阳市农业农村局', govCatalog: seedGovCatalogs[5] },
-  { id: 7, name: '撤销登记未通过-农产品流通数据', industry: '稻谷种植,小麦种植', reviewStatus: '撤销登记未通过', mountStatus: '待挂载', createdAt: '2026-08-17 14:20:04', updatedAt: '2026-08-18 16:52:01', provider: '岳阳市农业农村局', govCatalog: seedGovCatalogs[6] },
-  { id: 8, name: '已通过-医疗就诊数据资源', industry: '综合医院,中医医院,中西医结合医院', reviewStatus: '已通过', mountStatus: '已挂载', createdAt: '2026-08-11 15:23:32', updatedAt: '2026-08-11 15:28:15', provider: '湖南省卫生健康委', govCatalog: seedGovCatalogs[4] },
-  { id: 9, name: '已撤销-林木育苗数据', industry: '林木育苗', reviewStatus: '已撤销', mountStatus: '已挂载', createdAt: '2026-08-10 10:39:50', updatedAt: '2026-08-10 17:28:01', provider: '湖南省林业局', govCatalog: seedGovCatalogs[3], changed: true, changeRecords: [
+  { id: 1, name: '待登记-农业生产数据', industry: '稻谷种植,小麦种植,玉米种植', reviewStatus: '待登记', mountStatus: '待挂载', syncStatus: '是', createdAt: '2026-08-24 18:36:42', updatedAt: '2026-08-24 18:38:02', provider: '湖南省农业农村厅', holder: '大数据中心', govCatalog: seedGovCatalogs[0] },
+  { id: 2, name: '首次登记待审核-耕地资源数据', industry: '稻谷种植', reviewStatus: '首次登记待审核', mountStatus: '待挂载', syncStatus: '否', createdAt: '2026-06-25 10:55:59', updatedAt: '2026-08-24 10:17:13', provider: '长沙市农业农村局', holder: '大数据中心', govCatalog: seedGovCatalogs[1] },
+  { id: 3, name: '变更登记待审核-农作物分类数据', industry: '稻谷种植,小麦种植', reviewStatus: '变更登记待审核', mountStatus: '待挂载', syncStatus: '是', createdAt: '2026-06-26 16:12:07', updatedAt: '2026-08-24 10:17:11', provider: '株洲市农业农村局', holder: '大数据中心', govCatalog: seedGovCatalogs[2] },
+  { id: 4, name: '撤销登记待审核-农业监测数据', industry: '稻谷种植', reviewStatus: '撤销登记待审核', mountStatus: '待挂载', syncStatus: '否', createdAt: '2026-06-08 14:53:03', updatedAt: '2026-08-24 10:17:03', provider: '湘潭市农业农村局', holder: '大数据中心', govCatalog: seedGovCatalogs[3] },
+  { id: 5, name: '首次登记未通过-能源资源数据', industry: '烟煤和无烟煤开采洗选', reviewStatus: '首次登记未通过', mountStatus: '待挂载', syncStatus: '否', createdAt: '2026-08-21 15:06:54', updatedAt: '2026-08-21 15:08:00', provider: '湖南省能源局', holder: '大数据中心', govCatalog: seedGovCatalogs[4] },
+  { id: 6, name: '变更登记未通过-豆类种植数据', industry: '豆类种植', reviewStatus: '变更登记未通过', mountStatus: '待挂载', syncStatus: '是', createdAt: '2026-08-21 14:29:15', updatedAt: '2026-08-21 14:30:00', provider: '益阳市农业农村局', holder: '大数据中心', govCatalog: seedGovCatalogs[5] },
+  { id: 7, name: '撤销登记未通过-农产品流通数据', industry: '稻谷种植,小麦种植', reviewStatus: '撤销登记未通过', mountStatus: '待挂载', syncStatus: '否', createdAt: '2026-08-17 14:20:04', updatedAt: '2026-08-18 16:52:01', provider: '岳阳市农业农村局', holder: '大数据中心', govCatalog: seedGovCatalogs[6] },
+  { id: 8, name: '已通过-医疗就诊数据资源', industry: '综合医院,中医医院,中西医结合医院', reviewStatus: '已通过', mountStatus: '已挂载', syncStatus: '是', createdAt: '2026-08-11 15:23:32', updatedAt: '2026-08-11 15:28:15', provider: '湖南省卫生健康委', holder: '大数据中心', govCatalog: seedGovCatalogs[4] },
+  { id: 9, name: '已撤销-林木育苗数据', industry: '林木育苗', reviewStatus: '已撤销', mountStatus: '已挂载', syncStatus: '是', createdAt: '2026-08-10 10:39:50', updatedAt: '2026-08-10 17:28:01', provider: '湖南省林业局', holder: '大数据中心', govCatalog: seedGovCatalogs[3], changed: true, changeRecords: [
     { status: '变更通过', time: '2026-08-10 17:20:00', field: '行业分类', oldValue: '林木育种', newValue: '林木育苗', operator: '湖南省林业局', opinion: '分类调整通过', snapshot: changeSnapshotsForest[0] },
     { status: '变更通过', time: '2026-08-09 14:02:11', field: '更新频率', oldValue: '每季度', newValue: '每年', operator: '湖南省林业局', opinion: '更新频率调整通过', snapshot: changeSnapshotsForest[1] },
   ] },
-  { id: 10, name: '地域分类为长沙市的数据资源', industry: '稻谷种植', reviewStatus: '已通过', mountStatus: '已挂载', createdAt: '2026-07-28 09:21:45', updatedAt: '2026-08-06 11:27:24', provider: '湖南省农业农村厅', govCatalog: seedGovCatalogs[7], changed: true, changeRecords: [
+  { id: 10, name: '地域分类为长沙市的数据资源', industry: '稻谷种植', reviewStatus: '已通过', mountStatus: '已挂载', syncStatus: '是', createdAt: '2026-07-28 09:21:45', updatedAt: '2026-08-06 11:27:24', provider: '湖南省农业农村厅', holder: '大数据中心', govCatalog: seedGovCatalogs[7], changed: true, changeRecords: [
     { status: '变更通过', time: '2026-08-06 11:27:24', field: '地域分类', oldValue: '湖南省', newValue: '长沙市', operator: '湖南省农业农村厅', opinion: '变更内容符合要求', snapshot: changeSnapshots[0] },
     { status: '变更通过', time: '2026-08-06 11:25:10', field: '行业分类', oldValue: '稻谷种植,小麦种植', newValue: '稻谷种植', operator: '湖南省农业农村厅', opinion: '分类调整通过', snapshot: changeSnapshots[1] },
     { status: '变更不通过', time: '2026-08-06 11:20:33', field: '资源摘要', oldValue: '湖南省域内稻谷种植相关数据。', newValue: '全国稻谷种植相关数据，覆盖各省份。', operator: '湖南省农业农村厅', opinion: '请补充覆盖范围说明', snapshot: changeSnapshots[2] },
@@ -330,11 +332,12 @@ const seedResources: Resource[] = [
   ] },
 ];
 
-const statusClass = (status: Resource['reviewStatus'] | Resource['mountStatus']) => {
-  if (status === '已通过' || status === '已挂载') return 'status success';
+const statusClass = (status: Resource['reviewStatus'] | Resource['mountStatus'] | Resource['syncStatus']) => {
+  if (status === '已通过' || status === '已挂载' || status === '是') return 'status success';
   if (status === '首次登记待审核' || status === '变更登记待审核' || status === '撤销登记待审核' || status === '待挂载') return 'status info';
   if (status === '首次登记未通过' || status === '变更登记未通过' || status === '撤销登记未通过') return 'status danger';
   if (status === '已撤销') return 'status muted';
+  if (status === '否') return 'status muted';
   return 'status warning';
 };
 
@@ -434,10 +437,10 @@ const OriginalComponent = () => {
             <div className="table-heading" />
             <div className="table-wrap">
               <table className="catalog-table">
-                <thead><tr><th>序号</th><th>资源名称</th><th>行业分类</th><th>审核状态</th><th>数据源挂载状态</th><th>创建时间</th><th>更新时间</th><th>操作</th></tr></thead>
+                <thead><tr><th>序号</th><th>资源名称</th><th>行业分类</th><th>资源持有方</th><th>审核状态</th><th>数据源挂载状态</th><th>同步状态</th><th>创建时间</th><th>更新时间</th><th>操作</th></tr></thead>
                 <tbody>{filtered.slice((page - 1) * 10, page * 10).map((item, index) => <tr key={item.id}>
-                  <td>{(page - 1) * 10 + index + 1}</td><td className="ellipsis" title={item.name}>{item.name}</td><td className="ellipsis" title={item.industry}>{item.industry}</td>
-                  <td><span className={statusClass(item.reviewStatus)}>{item.reviewStatus}</span></td><td><span className={statusClass(item.mountStatus)}>{item.mountStatus}</span></td>
+                  <td>{(page - 1) * 10 + index + 1}</td><td className="ellipsis" title={item.name}>{item.name}</td><td className="ellipsis" title={item.industry}>{item.industry}</td><td className="ellipsis" title={item.holder}>{item.holder}</td>
+                  <td><span className={statusClass(item.reviewStatus)}>{item.reviewStatus}</span></td><td><span className={statusClass(item.mountStatus)}>{item.mountStatus}</span></td><td><span className={statusClass(item.syncStatus)}>{item.syncStatus}</span></td>
                   <td>{item.createdAt}</td><td>{item.updatedAt}</td><td className="actions">{ALL_ACTIONS.filter(a => a.show(item.reviewStatus, item)).map(a => (
                     <button key={a.key} className={a.danger ? 'action-danger' : ''} onClick={() => a.key === 'view' ? setShowView(item) : a.key === 'proof' ? setShowProof(item) : setAction({ type: a.key, item })}>{a.label}</button>
                   ))}</td>
@@ -485,6 +488,7 @@ type FormInitial = {
   untilNow?: boolean;
   region?: string;
   extCode?: string;
+  syncToWholeDomain?: '是' | '否';
   summary?: string;
   holder?: string;
   creditCode?: string;
@@ -516,6 +520,7 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
   const [untilNow, setUntilNow] = useState(initial?.untilNow ?? false);
   const [region, setRegion] = useState(initial?.region ?? '');
   const [extCode, setExtCode] = useState(initial?.extCode ?? '');
+  const [syncToWholeDomain, setSyncToWholeDomain] = useState<'是' | '否'>(initial?.syncToWholeDomain ?? '是');
   const [summary, setSummary] = useState(initial?.summary ?? '');
   const [holder] = useState(initial?.holder ?? '湖南省卫生健康委信息统计中心');
   const [creditCode] = useState(initial?.creditCode ?? '12430000MB0L046927');
@@ -574,6 +579,8 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
                 <Field label="地域分类" required><select value={region} onChange={e => setRegion(e.target.value)}><option>请选择</option><option>湖南省</option><option>长沙市</option><option>株洲市</option></select></Field>
                 {/* 变更弹窗不展示扩展码；新增／编辑弹窗仍保留该字段的输入与提交 */}
                 {mode !== 'change' && <Field label="扩展码"><input value={extCode} onChange={e => setExtCode(e.target.value)} placeholder="请输入" /></Field>}
+                {/* 仅新增弹窗展示「是否同步到整体领域」，默认选中「是」 */}
+                {mode === 'add' && <Field label="是否同步到整体领域"><div className="radio-group"><label><input type="radio" name="syncToWholeDomain" checked={syncToWholeDomain === '是'} onChange={() => setSyncToWholeDomain('是')} />是</label><label><input type="radio" name="syncToWholeDomain" checked={syncToWholeDomain === '否'} onChange={() => setSyncToWholeDomain('否')} />否</label></div></Field>}
                 <Field label="资源摘要" required full><textarea rows={3} value={summary} onChange={e => setSummary(e.target.value)} placeholder="请输入" /></Field>
               </div>
               <h4>资源持有方信息</h4>

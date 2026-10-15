@@ -1,0 +1,316 @@
+/* 行业主管部门管理页面专属样式 */
+
+.industry-page {
+  padding: 16px 24px 24px;
+}
+
+/* 列表操作列删除按钮 */
+.action-delete {
+  color: #d54941;
+}
+
+.action-delete:hover {
+  color: #b3281f;
+}
+
+.btn-danger {
+  color: #fff;
+  background: #d54941;
+  border-color: #d54941;
+}
+
+.btn-danger:hover {
+  color: #fff;
+  background: #b3281f;
+  border-color: #b3281f;
+}
+
+/* 筛选区日期范围样式 */
+.filter-item.date-range {
+  grid-column: span 1;
+}
+
+.date-inputs {
+  min-width: 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+}
+
+.date-input {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.date-input input[type="date"] {
+  width: 100%;
+  height: 30px;
+  padding: 0 2px;
+  font-size: 11px;
+  line-height: 30px;
+  color: #4b5563;
+  border: 0;
+  background: transparent;
+  outline: none;
+  box-shadow: none;
+  min-width: 0;
+}
+
+.date-input input[type="date"]::-webkit-calendar-picker-indicator {
+  display: block;
+  width: 10px;
+  height: 10px;
+  cursor: pointer;
+  opacity: 0.5;
+  margin: 0 auto;
+}
+
+.date-input input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.date-input input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+.date-input input[type="date"]::-webkit-datetime-edit {
+  padding: 0;
+}
+
+.date-separator {
+  flex: 0 0 auto;
+  width: 12px;
+  text-align: center;
+  color: #8b95a5;
+  font-size: 12px;
+  line-height: 30px;
+  user-select: none;
+}
+
+/* 弹窗通用结构 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 10vh 24px 40px;
+  background: rgba(0, 0, 0, .42);
+}
+
+.modal-medium,
+.modal-sm {
+  max-width: calc(100vw - 48px);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 3px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .18);
+  overflow: hidden;
+}
+
+.modal-medium { width: 640px; }
+.modal-sm { width: 400px; }
+
+.modal-header {
+  min-height: 58px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1px 24px 1px;
+  background: #fff;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #1f2329;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.modal-close {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: #9097a3;
+  border: 0;
+  background: transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #4b5563;
+  background: #f3f6fb;
+}
+
+.modal-body {
+  flex: 1;
+  min-height: 0;
+  padding: 4px 24px 24px;
+  overflow: auto;
+  background: #fff;
+}
+
+.modal-footer {
+  min-height: 64px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 1px 24px 1px;
+  border-top: 1px solid #edf0f5;
+  background: #fff;
+}
+
+/* 新增 / 删除弹窗表单：.modal-body 与 .form-content 同属一个元素，必须用类联写选择器 */
+.modal-body.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 2px 24px 38px;
+  min-height: auto;
+  flex: 1 1 auto;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.form-item {
+  min-height: 34px;
+  display: grid;
+  grid-template-columns: 126px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.form-item label {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-right: 4px;
+  color: #1f2329;
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 34px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 126px;
+}
+
+.form-item label .required {
+  color: var(--layout-danger, #f5222d);
+  flex: none;
+}
+
+.form-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.form-control select,
+.form-control input {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 12px;
+  color: #1f2329;
+  background: #fff;
+  border: 1px solid #d8dfe9;
+  border-radius: 2px;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+/* 批次：第 + 独立数字计数器 + 批 */
+.batch-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+}
+
+.batch-field .batch-prefix,
+.batch-field .batch-suffix {
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 34px;
+  user-select: none;
+}
+
+.batch-field .batch-counter {
+  width: 108px;
+  height: 34px;
+  padding: 0 6px 0 10px;
+  color: #1f2329;
+  background: #fff;
+  border: 1px solid #d8dfe9;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  text-align: left;
+  box-sizing: border-box;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.batch-field .batch-counter:focus {
+  border-color: #3d8bff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
+}
+
+.batch-field.has-error .batch-counter {
+  border-color: var(--layout-danger, #f5222d) !important;
+}
+
+.form-control select:focus,
+.form-control input:focus {
+  border-color: #3d8bff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
+}
+
+.form-control .has-error {
+  border-color: var(--layout-danger, #f5222d) !important;
+}
+
+.form-error {
+  color: var(--layout-danger, #f5222d);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+}
+
+.modal-body.delete-content {
+  padding: 12px 24px 0;
+  color: #1f2329;
+  font-size: 14px;
+  line-height: 22px;
+}
+

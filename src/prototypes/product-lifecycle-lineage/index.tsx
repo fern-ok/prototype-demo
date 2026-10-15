@@ -73,7 +73,7 @@ const OriginalComponent = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('basic');
   const [listPage, setListPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
 
   /** 依据节点类型确定抽屉页签：数据资源 + 基本信息/授权信息；基础产品 + 基本信息/授权信息；再开发产品 + 基本信息/交易信息 */
   const getTabs = useCallback((type: string): TabKey[] => {
@@ -467,9 +467,9 @@ const OriginalComponent = () => {
               ))}
             <button className="page-btn" disabled={safePage >= totalPages} onClick={() => props.onPageChange(Math.min(totalPages, safePage + 1))}>下一页</button>
             <select className="page-size-select" value={props.pageSize} onChange={(e) => props.onPageSizeChange(Number(e.target.value))}>
-              <option value={5}>5 条/页</option>
               <option value={10}>10 条/页</option>
-              <option value={20}>20 条/页</option>
+              <option value={50}>50 条/页</option>
+              <option value={100}>100 条/页</option>
             </select>
           </div>
         </div>
@@ -521,7 +521,8 @@ const OriginalComponent = () => {
           <div className="drawer-info-label">数据产品标识码</div>
           <div className="drawer-info-value">{productDetail.productCode}</div>
           <div className="drawer-info-label">产品类型</div>
-          <div className="drawer-info-value"><span className="type-tag">{productDetail.productType}</span></div>
+          {/* 产品类型：按需求以纯文本呈现，不添加文字颜色 / 背景色 / 高亮等视觉修饰 */}
+          <div className="drawer-info-value"><span>{productDetail.productType}</span></div>
           <div className="drawer-info-label">覆盖时间范围</div>
           <div className="drawer-info-value">{productDetail.coverage}</div>
           <div className="drawer-info-label">行业分类</div>
@@ -719,16 +720,22 @@ const OriginalComponent = () => {
           <span className="lineage-back-arrow">‹</span>
           返回产品库
         </a>
-        <div className="lineage-legend">
-          {LINEAGE_LEGEND.map(function (type) {
-            const style = LEGEND_STYLE[type];
-            return (
-              <span key={type} className="lineage-legend-item">
-                <i className="lineage-legend-swatch" style={{ background: style.fill, borderColor: style.stroke }} />
-                {type}
-              </span>
-            );
-          })}
+        <div className="lineage-topbar-right">
+          <div className="lineage-legend">
+            {LINEAGE_LEGEND.map(function (type) {
+              const style = LEGEND_STYLE[type];
+              return (
+                <span key={type} className="lineage-legend-item">
+                  <i className="lineage-legend-swatch" style={{ background: style.fill, borderColor: style.stroke }} />
+                  {type}
+                </span>
+              );
+            })}
+            <span className="lineage-legend-item">
+              <i className="lineage-legend-swatch lineage-legend-swatch-current" />
+              当前产品
+            </span>
+          </div>
         </div>
       </div>
 
@@ -753,6 +760,7 @@ const OriginalComponent = () => {
               onNodeClick={handleNodeClick}
               selectedNodeName={selectedNode?.name}
               highlightNames={matchedNames}
+              currentNodeName={record?.productName}
             />
           </div>
         )}

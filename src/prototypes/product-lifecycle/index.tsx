@@ -44,7 +44,7 @@ const FileChip = ({ name }: { name: string }) => {
   );
 };
 
-/** 列表页「流程节点」展示口径：将 产品上架 / 产品下架 拆分为两个独立节点（各自状态 待审核 / 已通过 / 不通过）；并移除「产品交易」节点及其状态值（已下单 / 交付中 / 已完成 / 已冻结），
+/** 列表页「流程节点」展示口径：将 产品上架 / 产品下架 拆分为两个独立节点（上架：上架待审核 / 上架已通过 / 上架不通过；下架：下架待审核 / 下架已通过 / 下架不通过）；并移除「产品交易」节点及其状态值（已下单 / 交付中 / 已完成 / 已冻结），
  * 使当前状态字段不再展示产品交易环节状态选项、筛选栏不再支持按产品交易环节状态筛选。
  * 仅作用于列表筛选与列展示，底层数据模型（STAGE_OPTIONS / STAGE_FLOW / STAGE_STATUS_MAP / STAGE_STATUS_OPTIONS_BY_STAGE）仍保留产品交易，时间轴与图谱不受影响。 */
 const CASCADE_OPTIONS = [
@@ -351,7 +351,8 @@ const OriginalComponent = () => {
                   <td className="col-index">{(safePage - 1) * pageSize + index + 1}</td>
                   <td className="col-code" title={record.productCode}>{record.productCode}</td>
                   <td className="col-product" title={record.productName}>{record.productName}</td>
-                  <td className="col-product-type"><span className="type-tag">{record.productType}</span></td>
+                  {/* 产品类型：按需求以纯文本呈现，不添加文字颜色 / 背景色 / 高亮等视觉修饰 */}
+                  <td className="col-product-type"><span>{record.productType}</span></td>
                   <td className="col-product-stage">{record.productStage}</td>
                   <td className="col-provider" title={record.provider}>{record.provider}</td>
                   <td className="col-current-status">
@@ -432,7 +433,8 @@ const OriginalComponent = () => {
                     <div className="info-label">产品名称</div>
                     <div className="info-value" title={viewDetail.productName}>{viewDetail.productName}</div>
                     <div className="info-label">产品类型</div>
-                    <div className="info-value"><span className="type-tag">{viewDetail.productType}</span></div>
+                    {/* 产品类型：按需求以纯文本呈现，不添加文字颜色 / 背景色 / 高亮等视觉修饰 */}
+                    <div className="info-value"><span>{viewDetail.productType}</span></div>
                     <div className="info-label">覆盖时间范围</div>
                     <div className="info-value">{viewDetail.coverage}</div>
                     <div className="info-label">行业分类</div>

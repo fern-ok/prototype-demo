@@ -27,6 +27,7 @@ interface ImplOrgFiling {
   status: string;
   filingTime: string;
   remark?: string;
+  attachment?: string;
   evidenceHash: string;
   blockchainId: string;
   evidenceTime: string;
@@ -49,6 +50,7 @@ interface ImplOrgFormData {
   domain: string;
   implOrg: string;
   creditCode: string;
+  attachment: string;
   remark: string;
 }
 
@@ -206,6 +208,7 @@ const createEmptyForm = (): ImplOrgFormData => ({
   domain: '',
   implOrg: '',
   creditCode: '',
+  attachment: '',
   remark: ''
 });
 
@@ -349,6 +352,7 @@ const OriginalComponent = () => {
       domain: record.domain,
       implOrg: record.implOrg,
       creditCode: record.creditCode,
+      attachment: record.attachment || '',
       remark: record.remark || ''
     });
     setFormErrors({});
@@ -372,6 +376,7 @@ const OriginalComponent = () => {
     if (!formData.domain.trim()) errors.domain = '请选择领域名称';
     if (!formData.implOrg.trim()) errors.implOrg = '请输入实施机构名称';
     if (!formData.creditCode.trim()) errors.creditCode = '请输入统一社会信用代码';
+    if (!formData.attachment.trim()) errors.attachment = '请上传附件';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -386,6 +391,7 @@ const OriginalComponent = () => {
       domain: formData.domain,
       implOrg: formData.implOrg.trim(),
       creditCode: formData.creditCode.trim(),
+      attachment: formData.attachment.trim(),
       legalHandler: LEGAL_HANDLER_DEFAULT,
       createTime: time,
       status: '已备案',
@@ -404,12 +410,36 @@ const OriginalComponent = () => {
   const handleSubmitEdit = () => {
     if (!validateForm() || !currentRecord) return;
     setRecords(prev => prev.map(r => (r.id === currentRecord.id
-      ? { ...r, authType: formData.authType, domain: formData.domain, implOrg: formData.implOrg.trim(), creditCode: formData.creditCode.trim(), remark: formData.remark.trim() || undefined }
+      ? { ...r, authType: formData.authType, domain: formData.domain, implOrg: formData.implOrg.trim(), creditCode: formData.creditCode.trim(), attachment: formData.attachment.trim(), remark: formData.remark.trim() || undefined }
       : r)));
     closeFormModals();
     setCurrentRecord(null);
     alert('编辑保存成功');
   };
+
+  /* 文件上传控件 */
+  const renderUploadField = (field: keyof ImplOrgFormData, label: string, required: boolean, hint: string) => (
+    <div className="form-item form-item-full upload-item">
+      <label>{required && <span className="required">*</span>} {label}</label>
+      <div className="upload-control">
+        <label className="upload-btn">
+          选择文件
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => {
+              const file = e.target.files && e.target.files[0];
+              handleFormChange(field, file ? file.name : '');
+            }}
+          />
+        </label>
+        <span className={'upload-name ' + (formData[field] ? 'has-file' : '')}>
+          {formData[field] || hint}
+        </span>
+      </div>
+      {formErrors[field] && <span className="error-text">{formErrors[field]}</span>}
+    </div>
+  );
 
   const renderFormModal = (title: string, onSubmit: () => void) => (
     <div className="modal-overlay" onClick={closeFormModals}>
@@ -420,7 +450,7 @@ const OriginalComponent = () => {
         </div>
         <div className="modal-body filing-form-body">
           <div className="form-grid">
-            <div className="form-item">
+            <div className="form-item form-item-full">
               <label><span className="required">*</span> 授权运营类型</label>
               <select
                 value={formData.authType}
@@ -431,7 +461,7 @@ const OriginalComponent = () => {
               </select>
               {formErrors.authType && <span className="error-text">{formErrors.authType}</span>}
             </div>
-            <div className="form-item">
+            <div className="form-item form-item-full">
               <label><span className="required">*</span> 领域名称</label>
               <select
                 value={formData.domain}
@@ -465,6 +495,7 @@ const OriginalComponent = () => {
               />
               {formErrors.creditCode && <span className="error-text">{formErrors.creditCode}</span>}
             </div>
+            {renderUploadField('attachment', '附件', true, '上传会议纪要或其他佐证实施机构身份的文件')}
             <div className="form-item form-item-full">
               <label>情况说明</label>
               <textarea

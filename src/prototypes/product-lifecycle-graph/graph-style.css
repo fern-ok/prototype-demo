@@ -686,6 +686,17 @@
   transform: none;
 }
 
+/* 未流转到的环节：禁用态——不可点击（不触发「暂无数据」提示），灰显且不可交互 */
+.life-flow-node:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.life-flow-node:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .life-flow-node.future:not(.active) .life-flow-node-label {
   color: #b9c0cc;
 }

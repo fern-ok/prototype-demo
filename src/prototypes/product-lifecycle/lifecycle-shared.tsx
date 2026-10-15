@@ -171,15 +171,15 @@ const STAGE_FLOW = ['安全审查', '产品登记', '产品上架', '产品交�
 const STAGE_STATUS_MAP: Record<string, string[]> = {
   安全审查: ['待审查', '审查不通过'],
   产品登记: ['首次登记待审核', '变更登记待审核', '撤销登记待审核', '首次登记未通过', '变更登记未通过', '撤销登记未通过', '已通过', '已撤销'],
-  产品上架: ['待审核', '已通过', '不通过'],
-  产品下架: ['待审核', '已通过', '不通过'],
+  产品上架: ['上架待审核', '上架已通过', '上架不通过'],
+  产品下架: ['下架待审核', '下架已通过', '下架不通过'],
   产品交易: ['已下单', '交付中', '已完成', '已冻结']
 };
 
 /** 节点状态全集（下拉未选流程节点时的兜底选项） */
 export const STAGE_STATUS_OPTIONS = Array.from(new Set(Object.values(STAGE_STATUS_MAP).flat()));
 
-/** 列表「流程节点」→「节点状态」级联映射（产品上架 / 产品下架 为两个独立节点，状态词表均为 待审核 / 已通过 / 不通过） */
+/** 列表「流程节点」→「节点状态」级联映射（产品上架 / 产品下架 为两个独立节点，状态词表各自带「上架 / 下架」前缀） */
 export const STAGE_STATUS_OPTIONS_BY_STAGE: Record<string, string[]> = {
   安全审查: STAGE_STATUS_MAP['安全审查'],
   产品登记: STAGE_STATUS_MAP['产品登记'],
@@ -267,11 +267,11 @@ export const seedRecords: LifecycleRecord[] = (function build() {
     });
   }
 
-  // 原型演示：固定将「DP43020020260019」置为产品下架 / 不通过
+  // 原型演示：固定将「DP43020020260019」置为产品下架 / 下架不通过
   const dp43020020260019 = list.find((r) => r.productCode === 'DP43020020260019');
   if (dp43020020260019) {
     dp43020020260019.currentStage = '产品下架';
-    dp43020020260019.stageStatus = '不通过';
+    dp43020020260019.stageStatus = '下架不通过';
   }
 
   return list;
@@ -639,9 +639,9 @@ export interface AuthRecord {
   org: string;
   /** 授权用途（基础产品：产品再开发） */
   purpose: string;
-  /** 授权时间，格式 yyyy-MM-dd */
+  /** 授权时间，格式 yyyy-MM-dd HH:mm:ss */
   authTime: string;
-  /** 授权期限（如 2026-2028 / 长期有效） */
+  /** 授权期限，格式 yyyy-MM-dd 至 yyyy-MM-dd（固定起止日期区间，系统中不存在长期有效类无固定期限值） */
   authTerm: string;
   /** 数据开发平台（承载授权开发的应用平台） */
   devPlatform: string;
@@ -697,16 +697,15 @@ const AUTH_SCENARIOS = [
   '农业产销数据分析'
 ];
 
-/** 授权信息列表「授权期限」候选（演示用） */
+/** 授权信息列表「授权期限」候选（演示用）：固定起止日期区间，系统中不存在「长期有效」类无固定期限值 */
 const AUTH_TERMS = [
-  '2026-2028',
-  '2026-2029',
-  '2026-2031',
-  '2026-2030',
-  '长期有效',
-  '2026-2027',
-  '2026-2032',
-  '2026-2028'
+  '2026-06-04 至 2027-06-04',
+  '2026-06-04 至 2028-06-04',
+  '2026-06-04 至 2029-06-04',
+  '2026-06-04 至 2030-06-04',
+  '2026-06-04 至 2031-06-04',
+  '2026-06-04 至 2032-06-04',
+  '2026-06-04 至 2033-06-04'
 ];
 
 /** 授权信息列表「数据开发平台」候选（演示用） */
@@ -756,6 +755,10 @@ const pickDate = (rand: () => number) => {
   return '2026-' + pad2(month) + '-' + pad2(day);
 };
 
+/** 由行索引派生稳定的「时分秒」片段，避免额外占用共享随机流影响其他字段演示数据 */
+const timePart = (i: number) =>
+  pad2(8 + (i % 12)) + ':' + pad2((i * 7) % 60) + ':' + pad2((i * 13) % 60);
+
 /**
  * 生成「授权信息」列表：序号、场景名称、其他经营主体、授权时间、授权期限、数据开发平台，按授权时间倒序排列。
  * 语义：当前节点（基础产品）被授权给这些机构，用于产品再开发（purpose 由调用方传入）。
@@ -772,7 +775,7 @@ export const buildAuthList = (seed: string, purpose = '产品再开发', count =
       scenario: AUTH_SCENARIOS[Math.floor(randExt() * AUTH_SCENARIOS.length)],
       org: AUTH_ORGS[Math.floor(rand() * AUTH_ORGS.length)],
       purpose,
-      authTime: pickDate(rand),
+      authTime: pickDate(rand) + ' ' + timePart(i),
       authTerm: AUTH_TERMS[Math.floor(randExt() * AUTH_TERMS.length)],
       devPlatform: AUTH_PLATFORMS[Math.floor(randExt() * AUTH_PLATFORMS.length)]
     });
@@ -895,9 +898,11 @@ export interface LineageGraphProps {
   selectedNodeName?: string;
   /** 需要重点标记（高亮）的节点名称列表；不传则全部节点保持原有样式 */
   highlightNames?: string[];
+  /** 当前查看的产品节点名称（即中心节点）；传入时该节点外圈以虚线边框突出显示，便于区分当前产品与其他关联产品 */
+  currentNodeName?: string;
 }
 
-export const LineageGraph = ({ layers, edges, onNodeClick, selectedNodeName, highlightNames }: LineageGraphProps) => {
+export const LineageGraph = ({ layers, edges, onNodeClick, selectedNodeName, highlightNames, currentNodeName }: LineageGraphProps) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ width: number; height: number }>({ width: 960, height: 540 });
   const highlightSet = useMemo(() => new Set(highlightNames || []), [highlightNames]);
@@ -940,6 +945,7 @@ export const LineageGraph = ({ layers, edges, onNodeClick, selectedNodeName, hig
     const style = NODE_STYLE[node.type] || NODE_STYLE['基础产品'];
     const isSelected = selectedNodeName === node.name;
     const isHighlight = !isSelected && highlightSet.has(node.name);
+    const isCurrent = currentNodeName === node.name;
     const halfW = NODE_W / 2;
     const halfH = NODE_H / 2;
     const isResource = node.type === '数据资源';
@@ -953,7 +959,22 @@ export const LineageGraph = ({ layers, edges, onNodeClick, selectedNodeName, hig
         onClick={() => onNodeClick && onNodeClick(node)}
         style={{ cursor: onNodeClick ? 'pointer' : 'default' }}
       >
-        <title>{node.name}</title>
+        <title>{node.name + (isCurrent ? '（当前查看产品）' : '')}</title>
+        {/* 当前查看产品：外圈虚线边框，区别于其他关联节点 */}
+        {isCurrent && (
+          <rect
+            className="lineage-node-current-ring"
+            x={-6}
+            y={-6}
+            width={NODE_W + 12}
+            height={NODE_H + 12}
+            rx={9}
+            fill="none"
+            stroke={style.stroke}
+            strokeWidth={1.5}
+            strokeDasharray="6 4"
+          />
+        )}
         <rect
           width={NODE_W}
           height={NODE_H}

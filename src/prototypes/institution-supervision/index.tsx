@@ -247,9 +247,22 @@ const OriginalComponent = () => {
   const totalRegistered = totalFiled + UNFILED_REGISTERED;
   /** 备案率（用于机构总数卡的进度摘要） */
   const filedRatePct = totalRegistered > 0 ? Math.round((totalFiled / totalRegistered) * 100) : 0;
+  /** 机构总数卡地域分布：省本级 / 地市（地市 = 除省本级外的全部地域） */
+  const provinceOrgCount = records.filter(function (it) { return it.region === '省本级'; }).length;
+  const cityOrgCount = records.length - provinceOrgCount;
   const roleCounts = useMemo(function () {
     const map: Record<string, number> = {};
     ROLE_LIST.forEach(function (r) { map[r] = records.filter(function (it) { return it.role === r; }).length; });
+    return map;
+  }, [records]);
+  /** 各角色卡地域分布：省本级 / 地市（地市 = 除省本级外的全部地域） */
+  const roleRegionCounts = useMemo(function () {
+    const map: Record<string, { province: number; city: number }> = {};
+    ROLE_LIST.forEach(function (r) {
+      const list = records.filter(function (it) { return it.role === r; });
+      const province = list.filter(function (it) { return it.region === '省本级'; }).length;
+      map[r] = { province: province, city: list.length - province };
+    });
     return map;
   }, [records]);
 
@@ -397,24 +410,40 @@ const OriginalComponent = () => {
             <div className="stat-progress" role="presentation">
               <span style={{ width: filedRatePct + '%', background: ROLE_CARD_TONE.total }} />
             </div>
-            <div className="stat-total-caption">已备案 {totalFiled} · 待备案 {UNFILED_REGISTERED}</div>
+            <div className="stat-total-caption">已备案 {totalFiled}（ 省本级 {provinceOrgCount} · 地市 {cityOrgCount} ）· 待备案 {UNFILED_REGISTERED}</div>
           </div>
         </div>
         <div className="stat-card" style={{ borderTopColor: ROLE_CARD_TONE['行业主管部门'] }}>
           <div className="stat-title">行业主管部门数量</div>
-          <div className="stat-main stat-main-center" style={{ color: ROLE_CARD_TONE['行业主管部门'] }}>{roleCounts['行业主管部门']}</div>
+          <div className="stat-main" style={{ color: ROLE_CARD_TONE['行业主管部门'] }}>{roleCounts['行业主管部门']}</div>
+          <div className="stat-region-row">
+            <span className="stat-region-item">省本级 <b>{roleRegionCounts['行业主管部门'].province}</b></span>
+            <span className="stat-region-item">地市 <b>{roleRegionCounts['行业主管部门'].city}</b></span>
+          </div>
         </div>
         <div className="stat-card" style={{ borderTopColor: ROLE_CARD_TONE['实施机构'] }}>
           <div className="stat-title">实施机构数量</div>
-          <div className="stat-main stat-main-center" style={{ color: ROLE_CARD_TONE['实施机构'] }}>{roleCounts['实施机构']}</div>
+          <div className="stat-main" style={{ color: ROLE_CARD_TONE['实施机构'] }}>{roleCounts['实施机构']}</div>
+          <div className="stat-region-row">
+            <span className="stat-region-item">省本级 <b>{roleRegionCounts['实施机构'].province}</b></span>
+            <span className="stat-region-item">地市 <b>{roleRegionCounts['实施机构'].city}</b></span>
+          </div>
         </div>
         <div className="stat-card" style={{ borderTopColor: ROLE_CARD_TONE['运营机构'] }}>
           <div className="stat-title">运营机构数量</div>
-          <div className="stat-main stat-main-center" style={{ color: ROLE_CARD_TONE['运营机构'] }}>{roleCounts['运营机构']}</div>
+          <div className="stat-main" style={{ color: ROLE_CARD_TONE['运营机构'] }}>{roleCounts['运营机构']}</div>
+          <div className="stat-region-row">
+            <span className="stat-region-item">省本级 <b>{roleRegionCounts['运营机构'].province}</b></span>
+            <span className="stat-region-item">地市 <b>{roleRegionCounts['运营机构'].city}</b></span>
+          </div>
         </div>
         <div className="stat-card" style={{ borderTopColor: ROLE_CARD_TONE['其他经营主体'] }}>
           <div className="stat-title">其他经营主体数量</div>
-          <div className="stat-main stat-main-center" style={{ color: ROLE_CARD_TONE['其他经营主体'] }}>{roleCounts['其他经营主体']}</div>
+          <div className="stat-main" style={{ color: ROLE_CARD_TONE['其他经营主体'] }}>{roleCounts['其他经营主体']}</div>
+          <div className="stat-region-row">
+            <span className="stat-region-item">省本级 <b>{roleRegionCounts['其他经营主体'].province}</b></span>
+            <span className="stat-region-item">地市 <b>{roleRegionCounts['其他经营主体'].city}</b></span>
+          </div>
         </div>
       </div>
     </div>

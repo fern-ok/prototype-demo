@@ -62,6 +62,32 @@
   align-items: center;
 }
 
+/* 角色卡：省本级 / 地市 地域分布摘要 */
+.stat-region-row {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.stat-region-item {
+  flex: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #f2f5fa;
+  color: #8a95a6;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stat-region-item b {
+  color: #1f2a3d;
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
 /* 机构总数卡：备案进度摘要 */
 .stat-total-foot {
   margin-top: 8px;

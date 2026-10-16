@@ -24,6 +24,7 @@ interface PlanFiling {
   planFile: string;
   minutesFile: string;
   attachFile: string;
+  attachFile2: string;
   legalHandler: string;
   createTime: string;
   status: string;
@@ -51,6 +52,7 @@ interface PlanFormData {
   planFile: string;
   minutesFile: string;
   attachFile: string;
+  attachFile2: string;
   remark: string;
 }
 
@@ -71,6 +73,7 @@ const planSeed: PlanFiling[] = [
     planFile: '长沙市医疗健康领域公共数据授权运营实施方案.pdf',
     minutesFile: '长沙市医疗健康领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-医疗健康.pdf',
+    attachFile2: '财政厅联审意见-医疗健康.pdf',
     legalHandler: '张文博',
     createTime: '2026-05-18 10:05:57',
     status: '已备案',
@@ -89,6 +92,7 @@ const planSeed: PlanFiling[] = [
     planFile: '湖南省交通运输领域授权运营实施方案.pdf',
     minutesFile: '交通运输领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-交通运输.pdf',
+    attachFile2: '财政厅联审意见-交通运输.pdf',
     legalHandler: '李建国',
     createTime: '2026-06-01 09:30:22',
     status: '待省级确认',
@@ -107,6 +111,7 @@ const planSeed: PlanFiling[] = [
     planFile: '岳麓区教育领域授权运营实施方案.pdf',
     minutesFile: '教育领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-教育.pdf',
+    attachFile2: '财政厅联审意见-教育.pdf',
     legalHandler: '王思远',
     createTime: '2026-06-05 14:20:15',
     status: '省级退回',
@@ -126,6 +131,7 @@ const planSeed: PlanFiling[] = [
     planFile: '湖南省文旅领域授权运营实施方案（草稿）.pdf',
     minutesFile: '文旅领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-文旅.pdf',
+    attachFile2: '财政厅联审意见-文旅.pdf',
     legalHandler: '孙佳怡',
     createTime: '2026-06-10 11:15:28',
     status: '待提交',
@@ -144,6 +150,7 @@ const planSeed: PlanFiling[] = [
     planFile: '岳阳市自然资源领域授权运营实施方案.pdf',
     minutesFile: '自然资源领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-自然资源.pdf',
+    attachFile2: '财政厅联审意见-自然资源.pdf',
     legalHandler: '赵敏',
     createTime: '2026-06-15 13:50:44',
     status: '已备案',
@@ -162,6 +169,7 @@ const planSeed: PlanFiling[] = [
     planFile: '株洲市交通领域授权运营实施方案.pdf',
     minutesFile: '株洲交通领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-株洲交通.pdf',
+    attachFile2: '财政厅联审意见-株洲交通.pdf',
     legalHandler: '周文涛',
     createTime: '2026-07-02 16:41:41',
     status: '待省级确认',
@@ -180,6 +188,7 @@ const planSeed: PlanFiling[] = [
     planFile: '湖南省全民健康信息平台授权运营实施方案.pdf',
     minutesFile: '全民健康平台实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-全民健康.pdf',
+    attachFile2: '财政厅联审意见-全民健康.pdf',
     legalHandler: '陈雨桐',
     createTime: '2026-07-16 09:07:23',
     status: '已备案',
@@ -221,6 +230,7 @@ const createEmptyForm = (): PlanFormData => ({
   planFile: '',
   minutesFile: '',
   attachFile: '',
+  attachFile2: '',
   remark: ''
 });
 
@@ -367,6 +377,7 @@ const OriginalComponent = () => {
         planFile: record.planFile,
         minutesFile: record.minutesFile,
         attachFile: record.attachFile,
+        attachFile2: record.attachFile2,
         remark: record.remark || ''
       });
     }
@@ -392,7 +403,8 @@ const OriginalComponent = () => {
     const errors: Record<string, string> = {};
     if (!formData.planFile.trim()) errors.planFile = '请上传实施方案';
     if (!formData.minutesFile.trim()) errors.minutesFile = '请上传会议纪要';
-    if (!formData.attachFile.trim()) errors.attachFile = '请上传附件';
+    if (!formData.attachFile.trim()) errors.attachFile = '请上传 “湘办通” 内数据局联审意见';
+    if (!formData.attachFile2.trim()) errors.attachFile2 = '请上传 “湘办通” 内财政厅联审意见';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -409,6 +421,7 @@ const OriginalComponent = () => {
       planFile: formData.planFile,
       minutesFile: formData.minutesFile,
       attachFile: formData.attachFile,
+      attachFile2: formData.attachFile2,
       legalHandler: LEGAL_HANDLER_DEFAULT,
       createTime: time,
       status: '待提交',
@@ -433,6 +446,7 @@ const OriginalComponent = () => {
           planFile: formData.planFile,
           minutesFile: formData.minutesFile,
           attachFile: formData.attachFile,
+          attachFile2: formData.attachFile2,
           remark: formData.remark.trim() || undefined,
           status: isReject ? '待省级确认' : r.status,
           filingTime: isReject ? '' : r.filingTime
@@ -451,6 +465,7 @@ const OriginalComponent = () => {
           planFile: formData.planFile,
           minutesFile: formData.minutesFile,
           attachFile: formData.attachFile,
+          attachFile2: formData.attachFile2,
           remark: formData.remark.trim() || undefined,
           status: '待省级确认',
           filingTime: ''
@@ -499,9 +514,10 @@ const OriginalComponent = () => {
         </div>
         <div className="modal-body filing-form-body">
           <div className="form-grid">
-            {renderUploadField('planFile', '实施方案', true, '请上传经 “三重一大” 决策机制审议通过的实施方案')}
             {renderUploadField('minutesFile', '会议纪要', true, '请上传会议纪要、盖章文件或者相关签批件')}
-            {renderUploadField('attachFile', '附件', true, '请上传 “湘办通” 联审通过证明材料，含湘办通数据局、财政厅联审意见')}
+            {renderUploadField('planFile', '实施方案', true, '请上传经 “三重一大” 决策机制审议通过的实施方案')}
+            {renderUploadField('attachFile', '附件1', true, '请上传 “湘办通” 内数据局联审意见')}
+            {renderUploadField('attachFile2', '附件2', true, '请上传 “湘办通” 内财政厅联审意见')}
             <div className="form-item form-item-full">
               <label>情况说明</label>
               <textarea
@@ -554,7 +570,8 @@ const OriginalComponent = () => {
               <div className="info-cell"><span className="info-label">授权运营类型</span><span className="info-value">{currentRecord.authType}</span></div>
               <div className="info-cell"><span className="info-label">领域名称</span><span className="info-value">{currentRecord.domain}</span></div>
               <div className="info-cell"><span className="info-label">实施机构</span><span className="info-value">{currentRecord.implOrg}</span></div>
-              <div className="info-cell"><span className="info-label">报审实施方案</span><span className="info-value">{renderFileLink(currentRecord.attachFile)}</span></div>
+              <div className="info-cell"><span className="info-label">附件1</span><span className="info-value">{renderFileLink(currentRecord.attachFile)}</span></div>
+              <div className="info-cell"><span className="info-label">附件2</span><span className="info-value">{renderFileLink(currentRecord.attachFile2)}</span></div>
               <div className="info-cell"><span className="info-label">实施方案</span><span className="info-value">{renderFileLink(currentRecord.planFile)}</span></div>
               <div className="info-cell"><span className="info-label">会议纪要</span><span className="info-value">{renderFileLink(currentRecord.minutesFile)}</span></div>
               <div className="info-cell"><span className="info-label">创建时间</span><span className="info-value">{currentRecord.createTime}</span></div>

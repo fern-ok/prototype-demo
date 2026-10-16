@@ -491,7 +491,18 @@ const OriginalComponent = () => {
                     <th className="col-product-name"><span className="required">*</span> 产品名称</th>
                     <th className="col-product-desc"><span className="required">*</span> 产品简介</th>
                     <th className="col-delivery"><span className="required">*</span> 交付方式</th>
-                    <th className="col-fee">服务费备注</th>
+                    <th className="col-fee">
+                      服务费备注
+                      <span
+                        className="fee-note-help-icon"
+                        role="img"
+                        aria-label="清单中拟收取运营服务费的产品和服务应进行备注"
+                        title="清单中拟收取运营服务费的产品和服务应进行备注"
+                      >
+                        ?
+                        <span className="fee-note-help-tooltip" role="tooltip">清单中拟收取运营服务费的产品和服务应进行备注</span>
+                      </span>
+                    </th>
                     <th className="col-op">操作</th>
                   </tr>
                 </thead>

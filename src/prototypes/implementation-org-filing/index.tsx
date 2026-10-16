@@ -495,7 +495,7 @@ const OriginalComponent = () => {
               />
               {formErrors.creditCode && <span className="error-text">{formErrors.creditCode}</span>}
             </div>
-            {renderUploadField('attachment', '附件', true, '上传会议纪要或其他佐证实施机构身份的文件')}
+            {renderUploadField('attachment', '附件', true, '上传会议纪要或其他证明实施机构身份的文件')}
             <div className="form-item form-item-full">
               <label>情况说明</label>
               <textarea

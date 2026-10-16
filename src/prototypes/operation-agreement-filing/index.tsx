@@ -482,6 +482,21 @@ const OriginalComponent = () => {
                 <label><span className="required">*</span> 运营机构</label>
                 <input type="text" value={formData.opOrg} disabled />
               </div>
+              {isAddModal && (
+                <div className="form-item upload-item">
+                  <label><span className="required">*</span> 会议纪要</label>
+                  <div className="upload-control">
+                    <label className="upload-btn">
+                      选择文件
+                      <input type="file" accept="application/pdf" onChange={handleMeetingMinutesChange} />
+                    </label>
+                    <span className={'upload-name ' + (formData.meetingMinutesFileName ? 'has-file' : '')}>
+                      {formData.meetingMinutesFileName || '请上传会议纪要、盖章文件或者相关签批件'}
+                    </span>
+                  </div>
+                  {formErrors.meetingMinutes && <span className="error-text">{formErrors.meetingMinutes}</span>}
+                </div>
+              )}
               <div className="form-item upload-item">
                 <label><span className="required">*</span> 运营协议</label>
                 <div className="upload-control">
@@ -501,21 +516,6 @@ const OriginalComponent = () => {
                 </div>
                 {formErrors.agreement && <span className="error-text">{formErrors.agreement}</span>}
               </div>
-              {isAddModal && (
-                <div className="form-item upload-item">
-                  <label><span className="required">*</span> 会议纪要</label>
-                  <div className="upload-control">
-                    <label className="upload-btn">
-                      选择文件
-                      <input type="file" accept="application/pdf" onChange={handleMeetingMinutesChange} />
-                    </label>
-                    <span className={'upload-name ' + (formData.meetingMinutesFileName ? 'has-file' : '')}>
-                      {formData.meetingMinutesFileName || '请上传会议纪要、盖章文件或者相关签批件'}
-                    </span>
-                  </div>
-                  {formErrors.meetingMinutes && <span className="error-text">{formErrors.meetingMinutes}</span>}
-                </div>
-              )}
               <div className="form-item">
                 <label><span className="required">*</span> 授权期限</label>
                 <div className="date-range-wrapper">

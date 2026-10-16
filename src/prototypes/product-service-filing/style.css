@@ -1303,3 +1303,65 @@
   padding: 0;
   line-height: 1.6;
 }
+
+/* 新增弹窗「服务费备注」表头提示图标：悬浮展示说明 */
+.fee-note-help-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: #1e88ff;
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+  font-style: normal;
+  font-weight: 400;
+  cursor: help;
+  vertical-align: middle;
+}
+
+.fee-note-help-icon:hover {
+  background: #1677e8;
+}
+
+.fee-note-help-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: -6px;
+  z-index: 50;
+  width: max-content;
+  max-width: 220px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: rgba(31, 35, 41, 0.92);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+  white-space: normal;
+  word-break: break-word;
+  text-align: left;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .15s ease;
+}
+
+.fee-note-help-tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  right: 10px;
+  border: 5px solid transparent;
+  border-bottom-color: rgba(31, 35, 41, 0.92);
+}
+
+.fee-note-help-icon:hover .fee-note-help-tooltip {
+  opacity: 1;
+  visibility: visible;
+}

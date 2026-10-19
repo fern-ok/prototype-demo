@@ -491,7 +491,7 @@ const OriginalComponent = () => {
                       <input type="file" accept="application/pdf" onChange={handleMeetingMinutesChange} />
                     </label>
                     <span className={'upload-name ' + (formData.meetingMinutesFileName ? 'has-file' : '')}>
-                      {formData.meetingMinutesFileName || '请上传会议纪要、盖章文件或者相关签批件'}
+                      {formData.meetingMinutesFileName || '请上传 “三重一大” 会议纪要'}
                     </span>
                   </div>
                   {formErrors.meetingMinutes && <span className="error-text">{formErrors.meetingMinutes}</span>}

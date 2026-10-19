@@ -98,14 +98,15 @@ const SIDEBAR_MENU: NavEntry[] = [
     label: '其他',
     icon: Layers,
     items: [
-      { key: 'institution-supervision', label: '机构监管' }
+      { key: 'institution-supervision', label: '机构监管' },
+      { key: 'business-overview', label: '业务概览' }
     ]
   }
 ];
 
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'other-entity-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'industry-dept-management' | 'unified-catalog-query' | 'monitoring-dashboard' | 'implementation-org-filing' | 'implementation-plan-filing' | 'operation-org-filing' | 'institution-supervision';
+  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'other-entity-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'industry-dept-management' | 'unified-catalog-query' | 'monitoring-dashboard' | 'implementation-org-filing' | 'implementation-plan-filing' | 'operation-org-filing' | 'institution-supervision' | 'business-overview';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;
@@ -169,7 +170,7 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
       : (activeMenu === 'product-security-review' || activeMenu === 'product-registration' || activeMenu === 'data-resource-catalog' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理'
     : (activeMenu === 'implement-org-workbench' || activeMenu === 'other-entity-workbench') ? '工作台'
         : (activeMenu === 'product-subscription-supervision' || activeMenu === 'subscription-order-supervision' || activeMenu === 'redev-data-product-supervision') ? '授权监管'
-          : activeMenu === 'institution-supervision' ? '其他'
+          : (activeMenu === 'institution-supervision' || activeMenu === 'business-overview') ? '其他'
           : activeMenu === 'demand-management' ? '需求管理'
             : '备案管理';
 

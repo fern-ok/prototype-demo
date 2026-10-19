@@ -1,0 +1,295 @@
+/* ============ 业务概览 ============ */
+
+.overview-card {
+  margin: 18px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #dfe5ef;
+  border-radius: 6px;
+  box-shadow: var(--layout-shadow);
+}
+
+.overview-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.overview-card-head .overview-card-title {
+  margin-bottom: 0;
+}
+
+.overview-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.overview-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2329;
+  margin-bottom: 16px;
+}
+
+/* 领域下钻：标题 / 领域名使用蓝色强调（与截图一致） */
+.overview-card-title.accent,
+.region-card-title.accent,
+.domain-block-title.accent {
+  color: #0f63f4;
+}
+
+.domain-block-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 4px 0 14px;
+}
+
+/* 市州下钻视图：顶部返回导航 */
+.area-drill-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 18px 0;
+}
+
+.area-drill-crumb {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.overview-sections {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.overview-section {
+  flex: 1 1 auto;
+  min-width: 220px;
+}
+
+.overview-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 14px;
+}
+
+.overview-divider {
+  width: 1px;
+  background: #e5e9f0;
+  margin: 0 20px;
+}
+
+.overview-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px 28px;
+}
+
+.metric {
+  min-width: 64px;
+}
+
+/* 机构数据指标可点击（弹出该角色机构列表弹窗） */
+.metric-clickable {
+  cursor: pointer;
+}
+
+.metric-clickable:hover .metric-value {
+  text-decoration: underline;
+}
+
+.metric-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 18px;
+}
+
+.metric-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: #4f6bed;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: help;
+}
+
+.metric-value {
+  margin-top: 6px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f63f4;
+  line-height: 30px;
+}
+
+/* 地域卡片网格 */
+.region-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* 各卡片保持自身高度：某张卡片展开变高时，不拉伸同一行的其他卡片 */
+  align-items: start;
+  gap: 16px;
+  margin: 18px;
+}
+
+@media (max-width: 1100px) {
+  .region-grid {
+    grid-template-columns: 1fr;
+  }
+  .overview-divider {
+    display: none;
+  }
+}
+
+.region-card {
+  background: #fff;
+  border: 1px solid #dfe5ef;
+  border-radius: 6px;
+  box-shadow: var(--layout-shadow);
+  padding: 16px 18px;
+}
+
+.region-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.region-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+.region-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.region-subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+  margin: 16px 0 14px;
+}
+
+/* 卡片展开板块：当前分类下的资源与产品登记、产品流通（两栏并排） */
+.extra-sections {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #eef1f6;
+}
+
+.extra-section {
+  flex: 1 1 auto;
+  min-width: 240px;
+}
+
+.extra-divider {
+  width: 1px;
+  background: #e5e9f0;
+  margin: 0 20px;
+}
+
+@media (max-width: 900px) {
+  .extra-divider {
+    display: none;
+  }
+  .extra-section {
+    margin-top: 14px;
+  }
+}
+
+/* ============ 机构数据弹窗 ============ */
+
+.org-modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.org-modal {
+  background: #fff;
+  border-radius: 8px;
+  width: min(880px, calc(100vw - 48px));
+  max-height: 78vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.org-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eef1f6;
+  flex-shrink: 0;
+}
+
+.org-modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+.org-modal-body {
+  overflow: auto;
+  padding: 0 20px 20px;
+}
+
+.org-modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.org-modal-table th,
+.org-modal-table td {
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #eef1f6;
+}
+
+.org-modal-table th {
+  position: sticky;
+  top: 0;
+  background: #f5f7fa;
+  color: #4b5563;
+  font-weight: 600;
+  z-index: 1;
+}
+
+.org-modal-table td {
+  color: #1f2329;
+}
+
+.org-modal-table .org-modal-col-idx {
+  width: 56px;
+  color: #6b7280;
+}

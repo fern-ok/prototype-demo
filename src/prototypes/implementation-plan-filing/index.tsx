@@ -514,7 +514,7 @@ const OriginalComponent = () => {
         </div>
         <div className="modal-body filing-form-body">
           <div className="form-grid">
-            {renderUploadField('minutesFile', '会议纪要', true, '请上传会议纪要、盖章文件或者相关签批件')}
+            {renderUploadField('minutesFile', '会议纪要', true, '请上传 “三重一大” 会议纪要')}
             {renderUploadField('planFile', '实施方案', true, '请上传经 “三重一大” 决策机制审议通过的实施方案')}
             {renderUploadField('attachFile', '附件1', true, '请上传 “湘办通” 内数据局联审意见')}
             {renderUploadField('attachFile2', '附件2', true, '请上传 “湘办通” 内财政厅联审意见')}

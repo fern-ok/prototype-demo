@@ -25,7 +25,7 @@
 
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -151,12 +151,507 @@
   border-bottom-color: var(--layout-blue);
 }
 
+/* ===== 列表工具条（导出入口） ===== */
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0 14px;
+}
+
+.list-toolbar-left,
+.list-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.list-toolbar-total {
+  color: #4b5563;
+  font-size: 13px;
+}
+
+.list-toolbar-total b {
+  color: #1f2329;
+  font-weight: 600;
+}
+
+.list-toolbar-selected {
+  padding: 2px 8px;
+  border: 1px solid #c9ddff;
+  border-radius: 2px;
+  background: #eef4ff;
+  color: #0052d9;
+  font-size: 12px;
+}
+
+.list-toolbar-selected b {
+  font-weight: 600;
+}
+
+.toolbar-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--layout-blue);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.toolbar-link:disabled {
+  color: #b8c0cc;
+  cursor: not-allowed;
+}
+
+/* 导出下拉菜单 */
+.export-dropdown-wrap {
+  position: relative;
+  z-index: 20;
+}
+
+.export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.export-caret {
+  transition: transform .15s ease;
+}
+
+.export-caret.open {
+  transform: rotate(180deg);
+}
+
+.export-menu-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+}
+
+.export-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 21;
+  width: 160px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #dfe5ef;
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, .14);
+}
+
+.export-menu-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 4px 6px 8px;
+}
+
+.export-menu-title {
+  color: #1f2329;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.export-menu-sub {
+  color: #8a95a6;
+  font-size: 12px;
+}
+
+.export-menu-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 6px;
+  margin-bottom: 6px;
+  border-radius: 3px;
+  background: #f5f7fb;
+}
+
+.export-filter-tag {
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: #e8eefb;
+  color: #4b5563;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.export-filter-empty {
+  color: #8a95a6;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.export-menu-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: 'name count' 'hint hint';
+  gap: 2px 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.export-menu-item:hover:not(:disabled) {
+  background: #f0f5ff;
+}
+
+.export-menu-item:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.export-item-name {
+  grid-area: name;
+  color: #1f2329;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.export-item-count {
+  grid-area: count;
+  color: var(--layout-blue);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.export-item-hint {
+  grid-area: hint;
+  color: #8a95a6;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+/* ===== 页面视图切换（机构清单 / 备案关系链路） ===== */
+.view-switch {
+  display: inline-flex;
+  margin: 14px 18px 0;
+  padding: 3px;
+  border: 1px solid #dfe5ef;
+  border-radius: 4px;
+  background: #f2f5fa;
+  gap: 4px;
+}
+
+.view-switch-item {
+  padding: 6px 18px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.view-switch-item:hover {
+  color: var(--layout-blue);
+}
+
+.view-switch-item.active {
+  background: #fff;
+  color: var(--layout-blue);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .12);
+}
+
+/* ===== 备案关系链路视图 ===== */
+.chain-view {
+  margin-top: 14px;
+}
+
+/* 链路概览条：五级可达数量（随路径逐层收敛） */
+.chain-overview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 18px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid #dfe5ef;
+  border-radius: 4px;
+  box-shadow: var(--layout-shadow);
+}
+
+.chain-overview-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #dfe5ef;
+  border-radius: 3px;
+  background: #f5f7fb;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.chain-overview-item b {
+  color: #1f2329;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.chain-overview-item:hover:not(:disabled) {
+  border-color: #c9ddff;
+  background: #eef4ff;
+}
+
+.chain-overview-item.active {
+  border-color: var(--layout-blue);
+  background: #eef4ff;
+  color: var(--layout-blue);
+}
+
+.chain-overview-item.active b {
+  color: var(--layout-blue);
+}
+
+.chain-overview-item.disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.chain-overview-arrow {
+  color: #b8c0cc;
+  flex: 0 0 auto;
+}
+
+/* 层级面包屑 + 导航操作 */
+.chain-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 18px 0;
+  padding: 10px 16px;
+  background: #fff;
+  border: 1px solid #dfe5ef;
+  border-radius: 4px;
+  box-shadow: var(--layout-shadow);
+}
+
+.chain-crumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.chain-crumb {
+  max-width: 260px;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--layout-blue);
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chain-crumb:hover:not(:disabled) {
+  background: #eef4ff;
+}
+
+.chain-crumb.current {
+  color: #1f2329;
+  font-weight: 600;
+  cursor: default;
+}
+
+.chain-crumb-sep {
+  color: #b8c0cc;
+  flex: 0 0 auto;
+}
+
+.chain-level-tag {
+  margin-left: 6px;
+  padding: 2px 8px;
+  border: 1px solid #c9ddff;
+  border-radius: 2px;
+  background: #eef4ff;
+  color: #0052d9;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.chain-level-tag.muted {
+  border-color: #dfe5ef;
+  background: #f5f7fb;
+  color: #8a95a6;
+}
+
+.chain-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 当前层统计卡（地域分布已移至链路概览条下方行内展示，仅剩两张卡） */
+.chain-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 18px 0;
+}
+
+/* 省本级 / 地市数量区分：链路概览条下方的行内小字 */
+.chain-region-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 18px 0;
+  padding: 0 16px;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.chain-region-label {
+  color: #9ca3af;
+}
+
+.chain-region-value {
+  color: #6b7280;
+}
+
+.chain-region-value b {
+  color: #1f2329;
+  font-weight: 600;
+}
+
+.chain-region-sep {
+  color: #d1d5db;
+}
+
+.chain-stat-card {
+  padding: 12px 16px;
+  border-radius: 4px;
+  background: var(--layout-table-head, #f5f7fb);
+}
+
+.chain-stat-label {
+  color: #4b5563;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.chain-stat-value {
+  margin-top: 4px;
+  color: #1f2329;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 26px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 链路列表工具提示 */
+.chain-scope-tip {
+  color: #8a95a6;
+  font-size: 12px;
+}
+
+/* 操作列按钮 */
+.chain-ops {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.link-text {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--layout-blue);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.link-text:hover:not(:disabled) {
+  color: #0a4fd0;
+}
+
+.link-text:disabled {
+  color: #b8c0cc;
+  cursor: not-allowed;
+}
+
+.chain-zero {
+  color: #b8c0cc;
+}
+
+/* 加载骨架屏 */
+.chain-skeleton {
+  padding: 6px 16px 16px;
+}
+
+.chain-skeleton-row {
+  height: 42px;
+  margin-top: 10px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #eef1f6 25%, #f6f8fb 37%, #eef1f6 63%);
+  background-size: 400% 100%;
+  animation: chain-skeleton-wave 1.2s ease infinite;
+}
+
+@keyframes chain-skeleton-wave {
+  from { background-position: 100% 50%; }
+  to { background-position: 0 50%; }
+}
+
+/* 空态操作按钮 */
+.chain-empty-actions {
+  margin-top: 14px;
+}
+
+/* ===== 导出结果轻提示 ===== */
+.export-toast {
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  z-index: 1100;
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  border-radius: 4px;
+  background: rgba(23, 43, 77, .92);
+  color: #fff;
+  font-size: 13px;
+  line-height: 20px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, .2);
+}
+
 /* ===== 列表列宽与角色标签 ===== */
 .data-table {
   min-width: 1380px;
 }
 
+.col-checkbox { width: 46px; padding-left: 16px !important; padding-right: 0 !important; }
+.col-checkbox input[type="checkbox"] { width: 14px; height: 14px; margin: 0; cursor: pointer; }
 .col-index { width: 56px; text-align: left; }
+
+/* 勾选行高亮 */
+.data-table tbody tr.row-selected {
+  background: #f5f9ff;
+}
 .col-region { width: 110px; }
 .col-auth-type { width: 140px; }
 .col-domain { width: 110px; }
@@ -419,7 +914,7 @@
   opacity: 0.5;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1440px) {
   .stat-cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

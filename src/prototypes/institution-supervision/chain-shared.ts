@@ -150,7 +150,7 @@ export const CHAIN_LEVELS: ChainLevelMeta[] = [
       { key: 'orgName', title: '单位/企业名称', width: 280 },
       { key: 'creditCode', title: '统一社会信用代码', width: 200 },
       { key: 'filingTime', title: '备案时间', width: 170 },
-      { key: 'childCount', title: '已备案实施机构', width: 150 },
+      { key: 'childCount', title: '关联实施机构', width: 150 },
       { key: 'ops', title: '操作', width: 150 }
     ],
     filters: [
@@ -175,7 +175,7 @@ export const CHAIN_LEVELS: ChainLevelMeta[] = [
       { key: 'orgName', title: '单位/企业名称', width: 250 },
       { key: 'creditCode', title: '统一社会信用代码', width: 200 },
       { key: 'filingTime', title: '备案时间', width: 170 },
-      { key: 'childCount', title: '已备案运营机构', width: 150 },
+      { key: 'childCount', title: '关联运营机构', width: 150 },
       { key: 'ops', title: '操作', width: 150 }
     ],
     filters: [
@@ -201,7 +201,7 @@ export const CHAIN_LEVELS: ChainLevelMeta[] = [
       { key: 'creditCode', title: '统一社会信用代码', width: 200 },
       { key: 'period', title: '运营期限', width: 200 },
       { key: 'filingTime', title: '备案时间', width: 170 },
-      { key: 'childCount', title: '已备案其他经营主体', width: 160 },
+      { key: 'childCount', title: '关联其他经营主体', width: 160 },
       { key: 'ops', title: '操作', width: 150 }
     ],
     filters: [

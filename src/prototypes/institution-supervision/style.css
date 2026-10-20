@@ -46,6 +46,75 @@
   line-height: 20px;
 }
 
+/* 口径说明角标（机构总数卡）：悬浮展示气泡 tooltip */
+.stat-hint {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: #4f6bed;
+  font-size: 10px;
+  font-weight: 700;
+  vertical-align: -2px;
+  cursor: help;
+}
+
+/* 气泡本体（默认隐藏，悬浮显示） */
+.stat-hint::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.96);
+  width: max-content;
+  max-width: 240px;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  color: #1f2329;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  text-align: left;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 50;
+}
+
+/* 气泡向上箭头 */
+.stat-hint::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  box-shadow: -1px -1px 2px rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 51;
+}
+
+.stat-hint:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+.stat-hint:hover::before {
+  opacity: 1;
+}
+
 .stat-main {
   margin-top: 6px;
   color: #1f2329;

@@ -192,7 +192,7 @@ const ROLE_CARD_TONE: Record<string, string> = {
 
 const ROLE_TABS = ['全部', '数据管理部门', '行业主管部门', '实施机构', '运营机构', '其他经营主体'];
 
-/** 跨角色归属过滤（点击「已备案实施机构 / 已备案其他经营主体 / 行业主管部门数量 / 已备案运营机构」数字时触发） */
+/** 跨角色归属过滤（点击「关联实施机构 / 关联其他经营主体 / 行业主管部门数量 / 关联运营机构」数字时触发） */
 interface LinkFilter {
   /** dept：行业主管部门→其备案的实施机构；operator：运营机构→其备案的其他经营主体；
    *  manage：数据管理部门→其下辖行业主管部门；impl：实施机构→其备案的运营机构 */
@@ -286,7 +286,7 @@ const OriginalComponent = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<Institution | null>(null);
 
-  // 跨角色归属过滤（点击「已备案实施机构 / 已备案其他经营主体」数字跳转后生效）
+  // 跨角色归属过滤（点击「关联实施机构 / 关联其他经营主体」数字跳转后生效）
   const [linkFilter, setLinkFilter] = useState<LinkFilter | null>(null);
 
   // 导出相关：列表勾选记录 id（跨分页保留，切换角色 Tab 时清空）、导出菜单开合、导出结果轻提示
@@ -325,12 +325,12 @@ const OriginalComponent = () => {
   const showBatchColumn = activeRoleTab === '行业主管部门';
   // 统筹型管理部门 Tab（数据管理部门 / 行业主管部门）不展示「授权运营类型 / 领域名称」（筛选条件与列表列均隐藏，其他 Tab 正常）
   const showAuthDomain = !isManageDeptRole(activeRoleTab);
-  // 跨角色备案数量列：行业主管部门 Tab 展示「已备案实施机构」，运营机构 Tab 展示「已备案其他经营主体」
+  // 跨角色备案数量列：行业主管部门 Tab 展示「关联实施机构」，运营机构 Tab 展示「关联其他经营主体」
   const showDeptImplColumn = activeRoleTab === '行业主管部门';
   const showOperatorOtherColumn = activeRoleTab === '运营机构';
   // 数据管理部门 Tab 的「行业主管部门数量」列（2026-10-19 需求去掉该列，代码保留，恒为 false）
   const showManageDeptColumn = false;
-  // 实施机构 Tab 展示「已备案运营机构」
+  // 实施机构 Tab 展示「关联运营机构」
   const showImplOperatorColumn = activeRoleTab === '实施机构';
   // 备案时间列列名：数据管理部门 / 行业主管部门 Tab 显示「创建时间」，其他经营主体 Tab 显示「授权时间」，全部 Tab 显示「创建/备案时间」，其余 Tab 不变
   const filingTimeLabel =
@@ -380,7 +380,7 @@ const OriginalComponent = () => {
     setCurrentPage(1);
   };
 
-  // 点击「已备案实施机构」数字：跳转实施机构 Tab，仅展示该行业主管部门备案的实施机构
+  // 点击「关联实施机构」数字：跳转实施机构 Tab，仅展示该行业主管部门备案的实施机构
   const handleJumpToImpl = (dept: Institution) => {
     setLinkFilter({ kind: 'dept', ownerId: dept.id, ownerName: dept.orgName, fromTab: '行业主管部门' });
     setActiveRoleTab('实施机构');
@@ -389,7 +389,7 @@ const OriginalComponent = () => {
     setCurrentPage(1);
   };
 
-  // 点击「已备案其他经营主体」数字：跳转其他经营主体 Tab，仅展示该运营机构备案的其他经营主体
+  // 点击「关联其他经营主体」数字：跳转其他经营主体 Tab，仅展示该运营机构备案的其他经营主体
   const handleJumpToOther = (op: Institution) => {
     setLinkFilter({ kind: 'operator', ownerId: op.id, ownerName: op.orgName, fromTab: '运营机构' });
     setActiveRoleTab('其他经营主体');
@@ -407,7 +407,7 @@ const OriginalComponent = () => {
     setCurrentPage(1);
   };
 
-  // 点击「已备案运营机构」数字：跳转运营机构 Tab，仅展示该实施机构备案的运营机构
+  // 点击「关联运营机构」数字：跳转运营机构 Tab，仅展示该实施机构备案的运营机构
   const handleJumpToImplOperator = (impl: Institution) => {
     setLinkFilter({ kind: 'impl', ownerId: impl.id, ownerName: impl.orgName, fromTab: '实施机构' });
     setActiveRoleTab('运营机构');
@@ -567,10 +567,10 @@ const OriginalComponent = () => {
     if (showAuthDomain) header.push('授权运营类型', '领域名称');
     if (showRoleColumn) header.push('机构角色');
     header.push('单位/企业名称', '统一社会信用代码', filingTimeLabel);
-    if (showDeptImplColumn) header.push('已备案实施机构');
-    if (showOperatorOtherColumn) header.push('已授权其他经营主体');
+    if (showDeptImplColumn) header.push('关联实施机构');
+    if (showOperatorOtherColumn) header.push('关联其他经营主体');
     if (showManageDeptColumn) header.push('行业主管部门数量');
-    if (showImplOperatorColumn) header.push('已备案运营机构');
+    if (showImplOperatorColumn) header.push('关联运营机构');
     const rows: string[][] = [header];
     list.forEach(function (r, idx) {
       const row: string[] = [String(idx + 1)];
@@ -615,7 +615,11 @@ const OriginalComponent = () => {
       </div>
       <div className="stat-cards">
         <div className="stat-card" style={{ borderTopColor: ROLE_CARD_TONE.total }}>
-          <div className="stat-title">机构总数</div>
+          <div className="stat-title">
+            机构总数
+            {/* 口径说明：同一机构可拥有多个角色，各角色数量之和可能大于机构总数（悬浮气泡提示） */}
+            <span className="stat-hint" data-tip="同一机构可能拥有多个角色，各角色数量之和可能大于机构总数">?</span>
+          </div>
           <div className="stat-main" style={{ color: ROLE_CARD_TONE.total }}>{totalRegistered}</div>
           <div className="stat-total-foot">
             <div className="stat-progress" role="presentation">
@@ -878,10 +882,10 @@ const OriginalComponent = () => {
               <th className="col-org">单位/企业名称</th>
               <th className="col-credit">统一社会信用代码</th>
               <th className="col-filing-time">{filingTimeLabel}</th>
-              {showDeptImplColumn && <th className="col-rel">已备案实施机构</th>}
-              {showOperatorOtherColumn && <th className="col-rel">已授权其他经营主体</th>}
+              {showDeptImplColumn && <th className="col-rel">关联实施机构</th>}
+              {showOperatorOtherColumn && <th className="col-rel">关联其他经营主体</th>}
               {showManageDeptColumn && <th className="col-rel">行业主管部门数量</th>}
-              {showImplOperatorColumn && <th className="col-rel">已备案运营机构</th>}
+              {showImplOperatorColumn && <th className="col-rel">关联运营机构</th>}
             </tr>
           </thead>
           <tbody>

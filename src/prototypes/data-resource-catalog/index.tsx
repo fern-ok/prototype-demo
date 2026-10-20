@@ -503,6 +503,18 @@ type FormInitial = {
 // 由列表行回显已填写的数据：资源名称、行业分类（取首个）、资源持有方（提供机构）
 const buildInitial = (item: Resource): FormInitial => ({ name: item.name, industry: item.industry, holder: item.provider, govCatalog: item.govCatalog });
 
+// 信息项 - 数据类型枚举（七种）
+const INFO_ITEM_TYPES = ['字符型', '数值型', '布尔型', '日期型', '二进制型', '对象型', '数组型'];
+// 无「数据长度」概念的数据类型：长度输入框置灰禁用
+const INFO_ITEM_TYPES_WITHOUT_LENGTH = ['布尔型', '日期型', '对象型', '数组型'];
+
+/** 关联政务目录后按映射自动填充的信息项（由目录生成演示数据） */
+const buildCatalogMappedItems = (c: GovCatalog): InfoItem[] => [
+  { english: 'record_id', name: '记录编号', type: '字符型', length: '32', desc: c.name + '记录唯一标识' },
+  { english: 'data_date', name: '数据日期', type: '日期型', length: '', desc: '数据产生日期' },
+  { english: 'org_name', name: '归属机构名称', type: '字符型', length: '100', desc: '' }
+];
+
 // 新增 / 编辑 / 变更 三处弹窗共用同一套字段结构
 const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initial?: FormInitial; onClose: () => void; mode: 'add' | 'edit' | 'change' }) => {
   const [step, setStep] = useState<1 | 2>(1);
@@ -533,6 +545,50 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
   const [relatedItems, setRelatedItems] = useState<GovCatalog[]>(initial?.govCatalog ? [initial.govCatalog] : (mode === 'add' ? [seedGovCatalogs[0]] : []));
   // 变更说明：仅变更弹窗使用，位于信息项表格下方
   const [changeNote, setChangeNote] = useState(initial?.changeNote ?? '');
+  // 关联政务目录自动填充：记录填充前的「资源名称 / 资源摘要 / 信息项」快照（预留给填充恢复能力）
+  const [preFillSnapshot, setPreFillSnapshot] = useState<{ name: string; summary: string; rows: InfoItem[] } | null>(null);
+  /** 关联政务目录确认后：按映射自动填充基本信息（资源名称、资源摘要）与信息项 */
+  const applyCatalogFill = (catalog: GovCatalog) => {
+    setPreFillSnapshot({ name: name, summary: summary, rows: rows });
+    setName(catalog.name);
+    setSummary(catalog.summary);
+    setRows(buildCatalogMappedItems(catalog));
+  };
+  // 重置气泡确认框：记录气泡位置（锚定重置按钮下方），null = 关闭
+  const [resetPopPos, setResetPopPos] = useState<{ left: number; top: number } | null>(null);
+  const resetBtnRef = useRef<HTMLButtonElement>(null);
+  const openResetPopover = () => {
+    const r = resetBtnRef.current?.getBoundingClientRect();
+    setResetPopPos(r ? { left: r.left + r.width / 2, top: r.bottom + 10 } : null);
+  };
+  // 表单初始快照（弹窗打开时的全部可编辑字段）：重置时恢复到该状态（新增=清空，编辑=回显初值）
+  const formSnapshotRef = useRef<{
+    name: string; industry: string; personal: '' | '是' | '否'; format: string; source: string;
+    freqNum: string; freqUnit: string; coverStart: string; coverEnd: string; untilNow: boolean;
+    region: string; extCode: string; syncToWholeDomain: '是' | '否'; summary: string;
+    contact: string; phone: string; infoType: string; rows: InfoItem[]; relatedItems: GovCatalog[];
+  } | null>(null);
+  if (formSnapshotRef.current === null) {
+    formSnapshotRef.current = {
+      name: name, industry: industry, personal: personal, format: format, source: source,
+      freqNum: freqNum, freqUnit: freqUnit, coverStart: coverStart, coverEnd: coverEnd, untilNow: untilNow,
+      region: region, extCode: extCode, syncToWholeDomain: syncToWholeDomain, summary: summary,
+      contact: contact, phone: phone, infoType: infoType, rows: rows.map(r => ({ ...r })), relatedItems: [...relatedItems]
+    };
+  }
+  /** 确认重置：清空弹窗内所有可编辑内容，恢复到弹窗打开时的初始状态 */
+  const doReset = () => {
+    const s = formSnapshotRef.current;
+    if (s) {
+      setName(s.name); setIndustry(s.industry); setPersonal(s.personal); setFormat(s.format);
+      setSource(s.source); setFreqNum(s.freqNum); setFreqUnit(s.freqUnit); setCoverStart(s.coverStart);
+      setCoverEnd(s.coverEnd); setUntilNow(s.untilNow); setRegion(s.region); setExtCode(s.extCode);
+      setSyncToWholeDomain(s.syncToWholeDomain); setSummary(s.summary); setContact(s.contact);
+      setPhone(s.phone); setInfoType(s.infoType); setRows(s.rows.map(r => ({ ...r }))); setRelatedItems([...s.relatedItems]);
+    }
+    setPreFillSnapshot(null);
+    setResetPopPos(null);
+  };
   const addRow = () => setRows(prev => [...prev, { english: '', name: '', type: '字符型', length: '20', desc: '' }]);
   // 信息项排序：与相邻行交换位置，实时反映到当前弹窗的列表展示
   const moveRow = (index: number, dir: 'up' | 'down') => setRows(prev => {
@@ -604,8 +660,8 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
                         <td>{i + 1}</td>
                         <td><input value={r.english} onChange={e => setRows(p => p.map((x, j) => j === i ? { ...x, english: e.target.value } : x))} /></td>
                         <td><input value={r.name} onChange={e => setRows(p => p.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} /></td>
-                        <td><select value={r.type} onChange={e => setRows(p => p.map((x, j) => j === i ? { ...x, type: e.target.value } : x))}><option>字符型</option><option>数值型</option><option>日期型</option></select></td>
-                        <td><input value={r.length} disabled={r.type === '日期型'} onChange={e => setRows(p => p.map((x, j) => j === i ? { ...x, length: e.target.value } : x))} /></td>
+                        <td><select value={r.type} onChange={e => setRows(p => p.map((x, j) => j === i ? { ...x, type: e.target.value } : x))}>{INFO_ITEM_TYPES.map(t => <option key={t}>{t}</option>)}</select></td>
+                        <td><input value={r.length} disabled={INFO_ITEM_TYPES_WITHOUT_LENGTH.includes(r.type)} onChange={e => setRows(p => p.map((x, j) => j === i ? { ...x, length: e.target.value } : x))} /></td>
                         <td><input value={r.desc} onChange={e => setRows(p => p.map((x, j) => j === i ? { ...x, desc: e.target.value } : x))} /></td>
                         <td>
                           <div className="info-row-actions">
@@ -626,12 +682,26 @@ const ResourceForm = ({ title, initial, onClose, mode }: { title: string; initia
           )}
         </div>
         <div className="modal-foot">
+          {mode !== 'change' && <button ref={resetBtnRef} className="btn" onClick={openResetPopover}>重置</button>}
           <button className="btn" onClick={onClose}>取消</button>
           {step === 2 && <button className="btn" onClick={() => setStep(1)}>上一步</button>}
           {step === 1 ? <button className="btn primary" onClick={() => setStep(2)}>下一步</button> : <>{mode !== 'change' && <button className="btn primary" onClick={onClose}>存为草稿</button>}<button className="btn primary" onClick={onClose}>提交</button></>}
         </div>
-        {showRelate && <RelateCatalogModal initialSelected={relatedItems.map(i => i.id)} initialAssociated={relatedItems} onClose={() => setShowRelate(false)} onConfirm={(ids, items) => { setRelatedItems(items); setShowRelate(false); }} />}
+        {showRelate && <RelateCatalogModal initialSelected={relatedItems.map(i => i.id)} initialAssociated={relatedItems} onClose={() => setShowRelate(false)} onConfirm={(ids, items) => { setRelatedItems(items); if (items.length > 0) applyCatalogFill(items[0]); setShowRelate(false); }} />}
       </div>
+      {/* 重置气泡确认框：锚定在弹窗底部【重置】按钮下方 */}
+      {resetPopPos && (
+        <div className="reset-popover" style={{ left: resetPopPos.left, top: resetPopPos.top }} onClick={e => e.stopPropagation()}>
+          <div className="reset-popover-body">
+            <span className="reset-popover-icon">!</span>
+            <span>重置将清空弹窗内所有可编辑内容，是否重置？</span>
+          </div>
+          <div className="reset-popover-foot">
+            <button type="button" className="reset-popover-cancel" onClick={() => setResetPopPos(null)}>取消</button>
+            <button type="button" className="reset-popover-ok" onClick={doReset}>确定</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

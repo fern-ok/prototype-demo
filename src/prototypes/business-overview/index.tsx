@@ -117,7 +117,7 @@ const ORG_MODAL_COLUMNS: Record<string, Array<{ key: string; label: string }>> =
     { key: 'name', label: '单位/企业名称' },
     { key: 'credit', label: '统一社会信用代码' },
     { key: 'time', label: '创建时间' },
-    { key: 'rel', label: '已备案实施机构' }
+    { key: 'rel', label: '关联实施机构' }
   ],
   '实施机构': [
     { key: 'region', label: '所属地域' },
@@ -126,7 +126,7 @@ const ORG_MODAL_COLUMNS: Record<string, Array<{ key: string; label: string }>> =
     { key: 'name', label: '单位/企业名称' },
     { key: 'credit', label: '统一社会信用代码' },
     { key: 'time', label: '备案时间' },
-    { key: 'rel', label: '已备案运营机构' }
+    { key: 'rel', label: '关联运营机构' }
   ],
   '运营机构': [
     { key: 'region', label: '所属地域' },
@@ -135,7 +135,7 @@ const ORG_MODAL_COLUMNS: Record<string, Array<{ key: string; label: string }>> =
     { key: 'name', label: '单位/企业名称' },
     { key: 'credit', label: '统一社会信用代码' },
     { key: 'time', label: '备案时间' },
-    { key: 'rel', label: '已授权其他经营主体' }
+    { key: 'rel', label: '关联其他经营主体' }
   ],
   '其他经营主体': [
     { key: 'region', label: '所属地域' },
@@ -189,6 +189,8 @@ const OriginalComponent = () => {
   const [domainDrill, setDomainDrill] = useState<{ region: string; from: string } | null>(null);
   // 区县领域概览：当前市州名（在领域下钻视图内再下钻一层）
   const [districtDomain, setDistrictDomain] = useState<string | null>(null);
+  // 区县领域概览 - 聚焦区县：从「进入区县领域概览」按钮悬浮下拉选择的区县；null = 展示全市区县卡片
+  const [districtFocus, setDistrictFocus] = useState<string | null>(null);
   // 机构数据弹窗：点击卡片「机构数据」指标后，展示该角色在当前分类（全省/地域/区县/领域）下的机构列表
   const [orgModal, setOrgModal] = useState<{ role: string; scopeName: string; regionPrefix: string; count: number } | null>(null);
 
@@ -205,6 +207,7 @@ const OriginalComponent = () => {
   /** 打开领域下钻：记录返回目标（全省视图或所在市州视图） */
   const openDomainDrill = (region: string, from: string) => {
     setDistrictDomain(null);
+    setDistrictFocus(null);
     setDomainDrill({ region: region, from: from });
   };
 
@@ -212,6 +215,7 @@ const OriginalComponent = () => {
   const backFromDomainDrill = () => {
     setDomainDrill(null);
     setDistrictDomain(null);
+    setDistrictFocus(null);
     if (areaDrill && domainDrill && domainDrill.from !== 'province') {
       setAreaDrill(domainDrill.from);
     } else if (domainDrill && domainDrill.from === 'province') {
@@ -400,13 +404,35 @@ const OriginalComponent = () => {
             <div className="overview-card-title accent">{domainDrill.region}</div>
             <div className="overview-card-actions">
               {hasDistricts && (
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={() => setDistrictDomain(domainDrill.region)}
-                >
-                  进入区县领域概览
-                </button>
+                <div className="dd-dropdown-wrap">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => {
+                      setDistrictFocus(null);
+                      setDistrictDomain(domainDrill.region);
+                    }}
+                  >
+                    进入区县领域概览
+                  </button>
+                  {/* 悬浮下拉：选择当前地市下辖区县，直接进入该区县的领域概览 */}
+                  <div className="dd-dropdown-menu">
+                    {(DISTRICT_POOL[domainDrill.region] || []).map(function (d) {
+                      return (
+                        <div
+                          key={d}
+                          className="dd-dropdown-item"
+                          onClick={() => {
+                            setDistrictFocus(d);
+                            setDistrictDomain(domainDrill.region);
+                          }}
+                        >
+                          {d}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
               <button type="button" className="btn btn-primary btn-sm" onClick={backFromDomainDrill}>
                 <Undo2 size={13} />
@@ -453,46 +479,70 @@ const OriginalComponent = () => {
     );
   };
 
-  /** 区县领域概览：市州下辖区县的机构数据卡片 */
+  /** 区县领域卡片：区县名 + 机构数据（可点击弹机构列表）+ 展开/隐藏板块 */
+  const renderDistrictDomainCard = (d: string) => (
+    <div className="region-card" key={d}>
+      <div className="region-card-header">
+        <div className="region-card-title">{d}</div>
+        <div className="region-card-actions">
+          <button
+            type="button"
+            className="btn btn-default btn-sm"
+            onClick={() => toggleExpand('dd-' + d)}
+          >
+            {isExpanded('dd-' + d) ? '隐藏' : '展开'}
+          </button>
+        </div>
+      </div>
+      <Fragment>
+        <div className="region-subtitle">机构数据</div>
+        {renderMetrics(DOMAIN_ORG_DATA, (role, count) =>
+          openOrgModal(role, count, d + ' · ' + districtDomain + '领域', d)
+        )}
+        {/* 展开/隐藏：当前区县领域下的资源与产品登记、产品流通数据 */}
+        {isExpanded('dd-' + d) && renderExtraSections()}
+      </Fragment>
+    </div>
+  );
+
+  /** 区县领域概览：默认展示市州下辖区县卡片；从悬浮下拉选择区县后聚焦展示该区县的领域概览 */
   const renderDistrictDomain = () => {
     if (!districtDomain) return null;
     const districts = DISTRICT_POOL[districtDomain] || [];
+    const focus = districtFocus && districts.indexOf(districtFocus) >= 0 ? districtFocus : null;
     return (
       <Fragment>
         <div className="area-drill-nav">
-          <button type="button" className="btn btn-primary btn-sm" onClick={() => setDistrictDomain(null)}>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => {
+              setDistrictDomain(null);
+              setDistrictFocus(null);
+            }}
+          >
             <Undo2 size={13} />
             返回领域概览
           </button>
-          <span className="area-drill-crumb">业务概览 / {districtDomain} / 区县领域概览</span>
+          <span className="area-drill-crumb">
+            业务概览 / {districtDomain} / 区县领域概览{focus ? ' / ' + focus : ''}
+          </span>
+          {focus && (
+            <button
+              type="button"
+              className="btn btn-default btn-sm"
+              onClick={() => setDistrictFocus(null)}
+            >
+              查看全部区县
+            </button>
+          )}
         </div>
         <div className="region-grid">
-          {districts.map(function (d) {
-            return (
-              <div className="region-card" key={d}>
-                <div className="region-card-header">
-                  <div className="region-card-title">{d}</div>
-                  <div className="region-card-actions">
-                    <button
-                      type="button"
-                      className="btn btn-default btn-sm"
-                      onClick={() => toggleExpand('dd-' + d)}
-                    >
-                      {isExpanded('dd-' + d) ? '隐藏' : '展开'}
-                    </button>
-                  </div>
-                </div>
-                <Fragment>
-                  <div className="region-subtitle">机构数据</div>
-                  {renderMetrics(DOMAIN_ORG_DATA, (role, count) =>
-                    openOrgModal(role, count, d + ' · ' + districtDomain + '领域', districtDomain)
-                  )}
-                  {/* 展开/隐藏：当前区县领域下的资源与产品登记、产品流通数据 */}
-                  {isExpanded('dd-' + d) && renderExtraSections()}
-                </Fragment>
-              </div>
-            );
-          })}
+          {focus
+            ? renderDistrictDomainCard(focus)
+            : districts.map(function (d) {
+                return renderDistrictDomainCard(d);
+              })}
         </div>
       </Fragment>
     );

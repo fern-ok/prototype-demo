@@ -7,7 +7,7 @@
 
 import { ChevronDown, DatabaseZap, FileText, FolderOpen, History, Home, ShieldCheck, Shield, FileSearch, FileCheck, KeyRound, X, Bell, LayoutDashboard, ClipboardList, ListTree, Settings2, Search, Monitor, Workflow, Layers } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useState, useMemo, ReactNode } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, createElement, type ReactNode, type ComponentType, type MouseEvent as ReactMouseEvent } from 'react';
 import messageTemplateTable from '../database/message-templates.json';
 import './layout.css';
 
@@ -41,7 +41,8 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplate[] = messageTemplateTa
 type NavLeaf = { key: string; label: string; kind?: 'link' | 'action' };
 type NavEntry =
   | { type: 'link'; key: string; label: string; icon: LucideIcon; href: string; external?: boolean }
-  | { type: 'group'; key: string; label: string; icon: LucideIcon; items: NavLeaf[] };
+  | { type: 'group'; key: string; label: string; icon: LucideIcon; items: NavLeaf[] }
+  | { type: 'divider'; key: string; label: string };
 
 const SIDEBAR_MENU: NavEntry[] = [
   { type: 'link', key: 'other-entity-workbench', label: '其他经营主体工作台', icon: LayoutDashboard, href: '/prototypes/other-entity-workbench.html' },
@@ -101,12 +102,122 @@ const SIDEBAR_MENU: NavEntry[] = [
       { key: 'institution-supervision', label: '机构监管' },
       { key: 'business-overview', label: '业务概览' }
     ]
+  },
+  { type: 'divider', key: 'undetermined-requirements-divider', label: '未确定需求' },
+  {
+    type: 'group',
+    key: 'pending-filing-management',
+    label: '备案管理',
+    icon: FolderOpen,
+    items: [
+      { key: 'pending-implementation-org-filing', label: '实施机构备案' },
+      { key: 'pending-implementation-plan-filing', label: '实施方案备案' },
+      { key: 'pending-operation-org-filing', label: '运营机构备案' },
+      { key: 'pending-operation-agreement-filing', label: '运营协议备案' }
+    ]
   }
 ];
 
+/* ============================================================
+ * SPA 局部切换：侧边栏切换模块时动态加载目标页面组件，
+ * 宿主 Layout（首个实例）保留侧边栏等外层框架，仅替换中央内容区；
+ * 被加载页面内部的 Layout 实例以「嵌入模式」渲染（无侧边栏），避免重复外壳。
+ * ========================================================== */
+type SpaRemoteComponent = ComponentType<any>;
+
+/* 各页面 style.css 使用全局类名（如 .form-grid / .form-item），SPA 局部切换时
+ * 上一个页面注入的 <style> 会残留在 head 中，与新页面同名规则冲突导致样式错乱。
+ * 这里记录每次 SPA 加载新注入的样式节点，切换到下一个模块前统一移除。 */
+let spaInjectedStyleNodes: HTMLElement[] = [];
+
+/* dev 环境下模块一旦被 import 过就会进入 ESM 缓存，再次进入同一模块不会重新注入
+ * 样式节点；如果上次切走时已把样式移除，页面就会残留上一个页面的样式（典型表现：
+ * 运营协议备案弹窗被其他备案页的双列 .form-grid 覆盖）。因此切走前先按模块 key
+ * 存档样式文本，重复进入且没有新注入时用存档还原。 */
+const spaStyleArchive = new Map<string, Array<{ text: string; media: string | null }>>();
+
+function collectHeadStyleNodes(): HTMLElement[] {
+  return Array.from(document.querySelectorAll<HTMLElement>('head style, head link[rel="stylesheet"]'));
+}
+
+function archiveSpaStyles(key: string | null) {
+  if (!key || spaInjectedStyleNodes.length === 0) return;
+  const entries = spaInjectedStyleNodes
+    .filter(node => node.tagName === 'STYLE' && node.isConnected)
+    .map(node => ({ text: node.textContent || '', media: node.getAttribute('media') }))
+    .filter(entry => entry.text.trim().length > 0);
+  if (entries.length > 0) spaStyleArchive.set(key, entries);
+}
+
+function dropSpaInjectedStyles() {
+  spaInjectedStyleNodes.forEach(node => {
+    if (node.parentNode) node.parentNode.removeChild(node);
+  });
+  spaInjectedStyleNodes = [];
+}
+
+function trackSpaInjectedStyles(before: HTMLElement[]) {
+  const beforeSet = new Set(before);
+  spaInjectedStyleNodes = collectHeadStyleNodes().filter(node => !beforeSet.has(node));
+}
+
+function restoreArchivedStyles(key: string) {
+  const entries = spaStyleArchive.get(key);
+  if (!entries || entries.length === 0) return;
+  entries.forEach(entry => {
+    const style = document.createElement('style');
+    style.setAttribute('data-axhub-spa-style', key);
+    if (entry.media) style.setAttribute('media', entry.media);
+    style.textContent = entry.text;
+    document.head.appendChild(style);
+    spaInjectedStyleNodes.push(style);
+  });
+}
+
+// dev 环境通过 vite 源码路由动态 import（vite root 为 src，/prototypes/<key>/index.tsx 即源码路径）；
+// 构建产物环境下通过脚本标签执行目标页面的 IIFE 并借助 __AXHUB_DEFINE_COMPONENT__ 捕获组件。
+async function loadSpaModuleComponent(key: string, previousKey: string | null): Promise<SpaRemoteComponent | null> {
+  archiveSpaStyles(previousKey);
+  dropSpaInjectedStyles();
+  const stylesBeforeLoad = collectHeadStyleNodes();
+  const w = window as any;
+  try {
+    if (typeof w.DevTemplateBootstrap !== 'undefined') {
+      const mod: any = await import(/* @vite-ignore */ `/prototypes/${key}/index.tsx`);
+      return (mod?.default ?? null) as SpaRemoteComponent | null;
+    }
+    return await new Promise<SpaRemoteComponent | null>((resolve, reject) => {
+      const previousHook = typeof w.__AXHUB_DEFINE_COMPONENT__ === 'function' ? w.__AXHUB_DEFINE_COMPONENT__ : null;
+      let captured: SpaRemoteComponent | null = null;
+      w.__AXHUB_DEFINE_COMPONENT__ = (comp: SpaRemoteComponent) => {
+        captured = comp;
+        return comp;
+      };
+      const script = document.createElement('script');
+      script.src = `./${key}.js`;
+      script.async = false;
+      script.onload = () => {
+        if (previousHook) w.__AXHUB_DEFINE_COMPONENT__ = previousHook;
+        else delete w.__AXHUB_DEFINE_COMPONENT__;
+        resolve(captured);
+      };
+      script.onerror = () => {
+        if (previousHook) w.__AXHUB_DEFINE_COMPONENT__ = previousHook;
+        else delete w.__AXHUB_DEFINE_COMPONENT__;
+        reject(new Error(`模块脚本加载失败: ${key}.js`));
+      };
+      document.body.appendChild(script);
+    });
+  } finally {
+    trackSpaInjectedStyles(stylesBeforeLoad);
+    // 模块命中 ESM 缓存时不会注入新样式，改用存档还原本页样式
+    if (spaInjectedStyleNodes.length === 0) restoreArchivedStyles(key);
+  }
+}
+
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'other-entity-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'industry-dept-management' | 'unified-catalog-query' | 'monitoring-dashboard' | 'implementation-org-filing' | 'implementation-plan-filing' | 'operation-org-filing' | 'institution-supervision' | 'business-overview';
+  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'other-entity-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'industry-dept-management' | 'unified-catalog-query' | 'monitoring-dashboard' | 'implementation-org-filing' | 'implementation-plan-filing' | 'operation-org-filing' | 'institution-supervision' | 'business-overview' | 'pending-implementation-org-filing' | 'pending-implementation-plan-filing' | 'pending-operation-org-filing' | 'pending-operation-agreement-filing';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;
@@ -129,6 +240,58 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [menuKeyword, setMenuKeyword] = useState('');
 
+  // 本实例是否为「嵌入模式」（仅实例创建时判定一次：
+  // 宿主实例创建早于标记设置，被加载页面的 Layout 创建于标记设置之后）
+  const [isEmbeddedInstance] = useState(() => (window as any).__AXHUB_SPA_EMBEDDED__ === '1');
+  const [remoteModule, setRemoteModule] = useState<{ key: string; element: ReactNode } | null>(null);
+  const [loadingModuleKey, setLoadingModuleKey] = useState<string | null>(null);
+  const loadingModuleRef = useRef(false);
+  const remoteModuleRef = useRef<{ key: string; element: ReactNode } | null>(null);
+  remoteModuleRef.current = remoteModule;
+
+  // 切换模块：动态加载目标页面组件并替换中央内容区（外层侧边栏保持挂载）
+  const navigateToModule = useCallback(async (key: string, push: boolean) => {
+    if (loadingModuleRef.current || remoteModuleRef.current?.key === key) return;
+    loadingModuleRef.current = true;
+    setLoadingModuleKey(key);
+    try {
+      const Comp = await loadSpaModuleComponent(key, remoteModuleRef.current?.key ?? activeMenu);
+      if (!Comp) throw new Error('模块未导出组件');
+      (window as any).__AXHUB_SPA_EMBEDDED__ = '1';
+      if (push) window.history.pushState({ axhubSpaModule: key }, '', `/prototypes/${key}.html`);
+      setRemoteModule({ key, element: createElement(Comp) });
+    } catch {
+      // 兜底：动态加载失败时回退为整页跳转，保证功能可用
+      window.location.href = `/prototypes/${key}.html`;
+    } finally {
+      loadingModuleRef.current = false;
+      setLoadingModuleKey(null);
+    }
+  }, []);
+
+  // 浏览器前进/后退：仅处理 SPA pushState 产生的历史记录，恢复对应模块
+  useEffect(() => {
+    const onPopState = () => {
+      const match = window.location.pathname.match(/\/prototypes\/([^/]+?)(?:\.html)?$/);
+      const key = match ? match[1] : '';
+      if (!key || key === (remoteModuleRef.current?.key ?? activeMenu)) return;
+      void navigateToModule(key, false);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [navigateToModule, activeMenu]);
+
+  // 侧边栏导航点击：拦截默认整页跳转，改为局部加载（修饰键点击保留浏览器默认行为）
+  const handleSpaNavClick = (e: ReactMouseEvent<HTMLAnchorElement>, key: string) => {
+    if (e.defaultPrevented) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    void navigateToModule(key, true);
+  };
+
+  // 当前应高亮的模块 key（宿主初始页 or 已加载的远程模块）
+  const effectiveActiveMenu = remoteModule ? remoteModule.key : activeMenu;
+
   // 菜单搜索：输入关键字实时过滤菜单，分组自动展开，命中文本高亮
   const searching = menuKeyword.trim().length > 0;
 
@@ -137,6 +300,7 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
     if (!kw) return SIDEBAR_MENU;
     const result: NavEntry[] = [];
     SIDEBAR_MENU.forEach(entry => {
+      if (entry.type === 'divider') return;
       if (entry.type === 'link') {
         if (entry.label.toLowerCase().includes(kw)) result.push(entry);
         return;
@@ -179,159 +343,71 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
     setCollapsedGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }));
   };
 
-  return (
-    <div className="filing-container">
-      <aside className={'sidebar ' + (sidebarCollapsed ? 'sidebar-collapsed' : '')}>
-        <div className="sidebar-header">
-          <div className="logo-icon"><DatabaseZap aria-hidden="true" /></div>
-          {!sidebarCollapsed && <div className="logo-text">公共数据资源授权运营管理平台</div>}
-        </div>
-        {!sidebarCollapsed && (
-          <div className="sidebar-search">
-            <Search size={14} className="sidebar-search-icon" aria-hidden="true" />
-            <input
-              type="text"
-              value={menuKeyword}
-              onChange={(e) => setMenuKeyword(e.target.value)}
-              placeholder="搜索菜单"
-              aria-label="搜索菜单"
-            />
-            {menuKeyword && (
-              <button type="button" className="sidebar-search-clear" onClick={() => setMenuKeyword('')} aria-label="清空搜索">
-                <X size={12} />
-              </button>
-            )}
-          </div>
-        )}
-        <nav className="sidebar-nav">
-          {searching && visibleMenu.length === 0 ? (
-            <div className="sidebar-nav-empty">未找到匹配菜单</div>
-          ) : (
-            visibleMenu.map(entry => {
-              const Icon = entry.icon;
-              if (entry.type === 'link') {
-                return (
-                  <a
-                    key={entry.key}
-                    className={'nav-top-link' + (activeMenu === entry.key ? ' active' : '')}
-                    href={entry.href}
-                    title={entry.label}
-                    {...(entry.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                  >
-                    <span className="nav-icon"><Icon aria-hidden="true" /></span>
-                    {!sidebarCollapsed && <span className="nav-text">{renderNavText(entry.label)}</span>}
-                  </a>
-                );
-              }
-              return (
-                <div key={entry.key} className="nav-group">
-                  <div
-                    className={'nav-group-title ' + (!searching && collapsedGroups[entry.key] ? 'collapsed' : '')}
-                    onClick={() => toggleGroup(entry.key)}
-                  >
-                    <span className="nav-label">
-                      <span className="nav-icon"><Icon aria-hidden="true" /></span>
-                      {!sidebarCollapsed && <span>{renderNavText(entry.label)}</span>}
-                    </span>
-                    {!sidebarCollapsed && <svg className="nav-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>}
-                  </div>
-                  {!sidebarCollapsed && (searching || !collapsedGroups[entry.key]) && (
-                    <div className="nav-items">
-                      {entry.items
-                        .filter(it => it.kind !== 'action' || onAuthRecordClick)
-                        .map(it => it.kind === 'action' ? (
-                          <div key={it.key} className="nav-item nav-item-clickable" onClick={onAuthRecordClick}>
-                            <span className="nav-text">{renderNavText(it.label)}</span>
-                          </div>
-                        ) : (
-                          <a
-                            key={it.key}
-                            className={'nav-item nav-item-link' + (activeMenu === it.key ? ' active' : '')}
-                            href={`/prototypes/${it.key}.html`}
-                          >
-                            <span className="nav-text">{renderNavText(it.label)}</span>
-                          </a>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </nav>
-        <div className="sidebar-footer">
-          <button className="sidebar-toggle-btn" onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              {sidebarCollapsed ? <polyline points="9 18 15 12 9 6" /> : <polyline points="15 18 9 12 15 6" />}
-            </svg>
-          </button>
-        </div>
-      </aside>
-      <main className="main-content">
-        <header className="top-header">
-          <div className="breadcrumb">
-            <span>首页</span>
+  const topHeaderNode = (
+    <header className="top-header">
+      <div className="breadcrumb">
+        <span>首页</span>
+        <span className="separator">/</span>
+        {parentMenu && (
+          <>
+            <span>{parentMenu}</span>
             <span className="separator">/</span>
-            {parentMenu && (
-              <>
-                <span>{parentMenu}</span>
-                <span className="separator">/</span>
-              </>
-            )}
-            <span className="current">{breadcrumb}</span>
-          </div>
-          <div className="header-right">
-            <a className="spec-btn" href="/prototypes/index.html">
-              <Home size={14} />
-              <span>版本管理</span>
-            </a>
-            {specContent && (
-              <button className="spec-btn" type="button" onClick={() => setShowSpecModal(true)}>
-                <FileText size={14} />
-                <span>页面说明</span>
-              </button>
-            )}
-            {changeLogContent && (
-              <button className="spec-btn" type="button" onClick={() => setShowChangeLogModal(true)}>
-                <History size={14} />
-                <span>原型修改记录</span>
-              </button>
-            )}
-            <div className="role-switcher" onMouseLeave={() => setRoleDropdownOpen(false)}>
-              <button className={'role-switch-trigger ' + (roleDropdownOpen ? 'open' : '')} type="button" onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}>
-                <span>{role}</span>
-                <ChevronDown aria-hidden="true" />
-              </button>
-              {roleDropdownOpen && (
-                <div className="role-switch-menu">
-                  {(roleOptions || ROLE_OPTIONS).map(roleOption => (
-                    <button key={roleOption} className={'role-switch-option ' + (roleOption === role ? 'active' : '')} type="button" onClick={() => { onRoleChange(roleOption); setRoleDropdownOpen(false); }}>
-                      {roleOption}
-                    </button>
-                  ))}
-                </div>
-              )}
+          </>
+        )}
+        <span className="current">{breadcrumb}</span>
+      </div>
+      <div className="header-right">
+        <a className="spec-btn" href="/prototypes/index.html">
+          <Home size={14} />
+          <span>版本管理</span>
+        </a>
+        {specContent && (
+          <button className="spec-btn" type="button" onClick={() => setShowSpecModal(true)}>
+            <FileText size={14} />
+            <span>页面说明</span>
+          </button>
+        )}
+        {changeLogContent && (
+          <button className="spec-btn" type="button" onClick={() => setShowChangeLogModal(true)}>
+            <History size={14} />
+            <span>原型修改记录</span>
+          </button>
+        )}
+        <div className="role-switcher" onMouseLeave={() => setRoleDropdownOpen(false)}>
+          <button className={'role-switch-trigger ' + (roleDropdownOpen ? 'open' : '')} type="button" onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}>
+            <span>{role}</span>
+            <ChevronDown aria-hidden="true" />
+          </button>
+          {roleDropdownOpen && (
+            <div className="role-switch-menu">
+              {(roleOptions || ROLE_OPTIONS).map(roleOption => (
+                <button key={roleOption} className={'role-switch-option ' + (roleOption === role ? 'active' : '')} type="button" onClick={() => { onRoleChange(roleOption); setRoleDropdownOpen(false); }}>
+                  {roleOption}
+                </button>
+              ))}
             </div>
-            <button
-              className="header-bell-btn"
-              type="button"
-              aria-label="消息通知"
-              onClick={() => setShowNotificationModal(true)}
-            >
-              <Bell className="header-bell" size={18} />
-              {templates.length > 0 && <span className="header-bell-badge">{templates.length}</span>}
-            </button>
-            <div className="backend-user-menu">
-              <div className="backend-account"><div><strong>数***</strong><em>法人</em></div><span>湖南数据产业集团</span></div>
-              <ChevronDown size={16} />
-              <div className="backend-user-dropdown"><a href="/prototypes/authorized-operation-portal.html">门户首页</a></div>
-            </div>
-          </div>
-        </header>
-        {title && <div className="page-header"><h1 className="page-title">{title}</h1></div>}
-        {children}
-      </main>
+          )}
+        </div>
+        <button
+          className="header-bell-btn"
+          type="button"
+          aria-label="消息通知"
+          onClick={() => setShowNotificationModal(true)}
+        >
+          <Bell className="header-bell" size={18} />
+          {templates.length > 0 && <span className="header-bell-badge">{templates.length}</span>}
+        </button>
+        <div className="backend-user-menu">
+          <div className="backend-account"><div><strong>数***</strong><em>法人</em></div><span>湖南数据产业集团</span></div>
+          <ChevronDown size={16} />
+          <div className="backend-user-dropdown"><a href="/prototypes/authorized-operation-portal.html">门户首页</a></div>
+        </div>
+      </div>
+    </header>
+  );
 
+  const pageModalsNode = (
+    <>
       {showSpecModal && specContent && (
         <div className="spec-modal-overlay" onClick={() => setShowSpecModal(false)}>
           <div className="spec-modal" onClick={(e) => e.stopPropagation()}>
@@ -407,6 +483,135 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
           </div>
         </div>
       )}
+    </>
+  );
+
+  // 嵌入模式：被 SPA 动态加载的页面仅渲染中央主体（顶栏 + 内容 + 弹层），不带侧边栏外壳
+  if (isEmbeddedInstance) {
+    return (
+      <main className="main-content main-content-spa-embedded">
+        {topHeaderNode}
+        {title && <div className="page-header"><h1 className="page-title">{title}</h1></div>}
+        {children}
+        {pageModalsNode}
+      </main>
+    );
+  }
+
+  return (
+    <div className="filing-container">
+      <aside className={'sidebar ' + (sidebarCollapsed ? 'sidebar-collapsed' : '')}>
+        <div className="sidebar-header">
+          <div className="logo-icon"><DatabaseZap aria-hidden="true" /></div>
+          {!sidebarCollapsed && <div className="logo-text">公共数据资源授权运营管理平台</div>}
+        </div>
+        {!sidebarCollapsed && (
+          <div className="sidebar-search">
+            <Search size={14} className="sidebar-search-icon" aria-hidden="true" />
+            <input
+              type="text"
+              value={menuKeyword}
+              onChange={(e) => setMenuKeyword(e.target.value)}
+              placeholder="搜索菜单"
+              aria-label="搜索菜单"
+            />
+            {menuKeyword && (
+              <button type="button" className="sidebar-search-clear" onClick={() => setMenuKeyword('')} aria-label="清空搜索">
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        )}
+        <nav className="sidebar-nav">
+          {searching && visibleMenu.length === 0 ? (
+            <div className="sidebar-nav-empty">未找到匹配菜单</div>
+          ) : (
+            visibleMenu.map(entry => {
+              if (entry.type === 'divider') {
+                return sidebarCollapsed ? null : (
+                  <div key={entry.key} className="nav-divider-label">
+                    <span>{entry.label}</span>
+                  </div>
+                );
+              }
+              const Icon = entry.icon;
+              if (entry.type === 'link') {
+                return (
+                  <a
+                    key={entry.key}
+                    className={'nav-top-link' + (effectiveActiveMenu === entry.key ? ' active' : '')}
+                    href={entry.href}
+                    title={entry.label}
+                    onClick={(e) => { if (!entry.external) handleSpaNavClick(e, entry.key); }}
+                    {...(entry.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  >
+                    <span className="nav-icon"><Icon aria-hidden="true" /></span>
+                    {!sidebarCollapsed && <span className="nav-text">{renderNavText(entry.label)}</span>}
+                  </a>
+                );
+              }
+              return (
+                <div key={entry.key} className="nav-group">
+                  <div
+                    className={'nav-group-title ' + (!searching && collapsedGroups[entry.key] ? 'collapsed' : '')}
+                    onClick={() => toggleGroup(entry.key)}
+                  >
+                    <span className="nav-label">
+                      <span className="nav-icon"><Icon aria-hidden="true" /></span>
+                      {!sidebarCollapsed && <span>{renderNavText(entry.label)}</span>}
+                    </span>
+                    {!sidebarCollapsed && <svg className="nav-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>}
+                  </div>
+                  {!sidebarCollapsed && (searching || !collapsedGroups[entry.key]) && (
+                    <div className="nav-items">
+                      {entry.items
+                        .filter(it => it.kind !== 'action' || (onAuthRecordClick && !remoteModule))
+                        .map(it => it.kind === 'action' ? (
+                          <div key={it.key} className="nav-item nav-item-clickable" onClick={onAuthRecordClick}>
+                            <span className="nav-text">{renderNavText(it.label)}</span>
+                          </div>
+                        ) : (
+                          <a
+                            key={it.key}
+                            className={'nav-item nav-item-link' + (effectiveActiveMenu === it.key ? ' active' : '')}
+                            href={`/prototypes/${it.key}.html`}
+                            onClick={(e) => handleSpaNavClick(e, it.key)}
+                          >
+                            <span className="nav-text">{renderNavText(it.label)}</span>
+                          </a>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </nav>
+        <div className="sidebar-footer">
+          <button className="sidebar-toggle-btn" onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {sidebarCollapsed ? <polyline points="9 18 15 12 9 6" /> : <polyline points="15 18 9 12 15 6" />}
+            </svg>
+          </button>
+        </div>
+      </aside>
+      {remoteModule ? (
+        remoteModule.element
+      ) : (
+        <main className="main-content">
+          {topHeaderNode}
+          {title && <div className="page-header"><h1 className="page-title">{title}</h1></div>}
+          {children}
+          {loadingModuleKey && (
+            <div className="spa-switch-loading-mask">
+              <span className="spa-switch-spinner" aria-hidden="true"></span>
+              <span>模块加载中…</span>
+            </div>
+          )}
+        </main>
+      )}
+
+      {pageModalsNode}
     </div>
   );
 };

@@ -253,6 +253,51 @@
   margin-top: 4px;
 }
 
+/* 「未确定需求」分区标注：与上方已确定原型内容区分 */
+.nav-divider-label {
+  margin: 10px 16px 4px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.15);
+  color: #f5222d;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  user-select: none;
+}
+
+/* SPA 模块切换加载遮罩：仅覆盖内容主体区，侧边栏保持可交互 */
+.spa-switch-loading-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(247, 248, 251, 0.6);
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 13px;
+}
+
+.main-content {
+  position: relative;
+}
+
+.spa-switch-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(22, 119, 255, 0.25);
+  border-top-color: var(--layout-blue-strong, #1677ff);
+  animation: spa-switch-spin 0.8s linear infinite;
+}
+
+@keyframes spa-switch-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .nav-item {
   position: relative;
 }

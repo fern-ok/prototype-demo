@@ -1,21 +1,5 @@
 # 原型修改记录
 
-## 2026-10-15（批次筛选条件挪到最前）
-
-筛选区字段顺序由「所属地域 → 单位/企业名称 → 统一社会信用代码 → 批次 → 创建时间」改为「批次 → 所属地域 → 单位/企业名称 → 统一社会信用代码 → 创建时间」，操作列与新增弹窗不受影响。
-
-## 2026-10-15（字段去加粗 + 批次输入框重构）
-
-按需求：字段去掉加粗效果；批次的"第"和"批"字挪到输入框外面，批次输入框是计数器。
-
-1. `.form-item label`：`font-weight: 500` → `font-weight: normal`，所有 5 个表单字段标签不再加粗。
-2. 批次字段重构：
-   - 删除旧 `.batch-combo` 规则（把"第 [input] 批"放在同一个 border 内的组合框）。
-   - 新增 `.batch-field`：`display:inline-flex; gap:8px`，三个兄弟元素平铺——"第"（.batch-prefix）、独立 .batch-counter input（原生 type="number"，自带 spinner、自己的 border、108px 宽）、"批"（.batch-suffix）。
-   - "第"和"批"文字在输入框 border 外侧（prefix.right < input.left < suffix.left），视觉上前后缀而非输入框内容。
-   - HTML 对应更新：.batch-combo → .batch-field、.batch-input-num → .batch-counter。
-3. 浏览器验收：5 个 label fontWeight 全为 400；hasBatchField=true 且 hasBatchCombo=false；prefixOutside=true、suffixOutside=true；counter 为 type=number、width=108px、有 border。
-
 ## 2026-10-15（修复新增弹窗表单项间隔）
 
 用户反馈新增弹窗内表单项紧贴无间隔。根因：HTML 中 `.modal-body` 与 `.form-content`（以及 `.modal-body` 与 `.delete-content`）是**同一个元素上同时存在的两个类名**，但 style.css 中 CSS 选择器写的是后代选择器（空格分隔）`.modal-body .form-content` / `.modal-body .delete-content`，浏览器无法匹配自身，整条 flex column + gap 规则完全失效。

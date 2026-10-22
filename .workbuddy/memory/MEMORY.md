@@ -44,3 +44,21 @@
 ## 数据资源目录模块（data-resource-catalog）
 - 操作按钮顺序严格：关联 → 查看 → 编辑 → 删除 → 变更 → 撤销 → 查看存证（左到右）。
 - 编辑/变更弹窗字段与新增弹窗一致，需预填回显已有数据；新增弹窗 UI 按参照截图精确还原。
+
+## 未确定需求板块（2026-10-21 新增）
+- 侧边栏「其他」group 下方新增「未确定需求」分区（NavEntry 新增 type:'divider'，红色标注 + 虚线分隔，样式 .nav-divider-label 于 layout.css；搜索过滤时 divider 隐藏，侧边栏收起时隐藏）。
+- 分区内复制「备案管理」一级菜单（key: pending-filing-management）+ 4 个二级菜单：pending-implementation-org-filing / pending-implementation-plan-filing / pending-operation-org-filing / pending-operation-agreement-filing，页面为原备案四页的整体复制（仅 index.tsx + style.css，不含 spec.md / change.md，已移除 ?raw 导入与 specContent/changeLogContent 传参，无页面说明/原型修改记录按钮）。
+- 原「备案管理」四页保持不变；activeMenu 联合类型已扩展 4 个 pending-* key，面包屑走默认「备案管理」分支；入口经 scripts/scan-entries.js 注册。
+
+## SPA 局部切换机制（2026-10-21 新增，src/common/Layout.tsx）
+- 侧边栏导航点击已改为拦截默认跳转（handleSpaNavClick），动态加载目标模块组件并仅替换中央内容区；外层侧边栏保持挂载，不整页刷新。
+- 机制：宿主 Layout（首个实例）通过 useState 初始化时读取 window.__AXHUB_SPA_EMBEDDED__ 判定身份；切换时置位该标记并动态加载模块。dev 环境（存在 window.DevTemplateBootstrap）走 `import('/prototypes/<key>/index.tsx')`（vite root=src）；构建产物走脚本标签执行 `<key>.js` IIFE + 临时替换 window.__AXHUB_DEFINE_COMPONENT__ 捕获组件。
+- 被加载页面的 Layout 以嵌入模式渲染（isEmbeddedInstance → 仅 `<main class="main-content main-content-spa-embedded">`，无侧边栏，顶栏/弹层随新页面）；侧边栏高亮跟随 effectiveActiveMenu（remoteModule.key 或 activeMenu）。
+- history.pushState 同步 URL 为 /prototypes/<key>.html；popstate 支持前进/后退恢复；加载失败兜底整页跳转；加载中显示 .spa-switch-loading-mask 遮罩（layout.css）。侧边栏「授权记录」action 项在远程模块激活时隐藏（避免触发宿主页面弹窗）。
+- 已验证：tsc 通过；dev 模块转换 200；单入口生产构建成功（动态 import 以原生形式保留）。注意：`npm run build` 的 rmSync(dist) 会被环境安全守卫拦截（>50 项批量删除需确认），全量重建 dist 需用户正常环境执行或分批清理。
+
+## SPA 切换的样式隔离（2026-10-21 补充）
+- 各页 style.css 使用全局类名（.form-grid / .form-item / .upload-* 等），SPA 局部切换时上一页注入的 <style> 残留在 head，会覆盖新页同名规则造成布局错乱（典型：运营协议备案弹窗被其他备案页的双列 .form-grid 污染）。
+- 已在 Layout.tsx 的 loadSpaModuleComponent 中加入样式隔离：加载前移除上次 SPA 注入的样式节点（dropSpaInjectedStyles），加载后按 head 快照 diff 记录本次新增节点（trackSpaInjectedStyles）；宿主页原有样式不受影响，dev/构建两条路径均生效。
+- 单页防护做法：用两级选择器提高优先级（如 `.form-modal .form-grid { grid-template-columns: 1fr }`）锁定本页布局。
+- Layout.tsx / layout.css 属公共文件，改动后需重建全部 dist 入口（42 个）保持产物一致。

@@ -209,7 +209,7 @@
   padding-right: 4px;
   color: #1f2329;
   font-size: 13px;
-  font-weight: normal;
+  font-weight: 500;
   line-height: 34px;
   white-space: nowrap;
   overflow: hidden;
@@ -249,45 +249,60 @@
   transition: border-color .16s ease, box-shadow .16s ease;
 }
 
-/* 批次：第 + 独立数字计数器 + 批 */
-.batch-field {
+/* 批次：第 + 数字 + 批 组合输入框 */
+.batch-combo {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  width: 160px;
   height: 34px;
+  padding: 0 12px;
+  color: #1f2329;
+  background: #fff;
+  border: 1px solid #d8dfe9;
+  border-radius: 2px;
+  font-size: 13px;
+  transition: border-color .16s ease, box-shadow .16s ease;
 }
 
-.batch-field .batch-prefix,
-.batch-field .batch-suffix {
-  color: #4b5563;
+.batch-combo:focus-within {
+  border-color: #3d8bff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
+}
+
+.batch-combo.has-error {
+  border-color: var(--layout-danger, #f5222d) !important;
+}
+
+.batch-combo .batch-prefix,
+.batch-combo .batch-suffix {
+  flex: 0 0 auto;
+  color: #6b7280;
   font-size: 13px;
   line-height: 34px;
   user-select: none;
 }
 
-.batch-field .batch-counter {
-  width: 108px;
-  height: 34px;
-  padding: 0 6px 0 10px;
+.batch-combo .batch-input-num {
+  width: 56px;
+  height: 32px;
+  margin: 0 6px;
+  padding: 0 4px;
   color: #1f2329;
-  background: #fff;
-  border: 1px solid #d8dfe9;
-  border-radius: 2px;
+  text-align: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   font-family: inherit;
   font-size: 13px;
   outline: none;
-  text-align: left;
-  box-sizing: border-box;
-  transition: border-color .16s ease, box-shadow .16s ease;
+  box-shadow: none;
+  -moz-appearance: textfield;
 }
 
-.batch-field .batch-counter:focus {
-  border-color: #3d8bff;
-  box-shadow: 0 0 0 2px rgba(22, 119, 255, .08);
-}
-
-.batch-field.has-error .batch-counter {
-  border-color: var(--layout-danger, #f5222d) !important;
+.batch-combo .batch-input-num::-webkit-outer-spin-button,
+.batch-combo .batch-input-num::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .form-control select:focus,

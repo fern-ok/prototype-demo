@@ -174,10 +174,6 @@ const OriginalComponent = () => {
         <div className="industry-page">
           <section className="filter-section">
             <div className="filter-row">
-              <div className="filter-item">
-                <label>批次</label>
-                <input type="text" placeholder="请输入" value={searchBatch} onChange={(e) => setSearchBatch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleQuery()} />
-              </div>
               <div className="filter-item filter-item-select">
                 <label>所属地域</label>
                 <select value={searchRegion} onChange={(e) => { setSearchRegion(e.target.value); handleQuery(); }}>
@@ -192,6 +188,10 @@ const OriginalComponent = () => {
               <div className="filter-item">
                 <label>统一社会信用代码</label>
                 <input type="text" placeholder="请输入" value={searchCreditCode} onChange={(e) => setSearchCreditCode(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleQuery()} />
+              </div>
+              <div className="filter-item">
+                <label>批次</label>
+                <input type="text" placeholder="请输入" value={searchBatch} onChange={(e) => setSearchBatch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleQuery()} />
               </div>
               <div className="filter-item date-range">
                 <label>创建时间</label>
@@ -281,7 +281,7 @@ const OriginalComponent = () => {
               <div className="form-item">
                 <label><span className="required">*</span>批次</label>
                 <div className="form-control">
-                  <div className={'batch-field ' + (formErrors.batch ? 'has-error' : '')}>
+                  <div className={'batch-combo ' + (formErrors.batch ? 'has-error' : '')}>
                     <span className="batch-prefix">第</span>
                     <input
                       type="number"
@@ -289,7 +289,7 @@ const OriginalComponent = () => {
                       value={formData.batch}
                       placeholder="请输入"
                       onChange={(e) => handleFormChange('batch', e.target.value)}
-                      className="batch-counter"
+                      className="batch-input-num"
                     />
                     <span className="batch-suffix">批</span>
                   </div>

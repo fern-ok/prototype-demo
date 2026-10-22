@@ -525,7 +525,7 @@ const OriginalComponent = () => {
             {renderUploadField('announcement', '征集公告', true, '请上传运营机构征集公告')}
             {renderUploadField('expertOpinion', '专家评审意见', true, '请上传专家评审意见')}
             {renderUploadField('publicityCert', '公示证明', true, '请上传运营机构公示完成证明')}
-            {renderUploadField('legalCert', '机构资格证明', true, '请上传运营机构法人证书', '企业：上传营业执照\n事业单位：上传事业单位法人证书\n党政机关：上传机构编制批复（三定）文件')}
+            {renderUploadField('legalCert', '机构资格证明', true, '请上传运营机构法人证书', '企业：上传营业执照\n事业单位：上传事业单位法人证书\n党政机关：上传统一社会信用代码证书')}
             {renderUploadField('attachment', '其他证明材料', false, '请上传其他证明运营机构身份的材料')}
             <div className="form-item form-item-full">
               <label>情况说明</label>

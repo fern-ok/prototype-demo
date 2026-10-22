@@ -1294,10 +1294,17 @@
 
 /* 按钮下方第二行：提示（未上传时橙色提示，已上传时深灰色文件名） */
 .pending-op-agree-filing .upload-tip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin-top: 0;
   color: #ff8800;
   font-size: 12px;
   line-height: 18px;
+}
+
+.pending-op-agree-filing .upload-tip-icon {
+  flex: 0 0 auto;
 }
 
 /* .error-text 已有 grid-column:2，不受影响 */
@@ -1359,7 +1366,7 @@
 .pending-op-agree-filing .primary-file-section {
   position: relative;
   margin: 6px 0 14px;
-  padding: 18px 14px 8px;
+  padding: 18px 1px 8px;
   background: #f5f9ff;
   border: 1px solid #3d8bff;
   border-radius: 4px;

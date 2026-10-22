@@ -530,8 +530,8 @@ const OriginalComponent = () => {
               />
               {formErrors.creditCode && <span className="error-text">{formErrors.creditCode}</span>}
             </div>
-            {renderUploadField('meetingMinutes', '会议纪要', true, '请上传 “三重一大” 会议纪要', '若会议纪要涉密，请提供其他证明文件并说明情况')}
-            {renderUploadField('qualificationCert', '机构资格证明', true, '请上传实施机构资格证明文件', '企业：上传营业执照\n事业单位：上传事业单位法人证书\n党政机关：上传机构编制批复（三定）文件')}
+            {renderUploadField('meetingMinutes', '会议纪要', true, '请上传 “三重一大” 会议纪要', '若会议纪要涉密，请提供其他证明材料并说明情况', true)}
+            {renderUploadField('qualificationCert', '机构资格证明', true, '请上传实施机构资格证明文件', '企业：上传营业执照\n事业单位：上传事业单位法人证书\n党政机关：上传统一社会信用代码证书')}
             {renderUploadField('attachment', '其他证明材料', false, '请上传其他证明实施机构身份的材料')}
             <div className="form-item form-item-full">
               <label>情况说明</label>

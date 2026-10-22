@@ -7,7 +7,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { HelpCircle } from 'lucide-react';
+import { AlertCircle, HelpCircle } from 'lucide-react';
 import Layout from '../../common/Layout';
 import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
@@ -493,7 +493,7 @@ const OriginalComponent = () => {
                     )}
                   </div>
                   {showUpload && <div className="upload-hint">支持格式: .pdf 单个文件不能超过15MB</div>}
-                  {showUpload && <div className="upload-tip">{formData.agreementFileName ? formData.agreementFileName : '请上传经 “三重一大” 决策机制审议通过的运营协议'}</div>}
+                  {showUpload && <div className="upload-tip">{formData.agreementFileName ? formData.agreementFileName : (<><AlertCircle size={13} className="upload-tip-icon" /><span>请上传经 “三重一大” 决策机制审议通过的运营协议</span></>)}</div>}
                   {formErrors.agreement && <span className="error-text">{formErrors.agreement}</span>}
                 </div>
               </div>
@@ -517,7 +517,7 @@ const OriginalComponent = () => {
                     </label>
                   </div>
                   <div className="upload-hint">支持格式: .pdf 单个文件不能超过15MB</div>
-                  <div className="upload-tip">{formData.meetingMinutesFileName ? formData.meetingMinutesFileName : '请上传 “三重一大” 会议纪要'}</div>
+                  <div className="upload-tip">{formData.meetingMinutesFileName ? formData.meetingMinutesFileName : (<><AlertCircle size={13} className="upload-tip-icon" /><span>请上传 “三重一大” 会议纪要</span></>)}</div>
                   {formErrors.meetingMinutes && <span className="error-text">{formErrors.meetingMinutes}</span>}
                 </div>
               )}

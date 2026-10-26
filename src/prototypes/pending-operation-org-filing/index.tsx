@@ -8,7 +8,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { AlertCircle, HelpCircle } from 'lucide-react';
+import { CheckCircle, HelpCircle } from 'lucide-react';
 import Layout from '../../common/Layout';
 import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
@@ -69,7 +69,7 @@ const REGION_DEFAULT = '省本级';
 const LEGAL_HANDLER_DEFAULT = '刘洋';
 /** 已完成备案的实施方案（下拉枚举，禁用不可修改） */
 const PLAN_OPTIONS = [
-  '长沙市医疗健康领域公共数据授权运营实施方案（已备案）',
+  '长沙市医疗健康领域公共数据授权运营实施方案',
   '湖南省交通运输领域数据授权运营实施方案（已备案）',
   '岳阳市自然资源领域数据授权运营实施方案（已备案）',
   '湖南省整体授权运营实施方案（已备案）'
@@ -88,7 +88,7 @@ const filingSeed: OperOrgFiling[] = [
     operOrg: '长沙市医疗健康数据运营有限公司',
     creditCode: '91430100MA4C12345X',
     legalHandler: '刘洋',
-    planName: '长沙市医疗健康领域公共数据授权运营实施方案（已备案）',
+    planName: '长沙市医疗健康领域公共数据授权运营实施方案',
     planFileLink: '#',
     createTime: '2026-05-20 10:05:57',
     status: '已备案',
@@ -198,7 +198,7 @@ const filingSeed: OperOrgFiling[] = [
     operOrg: '湖南省全民健康数据运营中心',
     creditCode: '91430000MA4F77889X',
     legalHandler: '陈雨桐',
-    planName: '长沙市医疗健康领域公共数据授权运营实施方案（已备案）',
+    planName: '长沙市医疗健康领域公共数据授权运营实施方案',
     planFileLink: '#',
     createTime: '2026-07-17 09:07:23',
     status: '已备案',
@@ -393,7 +393,7 @@ const OriginalComponent = () => {
     } else if (!isValidCreditCode(formData.creditCode)) {
       errors.creditCode = '统一社会信用代码格式不正确（应为 18 位，由数字与大写字母组成）';
     }
-    if (!formData.legalCert.trim()) errors.legalCert = '请上传运营机构法人证书';
+    if (!formData.legalCert.trim()) errors.legalCert = '请上传机构资格证明';
     if (!formData.announcement.trim()) errors.announcement = '请上传运营机构征集公告';
     if (!formData.expertOpinion.trim()) errors.expertOpinion = '请上传专家评审意见';
     if (!formData.publicityCert.trim()) errors.publicityCert = '请上传运营机构公示完成证明';
@@ -444,7 +444,9 @@ const OriginalComponent = () => {
   };
 
   /* 文件上传控件 */
-  const renderUploadField = (field: keyof OperOrgFormData, label: string, required: boolean, hint: string, tooltip?: string) => (
+  const renderUploadField = (field: keyof OperOrgFormData, label: string, required: boolean, hint: string, tooltip?: string) => {
+    const hasFile = !!formData[field];
+    return (
     <div className="form-item form-item-full upload-item">
       <label>
         {required && <span className="required">*</span>} {label}
@@ -467,18 +469,82 @@ const OriginalComponent = () => {
             }}
           />
         </label>
-        <span className={'upload-name ' + (formData[field] ? 'has-file' : '')}>
+        {!hasFile && <span className="upload-tip-inline">{hint}</span>}
+        <span className={'upload-name ' + (hasFile ? 'has-file' : '')}>
           {formData[field]}
         </span>
       </div>
       <div className="upload-hint">支持格式: .pdf 单个文件不能超过15MB</div>
-      <div className="upload-tip">
-        <AlertCircle size={13} className="upload-tip-icon" />
-        <span>{hint}</span>
-      </div>
+      {hasFile ? (
+        <div className="upload-status upload-status-done">
+          <CheckCircle size={13} className="upload-status-icon" />
+          <span>已上传</span>
+        </div>
+      ) : (
+        <div className="upload-status upload-status-todo">
+          <span className="upload-status-badge">待上传</span>
+        </div>
+      )}
       {formErrors[field] && <span className="error-text">{formErrors[field]}</span>}
     </div>
-  );
+    );
+  };
+
+  /* 附件上传卡片（卡片式上传，参考「主文件大卡 + 附件虚线小卡」样式，本页 5 个材料平级、无主文件） */
+  const renderUploadCard = (field: keyof OperOrgFormData, label: string, required: boolean, hint: string, tooltip?: string) => {
+    const hasFile = !!formData[field];
+    return (
+      <label
+        className={
+          'upload-card' +
+          (hasFile ? ' has-file' : '') +
+          (formErrors[field] ? ' has-error' : '')
+        }
+      >
+        <span className="upload-card-title">
+          {required && <span className="required">*</span>} {label}
+          {tooltip && (
+            <span className="field-tip">
+              <HelpCircle size={13} className="field-tip-icon" />
+              <span className="field-tip-text">{tooltip}</span>
+            </span>
+          )}
+        </span>
+        <span className="upload-card-btn">{hasFile ? '重新上传' : '点击上传'}</span>
+        {hasFile && (
+          <span className="upload-card-file" title={formData[field]}>{formData[field]}</span>
+        )}
+        {formErrors[field] && <span className="upload-card-error">{formErrors[field]}</span>}
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => {
+            const file = e.target.files && e.target.files[0];
+            handleFormChange(field, file ? file.name : '');
+          }}
+        />
+      </label>
+    );
+  };
+
+  /* 顶部材料上传进度：已上传 X / 5 */
+  const uploadFieldKeys: (keyof OperOrgFormData)[] = ['announcement', 'expertOpinion', 'publicityCert', 'legalCert', 'attachment'];
+  const renderUploadProgress = () => {
+    const uploaded = uploadFieldKeys.filter(k => !!formData[k]).length;
+    const total = uploadFieldKeys.length;
+    const pct = Math.round((uploaded / total) * 100);
+    return (
+      <div className="upload-progress">
+        <div className="upload-progress-head">
+          <span className="upload-progress-title">备案材料</span>
+          <span className="upload-progress-count">已上传 {uploaded} / {total}</span>
+        </div>
+        <div className="upload-progress-track">
+          <div className="upload-progress-fill" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
+    );
+  };
 
   const renderFormModal = (title: string, onSubmit: () => void) => (
     <div className="modal-overlay" onClick={closeFormModals}>
@@ -488,14 +554,19 @@ const OriginalComponent = () => {
           <button className="modal-close" onClick={closeFormModals}>×</button>
         </div>
         <div className="modal-body filing-form-body">
+          {renderUploadProgress()}
           <div className="form-grid">
+            <div className="form-group-title">基本信息</div>
             <div className="form-item form-item-full">
-              <label><span className="required">*</span> 实施方案</label>
+              <label>实施方案</label>
+              {/* 实施方案由系统自动带出：作为只读信息项展示，与输入项区分（下拉控件保留但不展示） */}
+              <div className="plan-info-item">{formData.planName}</div>
               <select
-                disabled
+                className="plan-select-hidden"
+                aria-hidden="true"
+                tabIndex={-1}
                 value={formData.planName}
                 onChange={(e) => handleFormChange('planName', e.target.value)}
-                className="disabled-select"
               >
                 {PLAN_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
@@ -522,19 +593,25 @@ const OriginalComponent = () => {
               />
               {formErrors.creditCode && <span className="error-text">{formErrors.creditCode}</span>}
             </div>
-            {renderUploadField('announcement', '征集公告', true, '请上传运营机构征集公告')}
-            {renderUploadField('expertOpinion', '专家评审意见', true, '请上传专家评审意见')}
-            {renderUploadField('publicityCert', '公示证明', true, '请上传运营机构公示完成证明')}
-            {renderUploadField('legalCert', '机构资格证明', true, '请上传运营机构法人证书', '企业：上传营业执照\n事业单位：上传事业单位法人证书\n党政机关：上传统一社会信用代码证书')}
-            {renderUploadField('attachment', '其他证明材料', false, '请上传其他证明运营机构身份的材料')}
             <div className="form-item form-item-full">
               <label>情况说明</label>
               <textarea
-                placeholder="请输入"
+                placeholder="选填，请输入"
                 value={formData.remark}
                 onChange={(e) => handleFormChange('remark', e.target.value)}
                 rows={4}
               />
+            </div>
+            <div className="form-group-title">
+              备案材料
+              <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
+            </div>
+            <div className="upload-cards">
+              {renderUploadCard('announcement', '征集公告', true, '请上传运营机构征集公告')}
+              {renderUploadCard('expertOpinion', '专家评审意见', true, '请上传专家评审意见')}
+              {renderUploadCard('publicityCert', '公示证明', true, '请上传运营机构公示完成证明')}
+              {renderUploadCard('legalCert', '机构资格证明', true, '请上传运营机构资格证明', '企业：上传营业执照\n事业单位：上传事业单位法人证书\n党政机关：上传统一社会信用代码证书')}
+              {renderUploadCard('attachment', '其他证明材料', false, '请上传其他证明运营机构身份的材料')}
             </div>
           </div>
         </div>

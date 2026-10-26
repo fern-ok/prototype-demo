@@ -7,7 +7,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { AlertCircle, HelpCircle } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import Layout from '../../common/Layout';
 import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
@@ -477,50 +477,40 @@ const OriginalComponent = () => {
         </div>
         <div className="modal-body form-modal-body">
           <div className="form-section">
+            <label
+              className={
+                'primary-file-section' +
+                (formData.agreementFileName ? ' has-file' : '') +
+                (formErrors.agreement ? ' has-error' : '')
+              }
+            >
+              <div className="primary-file-tag">主文件</div>
+              <span className="upload-card-title">
+                <span className="required">*</span> 运营协议
+                <span className="field-tip">
+                  <HelpCircle size={13} className="field-tip-icon" />
+                  <span className="field-tip-text">请上传经 "三重一大" 决策机制审议通过的运营协议</span>
+                </span>
+              </span>
+              {showUpload ? (
+                <span className="upload-card-btn">{formData.agreementFileName ? '重新上传' : '点击上传'}</span>
+              ) : (
+                <span className="upload-card-file" title={formData.agreementFileName}>{formData.agreementFileName}</span>
+              )}
+              {showUpload && formData.agreementFileName && (
+                <span className="upload-card-file" title={formData.agreementFileName}>{formData.agreementFileName}</span>
+              )}
+              {formErrors.agreement && <span className="upload-card-error">{formErrors.agreement}</span>}
+              {showUpload && (
+                <input type="file" accept="application/pdf" onChange={handleFileChange} />
+              )}
+            </label>
+            <div className="form-group-title">基本信息</div>
             <div className="form-grid">
-              <div className="primary-file-section">
-                <div className="primary-file-tag">主文件</div>
-                <div className="form-item upload-item">
-                  <label><span className="required">*</span> 运营协议</label>
-                  <div className="upload-control">
-                    {showUpload ? (
-                      <label className="upload-btn">
-                        选择文件
-                        <input type="file" accept="application/pdf" onChange={handleFileChange} />
-                      </label>
-                    ) : (
-                      <input type="text" value={formData.agreementFileName} disabled />
-                    )}
-                  </div>
-                  {showUpload && <div className="upload-hint">支持格式: .pdf 单个文件不能超过15MB</div>}
-                  {showUpload && <div className="upload-tip">{formData.agreementFileName ? formData.agreementFileName : (<><AlertCircle size={13} className="upload-tip-icon" /><span>请上传经 “三重一大” 决策机制审议通过的运营协议</span></>)}</div>}
-                  {formErrors.agreement && <span className="error-text">{formErrors.agreement}</span>}
-                </div>
-              </div>
               <div className="form-item">
                 <label><span className="required">*</span> 运营机构</label>
                 <input type="text" value={formData.opOrg} disabled />
               </div>
-              {isAddModal && (
-                <div className="form-item upload-item">
-                  <label>
-                    <span className="required">*</span> 会议纪要
-                    <span className="field-tip">
-                      <HelpCircle size={13} className="field-tip-icon" />
-                      <span className="field-tip-text">若会议纪要涉密，请提供其他证明材料并说明情况</span>
-                    </span>
-                  </label>
-                  <div className="upload-control">
-                    <label className="upload-btn">
-                      选择文件
-                      <input type="file" accept="application/pdf" onChange={handleMeetingMinutesChange} />
-                    </label>
-                  </div>
-                  <div className="upload-hint">支持格式: .pdf 单个文件不能超过15MB</div>
-                  <div className="upload-tip">{formData.meetingMinutesFileName ? formData.meetingMinutesFileName : (<><AlertCircle size={13} className="upload-tip-icon" /><span>请上传 “三重一大” 会议纪要</span></>)}</div>
-                  {formErrors.meetingMinutes && <span className="error-text">{formErrors.meetingMinutes}</span>}
-                </div>
-              )}
               <div className="form-item">
                 <label><span className="required">*</span> 授权期限</label>
                 <div className="date-range-wrapper">
@@ -542,10 +532,41 @@ const OriginalComponent = () => {
                   <span className="error-text">{formErrors.startDate || formErrors.endDate}</span>
                 )}
               </div>
+            </div>
+            <div className="form-group-title">
+              备案材料
+              <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
+            </div>
+            <div className="upload-cards">
+              {isAddModal && (
+                <label
+                  className={
+                    'upload-card' +
+                    (formData.meetingMinutesFileName ? ' has-file' : '') +
+                    (formErrors.meetingMinutes ? ' has-error' : '')
+                  }
+                >
+                  <span className="upload-card-title">
+                    <span className="required">*</span> 会议纪要
+                    <span className="field-tip">
+                      <HelpCircle size={13} className="field-tip-icon" />
+                      <span className="field-tip-text">请上传 “三重一大” 会议纪要。若会议纪要涉密，请提供其他证明材料并说明情况</span>
+                    </span>
+                  </span>
+                  <span className="upload-card-btn">{formData.meetingMinutesFileName ? '重新上传' : '点击上传'}</span>
+                  {formData.meetingMinutesFileName && (
+                    <span className="upload-card-file" title={formData.meetingMinutesFileName}>{formData.meetingMinutesFileName}</span>
+                  )}
+                  {formErrors.meetingMinutes && <span className="upload-card-error">{formErrors.meetingMinutes}</span>}
+                  <input type="file" accept="application/pdf" onChange={handleMeetingMinutesChange} />
+                </label>
+              )}
+            </div>
+            <div className="form-grid remark-grid">
               <div className="form-item remark-item">
                 <label>情况说明</label>
                 <textarea
-                  placeholder="请输入情况说明"
+                  placeholder="选填，请输入"
                   value={formData.remark}
                   onChange={(e) => handleFormChange('remark', e.target.value)}
                   rows={4}

@@ -8,7 +8,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { AlertCircle, HelpCircle } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import Layout from '../../common/Layout';
 import PasswordGuard from '../../common/PasswordGuard';
 import './style.css';
@@ -496,16 +496,17 @@ const OriginalComponent = () => {
   };
 
   /* 文件上传控件 */
-  const renderUploadField = (field: keyof PlanFormData, label: string, required: boolean, hint: string, tooltip?: string) => (
+  const renderUploadField = (field: keyof PlanFormData, label: string, required: boolean, hint: string, tooltip?: string) => {
+    /* 「请上传XXX」提示统一以 Tooltip 形式展示在字段名旁（传入 tooltip 的字段沿用原 Tooltip 文案） */
+    const tipText = tooltip || hint;
+    return (
     <div className="form-item form-item-full upload-item">
       <label>
         {required && <span className="required">*</span>} {label}
-        {tooltip && (
-          <span className="field-tip">
-            <HelpCircle size={13} className="field-tip-icon" />
-            <span className="field-tip-text">{tooltip}</span>
-          </span>
-        )}
+        <span className="field-tip">
+          <HelpCircle size={13} className="field-tip-icon" />
+          <span className="field-tip-text">{tipText}</span>
+        </span>
       </label>
       <div className="upload-control">
         <label className="upload-btn">
@@ -521,12 +522,48 @@ const OriginalComponent = () => {
         </label>
       </div>
       <div className="upload-hint">支持格式: .pdf 单个文件不能超过15MB</div>
-      <div className="upload-tip">
-        {formData[field] ? formData[field] : <><AlertCircle size={13} className="upload-tip-icon" /> <span>{hint}</span></>}
-      </div>
+      {formData[field] && <div className="upload-tip">{formData[field]}</div>}
       {formErrors[field] && <span className="error-text">{formErrors[field]}</span>}
     </div>
-  );
+    );
+  };
+
+  /* 附件上传卡片（卡片式上传，与运营/实施机构备案页一致；主文件区保持原样不卡片化） */
+  const renderUploadCard = (field: keyof PlanFormData, label: string, required: boolean, tooltip?: string) => {
+    const hasFile = !!formData[field];
+    return (
+      <label
+        className={
+          'upload-card' +
+          (hasFile ? ' has-file' : '') +
+          (formErrors[field] ? ' has-error' : '')
+        }
+      >
+        <span className="upload-card-title">
+          {required && <span className="required">*</span>} {label}
+          {tooltip && (
+            <span className="field-tip">
+              <HelpCircle size={13} className="field-tip-icon" />
+              <span className="field-tip-text">{tooltip}</span>
+            </span>
+          )}
+        </span>
+        <span className="upload-card-btn">{hasFile ? '重新上传' : '点击上传'}</span>
+        {hasFile && (
+          <span className="upload-card-file" title={formData[field]}>{formData[field]}</span>
+        )}
+        {formErrors[field] && <span className="upload-card-error">{formErrors[field]}</span>}
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => {
+            const file = e.target.files && e.target.files[0];
+            handleFormChange(field, file ? file.name : '');
+          }}
+        />
+      </label>
+    );
+  };
 
   const renderFormModal = (title: string, onSubmit: () => void) => (
     <div className="modal-overlay" onClick={closeFormModals}>
@@ -536,21 +573,51 @@ const OriginalComponent = () => {
           <button className="modal-close" onClick={closeFormModals}>×</button>
         </div>
         <div className="modal-body filing-form-body">
-          <div className="primary-file-section">
+          <label
+            className={
+              'primary-file-section' +
+              (formData.planFile ? ' has-file' : '') +
+              (formErrors.planFile ? ' has-error' : '')
+            }
+          >
             <div className="primary-file-tag">主文件</div>
-            {renderUploadField('planFile', '实施方案', true, '请上传经 “三重一大” 决策机制审议通过的实施方案')}
+            <span className="upload-card-title">
+              <span className="required">*</span> 实施方案
+              <span className="field-tip">
+                <HelpCircle size={13} className="field-tip-icon" />
+                <span className="field-tip-text">请上传经 “三重一大” 决策机制审议通过的实施方案</span>
+              </span>
+            </span>
+            <span className="upload-card-btn">{formData.planFile ? '重新上传' : '点击上传'}</span>
+            {formData.planFile && (
+              <span className="upload-card-file" title={formData.planFile}>{formData.planFile}</span>
+            )}
+            {formErrors.planFile && <span className="upload-card-error">{formErrors.planFile}</span>}
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => {
+                const file = e.target.files && e.target.files[0];
+                handleFormChange('planFile', file ? file.name : '');
+              }}
+            />
+          </label>
+          <div className="form-group-title">
+            备案材料
+            <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
           </div>
-          <div className="form-grid">
-            {renderUploadField('minutesFile', '会议纪要', true, '请上传 “三重一大” 会议纪要', '若会议纪要涉密，请提供其他证明材料并说明情况')}
-            {renderUploadField('attachFile', '数据局联审意见', true, '请上传 “湘办通” 内数据局联审意见')}
-            {renderUploadField('attachFile2', '财政厅联审意见', true, '请上传 “湘办通” 内财政厅联审意见')}
-            {renderUploadField('leaderApproval', '领导批示', true, '请上传分管省领导批示文件')}
+          <div className="upload-cards">
+            {renderUploadCard('minutesFile', '会议纪要', true, '请上传 “三重一大” 会议纪要。若会议纪要涉密，请提供其他证明材料并说明情况')}
+            {renderUploadCard('attachFile', '数据局联审意见', true, '请上传 “湘办通” 内数据局联审意见')}
+            {renderUploadCard('attachFile2', '财政厅联审意见', true, '请上传 “湘办通” 内财政厅联审意见')}
+            {renderUploadCard('leaderApproval', '领导批示', true, '请上传分管省领导批示文件')}
           </div>
-          <div className="form-grid">
+          <div className="form-group-title">基本信息</div>
+          <div className="form-grid remark-grid">
             <div className="form-item form-item-full">
               <label>情况说明</label>
               <textarea
-                placeholder="请输入"
+                placeholder="选填，请输入"
                 value={formData.remark}
                 onChange={(e) => handleFormChange('remark', e.target.value)}
                 rows={4}

@@ -1362,6 +1362,13 @@
   display: block;
 }
 
+/* 首字段（运营协议）的 Tooltip 改为向下弹出：其上方紧邻弹窗正文顶部，
+   向上弹会被 modal-body 的 overflow 裁剪，向下则不会 */
+.pending-op-agree-filing .field-tip.field-tip--down .field-tip-text {
+  top: calc(100% + 6px);
+  bottom: auto;
+}
+
 /* 主文件/辅助文件分区：突出主文件 */
 .pending-op-agree-filing .primary-file-section {
   position: relative;
@@ -1556,4 +1563,273 @@
 .pending-op-agree-filing .no-permission-hint {
   color: #86909c;
   font-size: 13px;
+}
+
+/* ==================== 表单分组标题 + 卡片式上传（与其他备案页一致） ==================== */
+
+/* 表单分组标题（基本信息 / 备案材料） */
+.pending-op-agree-filing .form-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  color: #1f2329;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.pending-op-agree-filing .form-group-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: #0f63f4;
+}
+
+/* 分组标题旁注释（支持格式说明统一挂在「备案材料」标题旁） */
+.pending-op-agree-filing .form-group-note {
+  margin-left: 4px;
+  color: #8b95a5;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+/* 卡片式上传：本页仅 2 张卡片，横向居中排列（卡片宽度与其他页 3 列网格一致） */
+.pending-op-agree-filing .upload-cards {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 8px 0 6px;
+}
+
+.pending-op-agree-filing .upload-card,
+.pending-op-agree-filing .primary-file-section {
+  flex: 0 0 calc((100% - 24px) / 3);
+  max-width: calc((100% - 24px) / 3);
+}
+
+.pending-op-agree-filing .upload-card,
+.pending-op-agree-filing .primary-file-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 14px 10px 10px;
+  border: 1px dashed #c9d2e0;
+  border-radius: 4px;
+  background: #fff;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .16s ease, background .16s ease;
+}
+
+.pending-op-agree-filing .upload-card:hover {
+  border-color: #3d8bff;
+}
+
+.pending-op-agree-filing .upload-card.has-file,
+.pending-op-agree-filing .primary-file-section.has-file {
+  border-style: solid;
+  border-color: #b9d4ff;
+  background: #f7faff;
+}
+
+.pending-op-agree-filing .upload-card.has-error,
+.pending-op-agree-filing .primary-file-section.has-error {
+  border-color: #d54941;
+}
+
+/* 主文件卡保持浅蓝底 + 蓝色实线（主文件标识） */
+.pending-op-agree-filing .primary-file-section {
+  border-style: solid;
+  border-color: #3d8bff;
+  background: #f5f9ff;
+}
+
+.pending-op-agree-filing .upload-card input[type="file"],
+.pending-op-agree-filing .primary-file-section input[type="file"] {
+  display: none;
+}
+
+.pending-op-agree-filing .upload-card-title {
+  display: inline-flex;
+  align-items: center;
+  color: #3f4652;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.pending-op-agree-filing .upload-card-btn {
+  margin-top: 10px;
+  height: 28px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  color: #1f2329;
+  background: #fff;
+  border: 1px solid #d8dfe9;
+  border-radius: 2px;
+  font-size: 13px;
+  line-height: 1;
+  transition: border-color .16s ease, color .16s ease, background .16s ease;
+}
+
+.pending-op-agree-filing .upload-card:hover .upload-card-btn,
+.pending-op-agree-filing .primary-file-section:hover .upload-card-btn {
+  color: #0f63f4;
+  border-color: #3d8bff;
+  background: #f5f9ff;
+}
+
+.pending-op-agree-filing .upload-card-file {
+  max-width: 100%;
+  margin-top: 8px;
+  overflow: hidden;
+  color: #1f2329;
+  font-size: 12px;
+  line-height: 17px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.pending-op-agree-filing .upload-card-error {
+  margin-top: 4px;
+  color: #d54941;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* 卡片 Tooltip：以整卡为定位基准、水平居中，最右卡气泡不超出弹窗 */
+.pending-op-agree-filing .upload-card .field-tip,
+.pending-op-agree-filing .primary-file-section .field-tip {
+  position: static;
+}
+
+.pending-op-agree-filing .upload-card .field-tip-text,
+.pending-op-agree-filing .primary-file-section .field-tip-text {
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+}
+
+/* ==================== 主文件强化（方向3：主文件更宽更醒目，情况说明下沉到表单末尾） ==================== */
+
+/* 仅 2 张卡：主文件更宽（55%）、附件卡 45%，整体仍居中 */
+.pending-op-agree-filing .primary-file-section {
+  flex: 0 0 calc((100% - 12px) * 0.55);
+  max-width: calc((100% - 12px) * 0.55);
+  padding: 18px 14px 14px;
+}
+
+.pending-op-agree-filing .upload-card {
+  flex: 0 0 calc((100% - 12px) * 0.45);
+  max-width: calc((100% - 12px) * 0.45);
+}
+
+.pending-op-agree-filing .primary-file-section .upload-card-title {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.pending-op-agree-filing .primary-file-section .upload-card-btn {
+  margin-top: 12px;
+  height: 32px;
+}
+
+/* 主文件区提到表单最前、独占整行（不再位于卡片行内） */
+.pending-op-agree-filing .primary-file-section {
+  flex: 0 0 100%;
+  max-width: 100%;
+  margin: 6px 0 14px;
+}
+
+/* ==================== 上传字段对齐表单字段列（2026-10-23） ====================
+   文件字段名与上传按钮同一行：字段名占 label 列（120px，右对齐，与「基本信息」
+   中「运营机构 / 授权期限 / 情况说明」同一竖线），上传按钮占控件列（左边界与
+   基本信息输入框对齐）。上传按钮自身的尺寸、边框、颜色不变。 */
+.pending-op-agree-filing .primary-file-section,
+.pending-op-agree-filing .upload-cards .upload-card {
+  display: grid;
+  /* 119px = 表单 label 列 120px - 卡片自身 1px 边框，使字段名右边界与
+     「基本信息」字段名、上传按钮左边界与输入框左边界严格重合 */
+  grid-template-columns: 119px minmax(0, 1fr);
+  align-items: start;
+  gap: 4px 8px;
+  text-align: left;
+}
+
+/* 会议纪要卡：占满整行，字段名才能落到与上方字段一致的 label 列；去掉虚线框 */
+.pending-op-agree-filing .upload-cards .upload-card {
+  flex: 0 0 100%;
+  max-width: 100%;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+}
+
+/* 主文件区：顶部留出「主文件」标识的高度，字段名与标识不重叠；
+   顶部再留 24px，保证字段名旁 Tooltip 向上弹出时不被正文上边界裁剪 */
+.pending-op-agree-filing .primary-file-section {
+  padding: 26px 0 10px;
+  margin-top: 24px;
+}
+
+/* 字段名：label 列，右对齐 */
+.pending-op-agree-filing .primary-file-section .upload-card-title,
+.pending-op-agree-filing .upload-cards .upload-card .upload-card-title {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 32px;
+  color: #3f4652;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* 上传按钮：控件列，左对齐（按钮样式保持不变，仅去掉卡片居中时的上外边距） */
+.pending-op-agree-filing .primary-file-section .upload-card-btn,
+.pending-op-agree-filing .upload-cards .upload-card .upload-card-btn {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: start;
+  margin-top: 0;
+}
+
+/* 文件名 / 校验提示：跟随按钮所在列，左对齐 */
+.pending-op-agree-filing .primary-file-section .upload-card-file,
+.pending-op-agree-filing .upload-cards .upload-card .upload-card-file,
+.pending-op-agree-filing .primary-file-section .upload-card-error,
+.pending-op-agree-filing .upload-cards .upload-card .upload-card-error {
+  grid-column: 2;
+  margin-top: 4px;
+  max-width: 100%;
+  text-align: left;
+}
+
+/* Tooltip 改为以图标为定位基准（原先以整卡居中定位），宽度恢复常规 */
+.pending-op-agree-filing .primary-file-section .field-tip,
+.pending-op-agree-filing .upload-cards .upload-card .field-tip {
+  position: relative;
+}
+
+.pending-op-agree-filing .primary-file-section .field-tip-text,
+.pending-op-agree-filing .upload-cards .upload-card .field-tip-text {
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+}
+
+/* 情况说明：位置调整到「备案材料」（会议纪要）之后，独立一行、左列标签与上方字段对齐 */
+.pending-op-agree-filing .form-modal .remark-grid {
+  grid-template-columns: 1fr;
+  margin-top: 14px;
 }

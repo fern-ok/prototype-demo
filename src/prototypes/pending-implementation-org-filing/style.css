@@ -623,3 +623,130 @@
     min-width: 900px;
   }
 }
+
+/* ==================== 表单分组标题 + 卡片式上传（与运营机构备案页一致） ==================== */
+
+/* 表单分组标题（基本信息 / 备案材料） */
+.form-group-title {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: #1f2329;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.form-group-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: #0f63f4;
+}
+
+/* 分组标题旁注释（如「备案材料」右侧的支持格式说明） */
+.form-group-note {
+  margin-left: 4px;
+  color: #8b95a5;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+/* 卡片式上传：虚线卡片网格 */
+.upload-cards {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 8px 0 6px;
+}
+
+.upload-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 10px 10px;
+  border: 1px dashed #c9d2e0;
+  border-radius: 4px;
+  background: #fff;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .16s ease, background .16s ease;
+}
+
+.upload-card:hover {
+  border-color: #3d8bff;
+}
+
+.upload-card.has-file {
+  border-style: solid;
+  border-color: #b9d4ff;
+  background: #f7faff;
+}
+
+.upload-card.has-error {
+  border-color: #d54941;
+}
+
+.upload-card input[type="file"] {
+  display: none;
+}
+
+.upload-card-title {
+  display: inline-flex;
+  align-items: center;
+  color: #3f4652;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.upload-card-btn {
+  margin-top: 10px;
+  height: 28px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  color: #1f2329;
+  background: #fff;
+  border: 1px solid #d8dfe9;
+  border-radius: 2px;
+  font-size: 13px;
+  line-height: 1;
+  transition: border-color .16s ease, color .16s ease, background .16s ease;
+}
+
+.upload-card:hover .upload-card-btn {
+  color: #0f63f4;
+  border-color: #3d8bff;
+  background: #f5f9ff;
+}
+
+.upload-card-file {
+  max-width: 100%;
+  margin-top: 8px;
+  overflow: hidden;
+  color: #1f2329;
+  font-size: 12px;
+  line-height: 17px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.upload-card-error {
+  margin-top: 4px;
+  color: #d54941;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* 卡片较窄：Tooltip 气泡收窄并按图标左侧展开，避免溢出弹窗被裁剪 */
+.upload-card .field-tip-text {
+  left: 0;
+  transform: none;
+  width: 180px;
+}

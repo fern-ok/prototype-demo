@@ -62,7 +62,7 @@ const REGION_DEFAULT = '省本级';
 const LEGAL_HANDLER_DEFAULT = '刘洋';
 /** 已完成备案的实施方案（下拉枚举，禁用不可修改） */
 const PLAN_OPTIONS = [
-  '长沙市医疗健康领域公共数据授权运营实施方案（已备案）',
+  '长沙市医疗健康领域公共数据授权运营实施方案',
   '湖南省交通运输领域数据授权运营实施方案（已备案）',
   '岳阳市自然资源领域数据授权运营实施方案（已备案）',
   '湖南省整体授权运营实施方案（已备案）'
@@ -81,7 +81,7 @@ const filingSeed: OperOrgFiling[] = [
     operOrg: '长沙市医疗健康数据运营有限公司',
     creditCode: '91430100MA4C12345X',
     legalHandler: '刘洋',
-    planName: '长沙市医疗健康领域公共数据授权运营实施方案（已备案）',
+    planName: '长沙市医疗健康领域公共数据授权运营实施方案',
     planFileLink: '#',
     createTime: '2026-05-20 10:05:57',
     status: '已备案',
@@ -191,7 +191,7 @@ const filingSeed: OperOrgFiling[] = [
     operOrg: '湖南省全民健康数据运营中心',
     creditCode: '91430000MA4F77889X',
     legalHandler: '陈雨桐',
-    planName: '长沙市医疗健康领域公共数据授权运营实施方案（已备案）',
+    planName: '长沙市医疗健康领域公共数据授权运营实施方案',
     planFileLink: '#',
     createTime: '2026-07-17 09:07:23',
     status: '已备案',

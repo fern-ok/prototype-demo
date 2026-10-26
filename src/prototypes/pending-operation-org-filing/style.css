@@ -162,25 +162,272 @@
   color: #1f2329;
 }
 
+/* 「请上传XXX」提示：位于「选择文件」按钮后方，上传文件后隐藏 */
+.upload-tip-inline {
+  flex: 0 0 auto;
+  max-width: 100%;
+  overflow: hidden;
+  color: #8b95a5;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .upload-hint {
+  grid-column: 2;
   margin-top: 2px;
   color: #8b95a5;
   font-size: 12px;
   line-height: 18px;
 }
 
-.upload-tip {
-  display: flex;
+/* 上传状态标识（待上传 / 已上传）：当前版本不展示，代码保留，后续如需恢复删除 display:none 即可 */
+.upload-status {
+  display: none;
+  grid-column: 2;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   margin-top: 2px;
-  color: #ff8800;
   font-size: 12px;
   line-height: 18px;
 }
 
-.upload-tip-icon {
+.upload-status-done {
+  color: #179b55;
+}
+
+.upload-status-todo {
+  color: #8b95a5;
+}
+
+.upload-status-icon {
   flex: 0 0 auto;
+}
+
+.upload-status-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 7px;
+  border-radius: 2px;
+  color: #6b7280;
+  background: #f2f3f5;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.upload-status-hint {
+  color: #8b95a5;
+}
+
+/* 实施方案：系统自动带出的只读信息项（无下拉图标、无边框，与输入项区分） */
+.plan-info-item {
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 2px;
+  background: #f5f7fa;
+  color: #1f2329;
+  font-size: 13px;
+  line-height: 20px;
+  word-break: break-all;
+}
+
+/* 原实施方案下拉控件：保留代码与数据绑定，当前不展示 */
+.plan-select-hidden {
+  display: none;
+}
+
+/* 表单分组标题（基本信息 / 备案材料） */
+.form-group-title {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: #1f2329;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.form-group-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: #0f63f4;
+}
+
+/* 分组标题旁注释（如「备案材料」右侧的支持格式说明） */
+.form-group-note {
+  margin-left: 4px;
+  color: #8b95a5;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+/* 卡片式上传：3+2 虚线卡片网格（参考「主文件大卡 + 附件小卡」样式，本页材料平级） */
+.upload-cards {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 8px 0 6px;
+}
+
+.upload-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 10px 10px;
+  border: 1px dashed #c9d2e0;
+  border-radius: 4px;
+  background: #fff;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .16s ease, background .16s ease;
+}
+
+.upload-card:hover {
+  border-color: #3d8bff;
+}
+
+.upload-card.has-file {
+  border-style: solid;
+  border-color: #b9d4ff;
+  background: #f7faff;
+}
+
+.upload-card.has-error {
+  border-color: #d54941;
+}
+
+.upload-card input[type="file"] {
+  display: none;
+}
+
+.upload-card-title {
+  display: inline-flex;
+  align-items: center;
+  color: #3f4652;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.upload-card-btn {
+  margin-top: 10px;
+  height: 28px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  color: #1f2329;
+  background: #fff;
+  border: 1px solid #d8dfe9;
+  border-radius: 2px;
+  font-size: 13px;
+  line-height: 1;
+  transition: border-color .16s ease, color .16s ease, background .16s ease;
+}
+
+.upload-card:hover .upload-card-btn {
+  color: #0f63f4;
+  border-color: #3d8bff;
+  background: #f5f9ff;
+}
+
+.upload-card-file {
+  max-width: 100%;
+  margin-top: 8px;
+  overflow: hidden;
+  color: #1f2329;
+  font-size: 12px;
+  line-height: 17px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.upload-card-hint {
+  margin-top: 10px;
+  color: #8b95a5;
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.upload-card-need {
+  display: inline-flex;
+  justify-content: center;
+  max-width: 100%;
+  margin-top: 2px;
+  color: #ff8800;
+  font-size: 12px;
+  line-height: 17px;
+  text-align: left;
+}
+
+.upload-card-need-icon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  margin-right: 4px;
+}
+
+.upload-card-error {
+  margin-top: 4px;
+  color: #d54941;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* 卡片较窄：Tooltip 气泡收窄并按图标左侧展开，避免溢出弹窗被裁剪 */
+.upload-card .field-tip-text {
+  left: 0;
+  transform: none;
+  width: 180px;
+}
+
+/* 顶部材料上传进度：当前版本不展示，代码保留，后续如需恢复删除 display:none 即可 */
+.upload-progress {
+  display: none;
+  margin: 4px 0 14px;
+  padding: 12px 14px;
+  border: 1px solid #edf0f5;
+  border-radius: 4px;
+  background: #fafbfc;
+}
+
+.upload-progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.upload-progress-title {
+  color: #3f4652;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.upload-progress-count {
+  color: #0f63f4;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.upload-progress-track {
+  height: 6px;
+  border-radius: 3px;
+  background: #eef1f6;
+  overflow: hidden;
+}
+
+.upload-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #3d8bff, #0f63f4);
+  transition: width .25s ease;
 }
 
 /* 字段 Tooltip：鼠标悬浮显示补充说明 */

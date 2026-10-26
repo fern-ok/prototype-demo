@@ -476,6 +476,43 @@ const OriginalComponent = () => {
     </div>
   );
 
+  /* 附件上传卡片（卡片式上传，与运营机构备案页一致） */
+  const renderUploadCard = (field: keyof ImplOrgFormData, label: string, required: boolean, tooltip?: string) => {
+    const hasFile = !!formData[field];
+    return (
+      <label
+        className={
+          'upload-card' +
+          (hasFile ? ' has-file' : '') +
+          (formErrors[field] ? ' has-error' : '')
+        }
+      >
+        <span className="upload-card-title">
+          {required && <span className="required">*</span>} {label}
+          {tooltip && (
+            <span className="field-tip">
+              <HelpCircle size={13} className="field-tip-icon" />
+              <span className="field-tip-text">{tooltip}</span>
+            </span>
+          )}
+        </span>
+        <span className="upload-card-btn">{hasFile ? '重新上传' : '点击上传'}</span>
+        {hasFile && (
+          <span className="upload-card-file" title={formData[field]}>{formData[field]}</span>
+        )}
+        {formErrors[field] && <span className="upload-card-error">{formErrors[field]}</span>}
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => {
+            const file = e.target.files && e.target.files[0];
+            handleFormChange(field, file ? file.name : '');
+          }}
+        />
+      </label>
+    );
+  };
+
   const renderFormModal = (title: string, onSubmit: () => void) => (
     <div className="modal-overlay" onClick={closeFormModals}>
       <div className="modal-medium filing-form-modal" onClick={(event) => event.stopPropagation()}>
@@ -485,6 +522,7 @@ const OriginalComponent = () => {
         </div>
         <div className="modal-body filing-form-body">
           <div className="form-grid">
+            <div className="form-group-title">基本信息</div>
             <div className="form-item form-item-full">
               <label><span className="required">*</span> 授权运营类型</label>
               <select
@@ -530,17 +568,23 @@ const OriginalComponent = () => {
               />
               {formErrors.creditCode && <span className="error-text">{formErrors.creditCode}</span>}
             </div>
-            {renderUploadField('meetingMinutes', '会议纪要', true, '请上传 “三重一大” 会议纪要', '若会议纪要涉密，请提供其他证明材料并说明情况', true)}
-            {renderUploadField('qualificationCert', '机构资格证明', true, '请上传实施机构资格证明文件', '企业：上传营业执照\n事业单位：上传事业单位法人证书\n党政机关：上传统一社会信用代码证书')}
-            {renderUploadField('attachment', '其他证明材料', false, '请上传其他证明实施机构身份的材料')}
             <div className="form-item form-item-full">
               <label>情况说明</label>
               <textarea
-                placeholder="请输入"
+                placeholder="选填，请输入"
                 value={formData.remark}
                 onChange={(e) => handleFormChange('remark', e.target.value)}
                 rows={4}
               />
+            </div>
+            <div className="form-group-title">
+              备案材料
+              <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
+            </div>
+            <div className="upload-cards">
+              {renderUploadCard('meetingMinutes', '会议纪要', true, '请上传 “三重一大” 会议纪要。若会议纪要涉密，请提供其他证明材料并说明情况')}
+              {renderUploadCard('qualificationCert', '机构资格证明', true, '企业：上传营业执照\n事业单位：上传事业单位法人证书\n党政机关：上传统一社会信用代码证书')}
+              {renderUploadCard('attachment', '其他证明材料', false)}
             </div>
           </div>
         </div>

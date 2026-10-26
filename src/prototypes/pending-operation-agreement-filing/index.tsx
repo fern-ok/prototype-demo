@@ -477,40 +477,42 @@ const OriginalComponent = () => {
         </div>
         <div className="modal-body form-modal-body">
           <div className="form-section">
-            <label
-              className={
-                'primary-file-section' +
-                (formData.agreementFileName ? ' has-file' : '') +
-                (formErrors.agreement ? ' has-error' : '')
-              }
-            >
-              <div className="primary-file-tag">主文件</div>
-              <span className="upload-card-title">
-                <span className="required">*</span> 运营协议
-                <span className="field-tip">
-                  <HelpCircle size={13} className="field-tip-icon" />
-                  <span className="field-tip-text">请上传经 "三重一大" 决策机制审议通过的运营协议</span>
-                </span>
-              </span>
-              {showUpload ? (
-                <span className="upload-card-btn">{formData.agreementFileName ? '重新上传' : '点击上传'}</span>
-              ) : (
-                <span className="upload-card-file" title={formData.agreementFileName}>{formData.agreementFileName}</span>
-              )}
-              {showUpload && formData.agreementFileName && (
-                <span className="upload-card-file" title={formData.agreementFileName}>{formData.agreementFileName}</span>
-              )}
-              {formErrors.agreement && <span className="upload-card-error">{formErrors.agreement}</span>}
-              {showUpload && (
-                <input type="file" accept="application/pdf" onChange={handleFileChange} />
-              )}
-            </label>
-            <div className="form-group-title">基本信息</div>
+            <div className="form-group-title">
+              备案信息
+              <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
+            </div>
             <div className="form-grid">
               <div className="form-item">
-                <label><span className="required">*</span> 运营机构</label>
+                <label>运营机构</label>
                 <input type="text" value={formData.opOrg} disabled />
               </div>
+              <label
+                className={
+                  'primary-file-section' +
+                  (formData.agreementFileName ? ' has-file' : '') +
+                  (formErrors.agreement ? ' has-error' : '')
+                }
+              >
+                <span className="upload-card-title">
+                  <span className="required">*</span> 运营协议
+                  <span className="field-tip">
+                    <HelpCircle size={13} className="field-tip-icon" />
+                    <span className="field-tip-text">请上传经 "三重一大" 决策机制审议通过的运营协议</span>
+                  </span>
+                </span>
+                {showUpload ? (
+                  <span className="upload-card-btn">{formData.agreementFileName ? '重新上传' : '点击上传'}</span>
+                ) : (
+                  <span className="upload-card-file" title={formData.agreementFileName}>{formData.agreementFileName}</span>
+                )}
+                {showUpload && formData.agreementFileName && (
+                  <span className="upload-card-file" title={formData.agreementFileName}>{formData.agreementFileName}</span>
+                )}
+                {formErrors.agreement && <span className="upload-card-error">{formErrors.agreement}</span>}
+                {showUpload && (
+                  <input type="file" accept="application/pdf" onChange={handleFileChange} />
+                )}
+              </label>
               <div className="form-item">
                 <label><span className="required">*</span> 授权期限</label>
                 <div className="date-range-wrapper">
@@ -562,6 +564,7 @@ const OriginalComponent = () => {
                 </label>
               )}
             </div>
+            <div className="form-group-title">情况说明</div>
             <div className="form-grid remark-grid">
               <div className="form-item remark-item">
                 <label>情况说明</label>
@@ -946,7 +949,7 @@ const OriginalComponent = () => {
   const hasPermission = isImplRole || isDeptRole;
 
   return (
-    <div className="pending-op-agree-filing">
+    <div>
       <Layout
         activeMenu="pending-operation-agreement-filing"
         breadcrumb="运营协议备案"
@@ -954,26 +957,32 @@ const OriginalComponent = () => {
         onRoleChange={setSelectedRole}
         title="运营协议备案"
       >
-        {hasPermission ? (
-          <>
-            {renderFilterSection()}
-            {renderTable()}
-          </>
-        ) : (
-          <div className="no-permission">
-            <div className="no-permission-icon">🔒</div>
-            <div className="no-permission-text">当前角色暂无运营协议备案功能权限</div>
-            <div className="no-permission-hint">请切换至「实施机构」或「数据管理部门」角色查看</div>
-          </div>
-        )}
+        {/* 页面样式作用域类只包在本页内容上：
+            SPA 局部切换时宿主页外层容器会保留，若把 .pending-op-agree-filing 放在最外层，
+            其前缀样式（.form-grid / .upload-cards / .upload-card 等）会串到切换后的其他页面上，
+            导致其他备案页「备案材料」卡片错乱并出现横向滚动条。 */}
+        <div className="pending-op-agree-filing">
+          {hasPermission ? (
+            <>
+              {renderFilterSection()}
+              {renderTable()}
+            </>
+          ) : (
+            <div className="no-permission">
+              <div className="no-permission-icon">🔒</div>
+              <div className="no-permission-text">当前角色暂无运营协议备案功能权限</div>
+              <div className="no-permission-hint">请切换至「实施机构」或「数据管理部门」角色查看</div>
+            </div>
+          )}
+        </div>
       </Layout>
 
-      {showAddModal && renderFormModal('运营协议备案', true, true)}
-      {showEditModal && renderFormModal('运营协议备案编辑', true, false)}
-      {showChangeModal && renderFormModal('运营协议备案变更', true, false)}
-      {showViewModal && renderViewModal()}
-      {showEvidenceModal && renderEvidenceModal()}
-      {showConfirmModal && renderConfirmModal()}
+      {showAddModal && <div className="pending-op-agree-filing">{renderFormModal('运营协议备案', true, true)}</div>}
+      {showEditModal && <div className="pending-op-agree-filing">{renderFormModal('运营协议备案编辑', true, false)}</div>}
+      {showChangeModal && <div className="pending-op-agree-filing">{renderFormModal('运营协议备案变更', true, false)}</div>}
+      {showViewModal && <div className="pending-op-agree-filing">{renderViewModal()}</div>}
+      {showEvidenceModal && <div className="pending-op-agree-filing">{renderEvidenceModal()}</div>}
+      {showConfirmModal && <div className="pending-op-agree-filing">{renderConfirmModal()}</div>}
     </div>
   );
 };

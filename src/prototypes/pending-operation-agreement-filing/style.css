@@ -1828,8 +1828,34 @@
   width: 240px;
 }
 
-/* 情况说明：位置调整到「备案材料」（会议纪要）之后，独立一行、左列标签与上方字段对齐 */
+/* 情况说明：位置调整到「备案材料」（会议纪要）之后，独立一行、左列标签与上方字段对齐
+   （已有独立「情况说明」分组标题，故不再需要额外上外边距） */
 .pending-op-agree-filing .form-modal .remark-grid {
   grid-template-columns: 1fr;
-  margin-top: 14px;
+  margin-top: 0;
+}
+
+/* ==================== 运营协议字段（2026-10-26） ====================
+   已并入「备案信息」组，位置在「运营机构」与「授权期限」之间；
+   去掉「主文件」角标、外边框与底色，按普通表单行排版：
+   字段名占 label 列（120px）右对齐，「点击上传」按钮占控件列左对齐（与输入框左边界一致）。 */
+.pending-op-agree-filing .form-modal .primary-file-section {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  align-items: start;
+  width: 100%;
+  max-width: 100%;
+  min-height: 35px;
+  flex: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+/* 校验失败 / 已选文件时也不再出现卡片式外框与底色，仅保留字段下方的提示文字 */
+.pending-op-agree-filing .form-modal .primary-file-section.has-error,
+.pending-op-agree-filing .form-modal .primary-file-section.has-file {
+  border: none;
+  background: transparent;
 }

@@ -522,7 +522,7 @@ const OriginalComponent = () => {
         </div>
         <div className="modal-body filing-form-body">
           <div className="form-grid">
-            <div className="form-group-title">基本信息</div>
+            <div className="form-group-title">备案信息</div>
             <div className="form-item form-item-full">
               <label><span className="required">*</span> 授权运营类型</label>
               <select
@@ -568,15 +568,6 @@ const OriginalComponent = () => {
               />
               {formErrors.creditCode && <span className="error-text">{formErrors.creditCode}</span>}
             </div>
-            <div className="form-item form-item-full">
-              <label>情况说明</label>
-              <textarea
-                placeholder="选填，请输入"
-                value={formData.remark}
-                onChange={(e) => handleFormChange('remark', e.target.value)}
-                rows={4}
-              />
-            </div>
             <div className="form-group-title">
               备案材料
               <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
@@ -585,6 +576,16 @@ const OriginalComponent = () => {
               {renderUploadCard('meetingMinutes', '会议纪要', true, '请上传 “三重一大” 会议纪要。若会议纪要涉密，请提供其他证明材料并说明情况')}
               {renderUploadCard('qualificationCert', '机构资格证明', true, '企业：上传营业执照\n事业单位：上传事业单位法人证书\n党政机关：上传统一社会信用代码证书')}
               {renderUploadCard('attachment', '其他证明材料', false)}
+            </div>
+            <div className="form-group-title">情况说明</div>
+            <div className="form-item form-item-full">
+              <label>情况说明</label>
+              <textarea
+                placeholder="选填，请输入"
+                value={formData.remark}
+                onChange={(e) => handleFormChange('remark', e.target.value)}
+                rows={4}
+              />
             </div>
           </div>
         </div>

@@ -992,3 +992,146 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 14px;
 }
+
+/* 去掉「主文件」角标后顶部内边距与其他上传卡对齐（原 18px 用于容纳角标）；
+   同时去掉浅蓝底色（改为透明）、去掉外边框，标题去掉加粗 */
+.filing-form-modal .primary-file-section {
+  padding-top: 14px;
+  background: transparent;
+  border: none;
+}
+
+/* 校验失败时仍显示红色边框 */
+.filing-form-modal .primary-file-section.has-error {
+  border: 1px solid #d54941;
+}
+
+.filing-form-modal .primary-file-section .upload-card-title {
+  font-weight: 400;
+}
+
+/* ==================== 实施方案（主文件区）改为卡片式，与「备案材料」上传卡样式完全一致 ==================== */
+.filing-form-modal .primary-file-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  /* 与 .upload-cards 3 列网格的单元格等宽，使卡片尺寸与会议纪要等卡片一致 */
+  width: calc((100% - 24px) / 3);
+  max-width: calc((100% - 24px) / 3);
+  margin: 6px 0 10px;
+  padding: 14px 10px 10px;
+  background: #fff;
+  border: 1px dashed #c9d2e0;
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .16s ease, background .16s ease;
+}
+
+.filing-form-modal .primary-file-section:hover {
+  border-color: #3d8bff;
+}
+
+/* 已选文件 / 校验失败状态与 .upload-card 保持一致 */
+.filing-form-modal .primary-file-section.has-file {
+  border-style: solid;
+  border-color: #b9d4ff;
+  background: #f7faff;
+}
+
+.filing-form-modal .primary-file-section.has-error {
+  border: 1px dashed #d54941;
+}
+
+/* 标题：居中、常规字重（与其他卡片标题一致，但本页不加粗） */
+.filing-form-modal .primary-file-section .upload-card-title {
+  flex: 0 0 auto;
+  justify-content: center;
+  text-align: center;
+  color: #3f4652;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+}
+
+/* 上传按钮：居中、与卡片按钮同尺寸 */
+.filing-form-modal .primary-file-section .upload-card-btn {
+  margin-top: 10px;
+  height: 28px;
+  width: auto;
+  justify-self: auto;
+}
+
+/* 文件名 / 错误提示：居中 */
+.filing-form-modal .primary-file-section .upload-card-file,
+.filing-form-modal .primary-file-section .upload-card-error {
+  flex: 0 0 auto;
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 100%;
+  text-align: center;
+}
+
+/* ==================== 实施方案：由卡片改为平铺行式（与「运营协议」一致，2026-10-26） ====================
+   结构：.form-grid.plan-file-grid 内一个 .primary-file-section，按普通表单行排版
+   字段名占 label 列（120px）右对齐，「点击上传」按钮占控件列左对齐；无边框、无底色 */
+.filing-form-modal .plan-file-grid {
+  grid-template-columns: 1fr;
+  gap: 0;
+  /* 上下各留 5px 空隙，避免「实施方案」行与上下分组标题贴得过紧 */
+  margin: 0;
+  padding: 5px 0;
+}
+
+.filing-form-modal .primary-file-section {
+  position: relative;
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-height: 32px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* 悬停 / 已选文件 / 校验失败：均不再出现卡片式边框与底色 */
+.filing-form-modal .primary-file-section:hover,
+.filing-form-modal .primary-file-section.has-file,
+.filing-form-modal .primary-file-section.has-error {
+  border: none;
+  background: transparent;
+}
+
+.filing-form-modal .primary-file-section .upload-card-title {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  text-align: right;
+  min-height: 32px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+}
+
+.filing-form-modal .primary-file-section .upload-card-btn {
+  justify-self: start;
+  width: auto;
+  margin-top: 0;
+  height: 32px;
+}
+
+.filing-form-modal .primary-file-section .upload-card-file,
+.filing-form-modal .primary-file-section .upload-card-error {
+  grid-column: 2;
+  flex: 0 0 auto;
+  margin: 4px 0 0;
+  max-width: 100%;
+  text-align: left;
+}

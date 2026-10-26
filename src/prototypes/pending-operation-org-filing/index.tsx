@@ -556,7 +556,7 @@ const OriginalComponent = () => {
         <div className="modal-body filing-form-body">
           {renderUploadProgress()}
           <div className="form-grid">
-            <div className="form-group-title">基本信息</div>
+            <div className="form-group-title">备案信息</div>
             <div className="form-item form-item-full">
               <label>实施方案</label>
               {/* 实施方案由系统自动带出：作为只读信息项展示，与输入项区分（下拉控件保留但不展示） */}
@@ -593,15 +593,6 @@ const OriginalComponent = () => {
               />
               {formErrors.creditCode && <span className="error-text">{formErrors.creditCode}</span>}
             </div>
-            <div className="form-item form-item-full">
-              <label>情况说明</label>
-              <textarea
-                placeholder="选填，请输入"
-                value={formData.remark}
-                onChange={(e) => handleFormChange('remark', e.target.value)}
-                rows={4}
-              />
-            </div>
             <div className="form-group-title">
               备案材料
               <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
@@ -612,6 +603,16 @@ const OriginalComponent = () => {
               {renderUploadCard('publicityCert', '公示证明', true, '请上传运营机构公示完成证明')}
               {renderUploadCard('legalCert', '机构资格证明', true, '请上传运营机构资格证明', '企业：上传营业执照\n事业单位：上传事业单位法人证书\n党政机关：上传统一社会信用代码证书')}
               {renderUploadCard('attachment', '其他证明材料', false, '请上传其他证明运营机构身份的材料')}
+            </div>
+            <div className="form-group-title">情况说明</div>
+            <div className="form-item form-item-full">
+              <label>情况说明</label>
+              <textarea
+                placeholder="选填，请输入"
+                value={formData.remark}
+                onChange={(e) => handleFormChange('remark', e.target.value)}
+                rows={4}
+              />
             </div>
           </div>
         </div>

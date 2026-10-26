@@ -573,35 +573,40 @@ const OriginalComponent = () => {
           <button className="modal-close" onClick={closeFormModals}>×</button>
         </div>
         <div className="modal-body filing-form-body">
-          <label
-            className={
-              'primary-file-section' +
-              (formData.planFile ? ' has-file' : '') +
-              (formErrors.planFile ? ' has-error' : '')
-            }
-          >
-            <div className="primary-file-tag">主文件</div>
-            <span className="upload-card-title">
-              <span className="required">*</span> 实施方案
-              <span className="field-tip">
-                <HelpCircle size={13} className="field-tip-icon" />
-                <span className="field-tip-text">请上传经 “三重一大” 决策机制审议通过的实施方案</span>
+          <div className="form-group-title">
+            备案信息
+            <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
+          </div>
+          <div className="form-grid plan-file-grid">
+            <label
+              className={
+                'primary-file-section' +
+                (formData.planFile ? ' has-file' : '') +
+                (formErrors.planFile ? ' has-error' : '')
+              }
+            >
+              <span className="upload-card-title">
+                <span className="required">*</span> 实施方案
+                <span className="field-tip">
+                  <HelpCircle size={13} className="field-tip-icon" />
+                  <span className="field-tip-text">请上传经 “三重一大” 决策机制审议通过的实施方案</span>
+                </span>
               </span>
-            </span>
-            <span className="upload-card-btn">{formData.planFile ? '重新上传' : '点击上传'}</span>
-            {formData.planFile && (
-              <span className="upload-card-file" title={formData.planFile}>{formData.planFile}</span>
-            )}
-            {formErrors.planFile && <span className="upload-card-error">{formErrors.planFile}</span>}
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => {
-                const file = e.target.files && e.target.files[0];
-                handleFormChange('planFile', file ? file.name : '');
-              }}
-            />
-          </label>
+              <span className="upload-card-btn">{formData.planFile ? '重新上传' : '点击上传'}</span>
+              {formData.planFile && (
+                <span className="upload-card-file" title={formData.planFile}>{formData.planFile}</span>
+              )}
+              {formErrors.planFile && <span className="upload-card-error">{formErrors.planFile}</span>}
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => {
+                  const file = e.target.files && e.target.files[0];
+                  handleFormChange('planFile', file ? file.name : '');
+                }}
+              />
+            </label>
+          </div>
           <div className="form-group-title">
             备案材料
             <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
@@ -612,7 +617,7 @@ const OriginalComponent = () => {
             {renderUploadCard('attachFile2', '财政厅联审意见', true, '请上传 “湘办通” 内财政厅联审意见')}
             {renderUploadCard('leaderApproval', '领导批示', true, '请上传分管省领导批示文件')}
           </div>
-          <div className="form-group-title">基本信息</div>
+          <div className="form-group-title">情况说明</div>
           <div className="form-grid remark-grid">
             <div className="form-item form-item-full">
               <label>情况说明</label>

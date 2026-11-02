@@ -8,6 +8,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { AlertCircle, HelpCircle, Paperclip, ShieldCheck } from 'lucide-react';
 import Layout from '../../common/Layout';
 import PasswordGuard from '../../common/PasswordGuard';
 import specContent from './spec.md?raw';
@@ -25,6 +26,8 @@ interface PlanFiling {
   minutesFile: string;
   attachFile: string;
   attachFile2: string;
+  leaderFile?: string;
+  otherFile?: string;
   legalHandler: string;
   createTime: string;
   status: string;
@@ -53,6 +56,8 @@ interface PlanFormData {
   minutesFile: string;
   attachFile: string;
   attachFile2: string;
+  leaderFile: string;
+  otherFile: string;
   remark: string;
 }
 
@@ -74,6 +79,8 @@ const planSeed: PlanFiling[] = [
     minutesFile: '长沙市医疗健康领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-医疗健康.pdf',
     attachFile2: '财政厅联审意见-医疗健康.pdf',
+    leaderFile: '分管领导批示-医疗健康.pdf',
+    otherFile: '其他证明材料-医疗健康.pdf',
     legalHandler: '张文博',
     createTime: '2026-05-18 10:05:57',
     status: '已备案',
@@ -93,6 +100,8 @@ const planSeed: PlanFiling[] = [
     minutesFile: '交通运输领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-交通运输.pdf',
     attachFile2: '财政厅联审意见-交通运输.pdf',
+    leaderFile: '分管领导批示-交通运输.pdf',
+    otherFile: '其他证明材料-交通运输.pdf',
     legalHandler: '李建国',
     createTime: '2026-06-01 09:30:22',
     status: '待省级确认',
@@ -112,6 +121,8 @@ const planSeed: PlanFiling[] = [
     minutesFile: '教育领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-教育.pdf',
     attachFile2: '财政厅联审意见-教育.pdf',
+    leaderFile: '分管领导批示-教育.pdf',
+    otherFile: '其他证明材料-教育.pdf',
     legalHandler: '王思远',
     createTime: '2026-06-05 14:20:15',
     status: '省级退回',
@@ -132,6 +143,8 @@ const planSeed: PlanFiling[] = [
     minutesFile: '文旅领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-文旅.pdf',
     attachFile2: '财政厅联审意见-文旅.pdf',
+    leaderFile: '分管领导批示-文旅.pdf',
+    otherFile: '其他证明材料-文旅.pdf',
     legalHandler: '孙佳怡',
     createTime: '2026-06-10 11:15:28',
     status: '待提交',
@@ -151,6 +164,8 @@ const planSeed: PlanFiling[] = [
     minutesFile: '自然资源领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-自然资源.pdf',
     attachFile2: '财政厅联审意见-自然资源.pdf',
+    leaderFile: '分管领导批示-自然资源.pdf',
+    otherFile: '其他证明材料-自然资源.pdf',
     legalHandler: '赵敏',
     createTime: '2026-06-15 13:50:44',
     status: '已备案',
@@ -170,6 +185,8 @@ const planSeed: PlanFiling[] = [
     minutesFile: '株洲交通领域实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-株洲交通.pdf',
     attachFile2: '财政厅联审意见-株洲交通.pdf',
+    leaderFile: '分管领导批示-株洲交通.pdf',
+    otherFile: '其他证明材料-株洲交通.pdf',
     legalHandler: '周文涛',
     createTime: '2026-07-02 16:41:41',
     status: '待省级确认',
@@ -189,6 +206,8 @@ const planSeed: PlanFiling[] = [
     minutesFile: '全民健康平台实施方案审议会议纪要.pdf',
     attachFile: '湘办通联审通过证明-全民健康.pdf',
     attachFile2: '财政厅联审意见-全民健康.pdf',
+    leaderFile: '分管领导批示-全民健康.pdf',
+    otherFile: '其他证明材料-全民健康.pdf',
     legalHandler: '陈雨桐',
     createTime: '2026-07-16 09:07:23',
     status: '已备案',
@@ -231,6 +250,8 @@ const createEmptyForm = (): PlanFormData => ({
   minutesFile: '',
   attachFile: '',
   attachFile2: '',
+  leaderFile: '',
+  otherFile: '',
   remark: ''
 });
 
@@ -378,6 +399,8 @@ const OriginalComponent = () => {
         minutesFile: record.minutesFile,
         attachFile: record.attachFile,
         attachFile2: record.attachFile2,
+        leaderFile: record.leaderFile || '',
+        otherFile: record.otherFile || '',
         remark: record.remark || ''
       });
     }
@@ -403,8 +426,9 @@ const OriginalComponent = () => {
     const errors: Record<string, string> = {};
     if (!formData.planFile.trim()) errors.planFile = '请上传实施方案';
     if (!formData.minutesFile.trim()) errors.minutesFile = '请上传会议纪要';
-    if (!formData.attachFile.trim()) errors.attachFile = '请上传 “湘办通” 内数据局联审意见';
-    if (!formData.attachFile2.trim()) errors.attachFile2 = '请上传 “湘办通” 内财政厅联审意见';
+    if (!formData.attachFile.trim()) errors.attachFile = '请上传数据局联审意见';
+    if (!formData.attachFile2.trim()) errors.attachFile2 = '请上传财政厅联审意见';
+    if (!formData.leaderFile.trim()) errors.leaderFile = '请上传分管领导批示';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -422,6 +446,8 @@ const OriginalComponent = () => {
       minutesFile: formData.minutesFile,
       attachFile: formData.attachFile,
       attachFile2: formData.attachFile2,
+      leaderFile: formData.leaderFile,
+      otherFile: formData.otherFile,
       legalHandler: LEGAL_HANDLER_DEFAULT,
       createTime: time,
       status: '待提交',
@@ -447,6 +473,8 @@ const OriginalComponent = () => {
           minutesFile: formData.minutesFile,
           attachFile: formData.attachFile,
           attachFile2: formData.attachFile2,
+          leaderFile: formData.leaderFile,
+          otherFile: formData.otherFile,
           remark: formData.remark.trim() || undefined,
           status: isReject ? '待省级确认' : r.status,
           filingTime: isReject ? '' : r.filingTime
@@ -466,6 +494,8 @@ const OriginalComponent = () => {
           minutesFile: formData.minutesFile,
           attachFile: formData.attachFile,
           attachFile2: formData.attachFile2,
+          leaderFile: formData.leaderFile,
+          otherFile: formData.otherFile,
           remark: formData.remark.trim() || undefined,
           status: '待省级确认',
           filingTime: ''
@@ -481,28 +511,37 @@ const OriginalComponent = () => {
     alert('备案已提交，流转至：待省级确认');
   };
 
-  /* 文件上传控件 */
-  const renderUploadField = (field: keyof PlanFormData, label: string, required: boolean, hint: string) => (
-    <div className="form-item form-item-full upload-item">
-      <label>{required && <span className="required">*</span>} {label}</label>
-      <div className="upload-control">
-        <label className="upload-btn">
-          选择文件
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => {
-              const file = e.target.files && e.target.files[0];
-              handleFormChange(field, file ? file.name : '');
-            }}
-          />
-        </label>
-        <span className={'upload-name ' + (formData[field] ? 'has-file' : '')}>
-          {formData[field] || hint}
-        </span>
-      </div>
-      {formErrors[field] && <span className="error-text">{formErrors[field]}</span>}
-    </div>
+  /* 证明材料上传卡片 */
+  const renderUploadCard = (field: keyof PlanFormData, label: string, required: boolean, tip?: string) => (
+    <label
+      className={
+        'upload-card' +
+        (formData[field] ? ' has-file' : '') +
+        (formErrors[field] ? ' has-error' : '')
+      }
+    >
+      <span className="upload-card-title">
+        {required && <span className="required">*</span>}
+        {label}
+        {tip && (
+          <span className="field-tip">
+            <HelpCircle size={13} className="field-tip-icon" />
+            <span className="field-tip-text">{tip}</span>
+          </span>
+        )}
+      </span>
+      <span className="upload-card-btn">{formData[field] ? '重新上传' : '点击上传'}</span>
+      {formData[field] && <span className="upload-card-file" title={formData[field]}>{formData[field]}</span>}
+      {formErrors[field] && <span className="upload-card-error">{formErrors[field]}</span>}
+      <input
+        type="file"
+        accept="application/pdf"
+        onChange={(e) => {
+          const file = e.target.files && e.target.files[0];
+          handleFormChange(field, file ? file.name : '');
+        }}
+      />
+    </label>
   );
 
   const renderFormModal = (title: string, onSubmit: () => void) => (
@@ -513,15 +552,62 @@ const OriginalComponent = () => {
           <button className="modal-close" onClick={closeFormModals}>×</button>
         </div>
         <div className="modal-body filing-form-body">
-          <div className="form-grid">
-            {renderUploadField('minutesFile', '会议纪要', true, '请上传 “三重一大” 会议纪要')}
-            {renderUploadField('planFile', '实施方案', true, '请上传经 “三重一大” 决策机制审议通过的实施方案')}
-            {renderUploadField('attachFile', '附件1', true, '请上传 “湘办通” 内数据局联审意见')}
-            {renderUploadField('attachFile2', '附件2', true, '请上传 “湘办通” 内财政厅联审意见')}
-            <div className="form-item form-item-full">
+          <div className="form-group-title">
+            备案信息
+            <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
+          </div>
+          <div className="form-grid plan-file-grid">
+            <label
+              className={
+                'primary-file-section' +
+                (formData.planFile ? ' has-file' : '') +
+                (formErrors.planFile ? ' has-error' : '')
+              }
+            >
+              <span className="upload-card-title">
+                <span className="required">*</span>
+                实施方案
+                <span className="field-tip">
+                  <HelpCircle size={13} className="field-tip-icon" />
+                  <span className="field-tip-text">请上传经 “三重一大” 决策机制审议通过的实施方案</span>
+                </span>
+              </span>
+              <span className="upload-card-btn">{formData.planFile ? '重新上传' : '点击上传'}</span>
+              {formData.planFile && <span className="upload-card-file" title={formData.planFile}>{formData.planFile}</span>}
+              {formErrors.planFile && <span className="upload-card-error">{formErrors.planFile}</span>}
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => {
+                  const file = e.target.files && e.target.files[0];
+                  handleFormChange('planFile', file ? file.name : '');
+                }}
+              />
+            </label>
+          </div>
+          <div className="form-group-title">
+            证明材料
+            <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
+          </div>
+          <div className="upload-cards">
+            {renderUploadCard('minutesFile', '会议纪要', true, '请上传 “三重一大” 会议纪要。若会议纪要涉密，请提供其他证明材料并说明情况')}
+            {renderUploadCard('attachFile', '数据局联审意见', true, '请上传 “湘办通” 内数据局联审意见')}
+            {renderUploadCard('attachFile2', '财政厅联审意见', true, '请上传 “湘办通” 内财政厅联审意见')}
+            {renderUploadCard('leaderFile', '分管领导批示', true, '请上传分管省领导批示文件')}
+            {renderUploadCard('otherFile', '其他证明材料', false)}
+          </div>
+          <div className="form-group-title">
+            情况说明
+            <span className="form-group-note form-group-note-warn">
+              <AlertCircle size={14} strokeWidth={2} className="form-group-note-icon" />
+              若会议纪要涉密，请填写情况说明
+            </span>
+          </div>
+          <div className="form-grid remark-grid">
+            <div className="form-item form-item-full remark-item">
               <label>情况说明</label>
               <textarea
-                placeholder="请输入"
+                placeholder="选填，请输入"
                 value={formData.remark}
                 onChange={(e) => handleFormChange('remark', e.target.value)}
                 rows={4}
@@ -565,20 +651,45 @@ const OriginalComponent = () => {
             <div className={'tab-item ' + (viewTab === 'audit' ? 'active' : '')} onClick={() => setViewTab('audit')}>审核信息</div>
           </div>
           {viewTab === 'apply' && (
-            <div className="view-info-table">
-              <div className="info-cell"><span className="info-label">所属地域</span><span className="info-value">{currentRecord.region}</span></div>
-              <div className="info-cell"><span className="info-label">授权运营类型</span><span className="info-value">{currentRecord.authType}</span></div>
-              <div className="info-cell"><span className="info-label">领域名称</span><span className="info-value">{currentRecord.domain}</span></div>
-              <div className="info-cell"><span className="info-label">实施机构</span><span className="info-value">{currentRecord.implOrg}</span></div>
-              <div className="info-cell"><span className="info-label">附件1</span><span className="info-value">{renderFileLink(currentRecord.attachFile)}</span></div>
-              <div className="info-cell"><span className="info-label">附件2</span><span className="info-value">{renderFileLink(currentRecord.attachFile2)}</span></div>
-              <div className="info-cell"><span className="info-label">实施方案</span><span className="info-value">{renderFileLink(currentRecord.planFile)}</span></div>
-              <div className="info-cell"><span className="info-label">会议纪要</span><span className="info-value">{renderFileLink(currentRecord.minutesFile)}</span></div>
-              <div className="info-cell"><span className="info-label">创建时间</span><span className="info-value">{currentRecord.createTime}</span></div>
-              <div className="info-cell"><span className="info-label">法人经办人姓名</span><span className="info-value">{currentRecord.legalHandler}</span></div>
-              <div className="info-cell"><span className="info-label">备案状态</span><span className="info-value"><span className={'status-tag ' + getStatusClass(currentRecord.status)}>{currentRecord.status}</span></span></div>
-              <div className="info-cell full-width"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.status === '已备案' && currentRecord.filingTime ? currentRecord.filingTime : '-'}</span></div>
-              <div className="info-cell full-width"><span className="info-label">情况说明</span><span className="info-value">{currentRecord.remark || '-'}</span></div>
+            <div className="view-detail">
+              {/* 备案信息 */}
+              <div className="view-group">
+                <div className="view-group-title">备案信息</div>
+                <div className="view-info-table">
+                  <div className="info-cell"><span className="info-label">所属地域</span><span className="info-value">{currentRecord.region}</span></div>
+                  <div className="info-cell"><span className="info-label">授权运营类型</span><span className="info-value">{currentRecord.authType}</span></div>
+                  <div className="info-cell"><span className="info-label">领域名称</span><span className="info-value">{currentRecord.domain}</span></div>
+                  <div className="info-cell"><span className="info-label">实施机构</span><span className="info-value">{currentRecord.implOrg}</span></div>
+                  <div className="info-cell"><span className="info-label">实施方案</span><span className="info-value">{renderFileLink(currentRecord.planFile)}</span></div>
+                  <div className="info-cell"><span className="info-label">法人经办人姓名</span><span className="info-value">{currentRecord.legalHandler}</span></div>
+                  <div className="info-cell"><span className="info-label">创建时间</span><span className="info-value">{currentRecord.createTime}</span></div>
+                  <div className="info-cell"><span className="info-label">备案状态</span><span className="info-value"><span className={'status-tag ' + getStatusClass(currentRecord.status)}>{currentRecord.status}</span></span></div>
+                  <div className="info-cell full-width"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.status === '已备案' && currentRecord.filingTime ? currentRecord.filingTime : '-'}</span></div>
+                </div>
+              </div>
+
+              {/* 证明材料 */}
+              <div className="view-group">
+                <div className="view-group-title">证明材料</div>
+                <div className="view-info-table">
+                  <div className="info-cell"><span className="info-label">会议纪要</span><span className="info-value"><span className="file-line"><span className="file-chip"><Paperclip size={12} />{currentRecord.minutesFile || '-'}</span><ShieldCheck size={14} className="file-shield" /></span></span></div>
+                  <div className="info-cell"><span className="info-label">数据局联审意见</span><span className="info-value"><span className="file-line"><span className="file-chip"><Paperclip size={12} />{currentRecord.attachFile || '-'}</span><ShieldCheck size={14} className="file-shield" /></span></span></div>
+                  <div className="info-cell"><span className="info-label">财政厅联审意见</span><span className="info-value"><span className="file-line"><span className="file-chip"><Paperclip size={12} />{currentRecord.attachFile2 || '-'}</span><ShieldCheck size={14} className="file-shield" /></span></span></div>
+                  <div className="info-cell"><span className="info-label">分管领导批示</span><span className="info-value"><span className="file-line"><span className="file-chip"><Paperclip size={12} />{currentRecord.leaderFile || '-'}</span><ShieldCheck size={14} className="file-shield" /></span></span></div>
+                  <div className="info-cell full-width"><span className="info-label">其他证明材料</span><span className="info-value"><span className="file-line"><span className="file-chip"><Paperclip size={12} />{currentRecord.otherFile || '-'}</span><ShieldCheck size={14} className="file-shield" /></span></span></div>
+                </div>
+              </div>
+
+              {/* 情况说明 */}
+              <div className="view-group">
+                <div className="view-group-title">情况说明</div>
+                <div className="view-info-table">
+                  <div className="info-cell full-width">
+                    <span className="info-label">情况说明</span>
+                    <span className="info-value">{currentRecord.remark || '-'}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
           {viewTab === 'audit' && (
@@ -751,7 +862,7 @@ const OriginalComponent = () => {
         </div>
       </Layout>
 
-      {showAddModal && renderFormModal('新增实施方案备案', handleSubmitAdd)}
+      {showAddModal && renderFormModal('实施方案备案', handleSubmitAdd)}
       {showEditModal && renderFormModal('编辑实施方案备案', handleSubmitEdit)}
       {showChangeModal && renderFormModal('变更实施方案备案', handleSubmitChange)}
       {showViewModal && renderViewModal()}

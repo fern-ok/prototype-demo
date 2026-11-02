@@ -8,6 +8,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { AlertCircle, HelpCircle, ShieldCheck, Paperclip } from 'lucide-react';
 import Layout from '../../common/Layout';
 import PasswordGuard from '../../common/PasswordGuard';
 import specContent from './spec.md?raw';
@@ -28,6 +29,8 @@ interface ImplOrgFiling {
   filingTime: string;
   remark?: string;
   attachment?: string;
+  minutesFile?: string;
+  qualFile?: string;
   evidenceHash: string;
   blockchainId: string;
   evidenceTime: string;
@@ -50,6 +53,8 @@ interface ImplOrgFormData {
   domain: string;
   implOrg: string;
   creditCode: string;
+  minutesFile: string;
+  qualFile: string;
   attachment: string;
   remark: string;
 }
@@ -67,6 +72,9 @@ const filingSeed: ImplOrgFiling[] = [
     authType: '分领域授权运营',
     domain: '医疗健康',
     implOrg: '长沙市卫生健康委员会实施机构',
+    minutesFile: '三重一大会议纪要.pdf',
+    qualFile: '机构资格证明.pdf',
+    attachment: '其他证明材料.pdf',
     creditCode: '11430100MB1A23456X',
     legalHandler: '张文博',
     createTime: '2026-05-18 10:05:57',
@@ -83,6 +91,9 @@ const filingSeed: ImplOrgFiling[] = [
     authType: '分领域授权运营',
     domain: '交通运输',
     implOrg: '湖南省交通运输厅数据运营中心',
+    minutesFile: '三重一大会议纪要.pdf',
+    qualFile: '机构资格证明.pdf',
+    attachment: '其他证明材料.pdf',
     creditCode: '12430000MB1B87654X',
     legalHandler: '李建国',
     createTime: '2026-06-01 09:30:22',
@@ -99,6 +110,9 @@ const filingSeed: ImplOrgFiling[] = [
     authType: '分领域授权运营',
     domain: '教育',
     implOrg: '长沙市岳麓区智慧教育数据实施发展有限公司',
+    minutesFile: '三重一大会议纪要.pdf',
+    qualFile: '机构资格证明.pdf',
+    attachment: '其他证明材料.pdf',
     creditCode: '91430104MA4C56789X',
     legalHandler: '王思远',
     createTime: '2026-06-05 14:20:15',
@@ -116,6 +130,9 @@ const filingSeed: ImplOrgFiling[] = [
     authType: '分领域授权运营',
     domain: '自然资源',
     implOrg: '岳阳市自然资源和规划局数据中心',
+    minutesFile: '三重一大会议纪要.pdf',
+    qualFile: '机构资格证明.pdf',
+    attachment: '其他证明材料.pdf',
     creditCode: '12430600MB1C11223X',
     legalHandler: '赵敏',
     createTime: '2026-06-15 13:50:44',
@@ -132,6 +149,9 @@ const filingSeed: ImplOrgFiling[] = [
     authType: '整体授权运营',
     domain: '文化旅游',
     implOrg: '湖南文旅大数据实施运营有限公司',
+    minutesFile: '三重一大会议纪要.pdf',
+    qualFile: '机构资格证明.pdf',
+    attachment: '其他证明材料.pdf',
     creditCode: '91430000MA4D99887X',
     legalHandler: '孙佳怡',
     createTime: '2026-06-10 11:15:28',
@@ -149,6 +169,9 @@ const filingSeed: ImplOrgFiling[] = [
     authType: '分领域授权运营',
     domain: '交通运输',
     implOrg: '株洲市轨道交通与智慧交通数据运营实施集团有限公司',
+    minutesFile: '三重一大会议纪要.pdf',
+    qualFile: '机构资格证明.pdf',
+    attachment: '其他证明材料.pdf',
     creditCode: '12430200MB1E44556X',
     legalHandler: '周文涛',
     createTime: '2026-07-02 16:41:41',
@@ -165,6 +188,9 @@ const filingSeed: ImplOrgFiling[] = [
     authType: '分领域授权运营',
     domain: '医疗健康',
     implOrg: '湖南省全民健康信息平台实施运营中心',
+    minutesFile: '三重一大会议纪要.pdf',
+    qualFile: '机构资格证明.pdf',
+    attachment: '其他证明材料.pdf',
     creditCode: '12430000MB1F77889X',
     legalHandler: '陈雨桐',
     createTime: '2026-07-16 09:07:23',
@@ -208,6 +234,8 @@ const createEmptyForm = (): ImplOrgFormData => ({
   domain: '',
   implOrg: '',
   creditCode: '',
+  minutesFile: '',
+  qualFile: '',
   attachment: '',
   remark: ''
 });
@@ -352,6 +380,8 @@ const OriginalComponent = () => {
       domain: record.domain,
       implOrg: record.implOrg,
       creditCode: record.creditCode,
+      minutesFile: record.minutesFile || '',
+      qualFile: record.qualFile || '',
       attachment: record.attachment || '',
       remark: record.remark || ''
     });
@@ -376,7 +406,8 @@ const OriginalComponent = () => {
     if (!formData.domain.trim()) errors.domain = '请选择领域名称';
     if (!formData.implOrg.trim()) errors.implOrg = '请输入实施机构名称';
     if (!formData.creditCode.trim()) errors.creditCode = '请输入统一社会信用代码';
-    if (!formData.attachment.trim()) errors.attachment = '请上传附件';
+    if (!formData.minutesFile.trim()) errors.minutesFile = '请上传会议纪要';
+    if (!formData.qualFile.trim()) errors.qualFile = '请上传机构资格证明';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -391,6 +422,8 @@ const OriginalComponent = () => {
       domain: formData.domain,
       implOrg: formData.implOrg.trim(),
       creditCode: formData.creditCode.trim(),
+      minutesFile: formData.minutesFile.trim(),
+      qualFile: formData.qualFile.trim(),
       attachment: formData.attachment.trim(),
       legalHandler: LEGAL_HANDLER_DEFAULT,
       createTime: time,
@@ -410,35 +443,44 @@ const OriginalComponent = () => {
   const handleSubmitEdit = () => {
     if (!validateForm() || !currentRecord) return;
     setRecords(prev => prev.map(r => (r.id === currentRecord.id
-      ? { ...r, authType: formData.authType, domain: formData.domain, implOrg: formData.implOrg.trim(), creditCode: formData.creditCode.trim(), attachment: formData.attachment.trim(), remark: formData.remark.trim() || undefined }
+      ? { ...r, authType: formData.authType, domain: formData.domain, implOrg: formData.implOrg.trim(), creditCode: formData.creditCode.trim(), minutesFile: formData.minutesFile.trim(), qualFile: formData.qualFile.trim(), attachment: formData.attachment.trim(), remark: formData.remark.trim() || undefined }
       : r)));
     closeFormModals();
     setCurrentRecord(null);
     alert('编辑保存成功');
   };
 
-  /* 文件上传控件 */
-  const renderUploadField = (field: keyof ImplOrgFormData, label: string, required: boolean, hint: string) => (
-    <div className="form-item form-item-full upload-item">
-      <label>{required && <span className="required">*</span>} {label}</label>
-      <div className="upload-control">
-        <label className="upload-btn">
-          选择文件
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => {
-              const file = e.target.files && e.target.files[0];
-              handleFormChange(field, file ? file.name : '');
-            }}
-          />
-        </label>
-        <span className={'upload-name ' + (formData[field] ? 'has-file' : '')}>
-          {formData[field] || hint}
-        </span>
-      </div>
-      {formErrors[field] && <span className="error-text">{formErrors[field]}</span>}
-    </div>
+  /* 证明材料上传卡片 */
+  const renderUploadCard = (field: keyof ImplOrgFormData, label: string, required: boolean, tip?: string) => (
+    <label
+      className={
+        'upload-card' +
+        (formData[field] ? ' has-file' : '') +
+        (formErrors[field] ? ' has-error' : '')
+      }
+    >
+      <span className="upload-card-title">
+        {required && <span className="required">*</span>}
+        {label}
+        {tip && (
+          <span className="field-tip">
+            <HelpCircle size={13} className="field-tip-icon" />
+            <span className="field-tip-text">{tip}</span>
+          </span>
+        )}
+      </span>
+      <span className="upload-card-btn">{formData[field] ? '重新上传' : '点击上传'}</span>
+      {formData[field] && <span className="upload-card-file" title={formData[field]}>{formData[field]}</span>}
+      {formErrors[field] && <span className="upload-card-error">{formErrors[field]}</span>}
+      <input
+        type="file"
+        accept="application/pdf"
+        onChange={(e) => {
+          const file = e.target.files && e.target.files[0];
+          handleFormChange(field, file ? file.name : '');
+        }}
+      />
+    </label>
   );
 
   const renderFormModal = (title: string, onSubmit: () => void) => (
@@ -449,6 +491,7 @@ const OriginalComponent = () => {
           <button className="modal-close" onClick={closeFormModals}>×</button>
         </div>
         <div className="modal-body filing-form-body">
+          <div className="form-group-title">备案信息</div>
           <div className="form-grid">
             <div className="form-item form-item-full">
               <label><span className="required">*</span> 授权运营类型</label>
@@ -495,11 +538,28 @@ const OriginalComponent = () => {
               />
               {formErrors.creditCode && <span className="error-text">{formErrors.creditCode}</span>}
             </div>
-            {renderUploadField('attachment', '附件', true, '上传会议纪要或其他证明实施机构身份的文件')}
-            <div className="form-item form-item-full">
+          </div>
+          <div className="form-group-title">
+            证明材料
+            <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
+          </div>
+          <div className="upload-cards">
+            {renderUploadCard('minutesFile', '会议纪要', true, '请上传 “三重一大” 会议纪要。若会议纪要涉密，请提供其他证明材料并说明情况')}
+            {renderUploadCard('qualFile', '机构资格证明', true, '企业：上传营业执照；事业单位：上传事业单位法人证书；党政机关：上传统一社会信用代码证书')}
+            {renderUploadCard('attachment', '其他证明材料', false)}
+          </div>
+          <div className="form-group-title">
+            情况说明
+            <span className="form-group-note form-group-note-warn">
+              <AlertCircle size={14} strokeWidth={2} className="form-group-note-icon" />
+              若会议纪要涉密，请填写情况说明
+            </span>
+          </div>
+          <div className="form-grid remark-grid">
+            <div className="form-item form-item-full remark-item">
               <label>情况说明</label>
               <textarea
-                placeholder="请输入"
+                placeholder="选填，请输入"
                 value={formData.remark}
                 onChange={(e) => handleFormChange('remark', e.target.value)}
                 rows={4}
@@ -543,17 +603,43 @@ const OriginalComponent = () => {
             <div className={'tab-item ' + (viewTab === 'audit' ? 'active' : '')} onClick={() => setViewTab('audit')}>审核信息</div>
           </div>
           {viewTab === 'apply' && (
-            <div className="view-info-table">
-              <div className="info-cell"><span className="info-label">所属地域</span><span className="info-value">{currentRecord.region}</span></div>
-              <div className="info-cell"><span className="info-label">授权运营类型</span><span className="info-value">{currentRecord.authType}</span></div>
-              <div className="info-cell"><span className="info-label">领域名称</span><span className="info-value">{currentRecord.domain}</span></div>
-              <div className="info-cell"><span className="info-label">实施机构</span><span className="info-value">{currentRecord.implOrg}</span></div>
-              <div className="info-cell"><span className="info-label">统一社会信用代码</span><span className="info-value">{currentRecord.creditCode}</span></div>
-              <div className="info-cell"><span className="info-label">法人经办人姓名</span><span className="info-value">{currentRecord.legalHandler}</span></div>
-              <div className="info-cell"><span className="info-label">创建时间</span><span className="info-value">{currentRecord.createTime}</span></div>
-              <div className="info-cell"><span className="info-label">备案状态</span><span className="info-value"><span className={'status-tag ' + getStatusClass(currentRecord.status)}>{currentRecord.status}</span></span></div>
-              <div className="info-cell full-width"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.status === '已备案' ? currentRecord.filingTime : '-'}</span></div>
-              <div className="info-cell full-width"><span className="info-label">情况说明</span><span className="info-value">{currentRecord.remark || '-'}</span></div>
+            <div className="view-detail">
+              {/* 备案信息 */}
+              <div className="view-group">
+                <div className="view-group-title">备案信息</div>
+                <div className="view-info-table">
+                  <div className="info-cell"><span className="info-label">所属地域</span><span className="info-value">{currentRecord.region}</span></div>
+                  <div className="info-cell"><span className="info-label">授权运营类型</span><span className="info-value">{currentRecord.authType}</span></div>
+                  <div className="info-cell"><span className="info-label">领域名称</span><span className="info-value">{currentRecord.domain}</span></div>
+                  <div className="info-cell"><span className="info-label">实施机构</span><span className="info-value">{currentRecord.implOrg}</span></div>
+                  <div className="info-cell"><span className="info-label">统一社会信用代码</span><span className="info-value">{currentRecord.creditCode}</span></div>
+                  <div className="info-cell"><span className="info-label">法人经办人姓名</span><span className="info-value">{currentRecord.legalHandler}</span></div>
+                  <div className="info-cell"><span className="info-label">创建时间</span><span className="info-value">{currentRecord.createTime}</span></div>
+                  <div className="info-cell"><span className="info-label">备案状态</span><span className="info-value"><span className={'status-tag ' + getStatusClass(currentRecord.status)}>{currentRecord.status}</span></span></div>
+                  <div className="info-cell full-width"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.status === '已备案' ? currentRecord.filingTime : '-'}</span></div>
+                </div>
+              </div>
+
+              {/* 证明材料 */}
+              <div className="view-group">
+                <div className="view-group-title">证明材料</div>
+                <div className="view-info-table">
+                  <div className="info-cell"><span className="info-label">会议纪要</span><span className="info-value"><span className="file-line"><span className="file-chip"><Paperclip size={12} />{currentRecord.minutesFile || '-'}</span><ShieldCheck size={14} className="file-shield" /></span></span></div>
+                  <div className="info-cell"><span className="info-label">机构资格证明</span><span className="info-value"><span className="file-line"><span className="file-chip"><Paperclip size={12} />{currentRecord.qualFile || '-'}</span><ShieldCheck size={14} className="file-shield" /></span></span></div>
+                  <div className="info-cell full-width"><span className="info-label">其他证明材料</span><span className="info-value"><span className="file-line"><span className="file-chip"><Paperclip size={12} />{currentRecord.attachment || '-'}</span><ShieldCheck size={14} className="file-shield" /></span></span></div>
+                </div>
+              </div>
+
+              {/* 情况说明 */}
+              <div className="view-group">
+                <div className="view-group-title">情况说明</div>
+                <div className="view-info-table">
+                  <div className="info-cell full-width">
+                    <span className="info-label">情况说明</span>
+                    <span className="info-value">{currentRecord.remark || '-'}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
           {viewTab === 'audit' && (

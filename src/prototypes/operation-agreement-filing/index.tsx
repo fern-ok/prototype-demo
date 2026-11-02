@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @name 运营协议备案
  * @mode axure
  *
@@ -6,6 +6,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { AlertCircle, HelpCircle, Paperclip, ShieldCheck } from 'lucide-react';
 import Layout from '../../common/Layout';
 import PasswordGuard from '../../common/PasswordGuard';
 import specContent from './spec.md?raw';
@@ -40,6 +41,8 @@ interface OperationAgreement {
   rejectReason?: string;
   startDate?: string;
   endDate?: string;
+  meetingMinutesFile?: string;
+  otherFile?: string;
   remark?: string;
 }
 
@@ -49,6 +52,7 @@ interface AgreementFormData {
   agreementFileName: string;
   meetingMinutes: string;
   meetingMinutesFileName: string;
+  otherFileName: string;
   startDate: string;
   endDate: string;
   remark: string;
@@ -77,6 +81,8 @@ const agreementSeed: OperationAgreement[] = [
     filingTime: '2026-05-18 15:30:10',
     startDate: '2026-05-01',
     endDate: '2027-04-30',
+    meetingMinutesFile: '医疗健康领域运营协议审议会议纪要.pdf',
+    otherFile: '其他证明材料-医疗健康.pdf',
     remark: '医疗健康领域数据运营协议，涵盖全省医疗机构就诊数据和健康档案数据。'
   },
   {
@@ -94,6 +100,8 @@ const agreementSeed: OperationAgreement[] = [
     filingTime: '2026-06-01 09:30:22',
     startDate: '2026-06-01',
     endDate: '2027-05-31',
+    meetingMinutesFile: '交通运输领域运营协议审议会议纪要.pdf',
+    otherFile: '其他证明材料-交通运输.pdf',
     remark: '交通运输领域数据运营协议，涵盖道路监控和交通流量数据。'
   },
   {
@@ -112,6 +120,8 @@ const agreementSeed: OperationAgreement[] = [
     rejectReason: '协议中数据使用权限范围描述不明确，请补充详细的数据使用范围和限制条款。',
     startDate: '2026-06-01',
     endDate: '2027-05-31',
+    meetingMinutesFile: '教育领域运营协议审议会议纪要.pdf',
+    otherFile: '其他证明材料-教育.pdf',
     remark: '教育领域数据运营协议。'
   },
   {
@@ -129,6 +139,8 @@ const agreementSeed: OperationAgreement[] = [
     filingTime: '2026-06-10 16:42:10',
     startDate: '2026-06-10',
     endDate: '2028-06-09',
+    meetingMinutesFile: '文化旅游领域运营协议审议会议纪要.pdf',
+    otherFile: '其他证明材料-文旅.pdf',
     remark: '文化旅游领域整体运营协议，涵盖旅游客流和文化资源数据。'
   },
   {
@@ -146,6 +158,8 @@ const agreementSeed: OperationAgreement[] = [
     filingTime: '2026-06-16 09:28:17',
     startDate: '2026-06-15',
     endDate: '2027-06-14',
+    meetingMinutesFile: '自然资源领域运营协议审议会议纪要.pdf',
+    otherFile: '其他证明材料-自然资源.pdf',
     remark: '自然资源领域数据运营协议，涵盖土地利用和矿产资源数据。'
   }
 ];
@@ -234,6 +248,7 @@ const createEmptyForm = (): AgreementFormData => ({
   agreementFileName: '',
   meetingMinutes: '',
   meetingMinutesFileName: '',
+  otherFileName: '',
   startDate: '',
   endDate: '',
   remark: ''
@@ -348,6 +363,7 @@ const OriginalComponent = () => {
       agreementFileName: record.agreement,
       meetingMinutes: '',
       meetingMinutesFileName: '',
+      otherFileName: '',
       startDate: record.startDate || '',
       endDate: record.endDate || '',
       remark: record.remark || ''
@@ -365,6 +381,7 @@ const OriginalComponent = () => {
       agreementFileName: record.agreement,
       meetingMinutes: '',
       meetingMinutesFileName: '',
+      otherFileName: '',
       startDate: record.startDate || '',
       endDate: record.endDate || '',
       remark: record.remark || ''
@@ -470,52 +487,48 @@ const OriginalComponent = () => {
 
   const renderFormModal = (title: string, showUpload: boolean = true, isAddModal: boolean = false) => (
     <div className="modal-overlay" onClick={closeFormModals}>
-      <div className="modal-large form-modal" onClick={(event) => event.stopPropagation()}>
+      <div className="modal-medium filing-form-modal" onClick={(event) => event.stopPropagation()}>
         <div className="modal-header">
           <h3>{title}</h3>
           <button className="modal-close" onClick={closeFormModals}>×</button>
         </div>
-        <div className="modal-body form-modal-body">
-          <div className="form-section">
+          <div className="modal-body filing-form-body">
+            <div className="form-group-title">
+              备案信息
+              <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
+            </div>
             <div className="form-grid">
               <div className="form-item">
-                <label><span className="required">*</span> 运营机构</label>
+                <label>运营机构</label>
                 <input type="text" value={formData.opOrg} disabled />
               </div>
-              {isAddModal && (
-                <div className="form-item upload-item">
-                  <label><span className="required">*</span> 会议纪要</label>
-                  <div className="upload-control">
-                    <label className="upload-btn">
-                      选择文件
-                      <input type="file" accept="application/pdf" onChange={handleMeetingMinutesChange} />
-                    </label>
-                    <span className={'upload-name ' + (formData.meetingMinutesFileName ? 'has-file' : '')}>
-                      {formData.meetingMinutesFileName || '请上传 “三重一大” 会议纪要'}
-                    </span>
-                  </div>
-                  {formErrors.meetingMinutes && <span className="error-text">{formErrors.meetingMinutes}</span>}
-                </div>
-              )}
-              <div className="form-item upload-item">
-                <label><span className="required">*</span> 运营协议</label>
-                <div className="upload-control">
-                  {showUpload ? (
-                    <>
-                      <label className="upload-btn">
-                        选择文件
-                        <input type="file" accept="application/pdf" onChange={handleFileChange} />
-                      </label>
-                      <span className={'upload-name ' + (formData.agreementFileName ? 'has-file' : '')}>
-                        {formData.agreementFileName || '请上传经 “三重一大” 决策机制审议通过的运营协议'}
-                      </span>
-                    </>
-                  ) : (
-                    <input type="text" value={formData.agreementFileName} disabled />
-                  )}
-                </div>
-                {formErrors.agreement && <span className="error-text">{formErrors.agreement}</span>}
-              </div>
+              <label
+                className={
+                  'primary-file-section' +
+                  (formData.agreementFileName ? ' has-file' : '') +
+                  (formErrors.agreement ? ' has-error' : '')
+                }
+              >
+                <span className="upload-card-title yunyingxieyi">
+                  <span className="required">*</span> 运营协议
+                  <span className="field-tip">
+                    <HelpCircle size={13} className="field-tip-icon" />
+                    <span className="field-tip-text">请上传经 "三重一大" 决策机制审议通过的运营协议</span>
+                  </span>
+                </span>
+                {showUpload ? (
+                  <span className="upload-card-btn yunyingxieyi">{formData.agreementFileName ? '重新上传' : '点击上传'}</span>
+                ) : (
+                  <span className="upload-card-file" title={formData.agreementFileName}>{formData.agreementFileName}</span>
+                )}
+                {showUpload && formData.agreementFileName && (
+                  <span className="upload-card-file" title={formData.agreementFileName}>{formData.agreementFileName}</span>
+                )}
+                {formErrors.agreement && <span className="upload-card-error">{formErrors.agreement}</span>}
+                {showUpload && (
+                  <input type="file" accept="application/pdf" onChange={handleFileChange} />
+                )}
+              </label>
               <div className="form-item">
                 <label><span className="required">*</span> 授权期限</label>
                 <div className="date-range-wrapper">
@@ -537,10 +550,68 @@ const OriginalComponent = () => {
                   <span className="error-text">{formErrors.startDate || formErrors.endDate}</span>
                 )}
               </div>
+            </div>
+            <div className="form-group-title">
+              证明材料
+              <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
+            </div>
+            <div className="upload-cards" data-add={isAddModal ? '1' : '0'}>
+              <label
+                className={
+                  'upload-card' +
+                  (formData.meetingMinutesFileName ? ' has-file' : '') +
+                  (formErrors.meetingMinutes ? ' has-error' : '')
+                }
+              >
+                <span className="upload-card-title">
+                  <span className="required">*</span> 会议纪要
+                  <span className="field-tip">
+                    <HelpCircle size={13} className="field-tip-icon" />
+                    <span className="field-tip-text">请上传 “三重一大” 会议纪要。若会议纪要涉密，请提供其他证明材料并说明情况</span>
+                  </span>
+                </span>
+                <span className="upload-card-btn">{formData.meetingMinutesFileName ? '重新上传' : '点击上传'}</span>
+                {formData.meetingMinutesFileName && (
+                  <span className="upload-card-file" title={formData.meetingMinutesFileName}>{formData.meetingMinutesFileName}</span>
+                )}
+                {formErrors.meetingMinutes && <span className="upload-card-error">{formErrors.meetingMinutes}</span>}
+                <input type="file" accept="application/pdf" onChange={handleMeetingMinutesChange} />
+              </label>
+              <label
+                className={
+                  'upload-card' +
+                  (formData.otherFileName ? ' has-file' : '') +
+                  (formErrors.otherFileName ? ' has-error' : '')
+                }
+              >
+                <span className="upload-card-title">其他证明材料</span>
+                <span className="upload-card-btn">{formData.otherFileName ? '重新上传' : '点击上传'}</span>
+                {formData.otherFileName && (
+                  <span className="upload-card-file" title={formData.otherFileName}>{formData.otherFileName}</span>
+                )}
+                {formErrors.otherFileName && <span className="upload-card-error">{formErrors.otherFileName}</span>}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFormChange('otherFileName', file.name);
+                  }}
+                />
+              </label>
+            </div>
+            <div className="form-group-title">
+              情况说明
+              <span className="form-group-note form-group-note-warn">
+                <AlertCircle size={14} strokeWidth={2} className="form-group-note-icon" />
+                若会议纪要涉密，请填写情况说明
+              </span>
+            </div>
+            <div className="form-grid remark-grid">
               <div className="form-item remark-item">
                 <label>情况说明</label>
                 <textarea
-                  placeholder="请输入情况说明"
+                  placeholder="选填，请输入"
                   value={formData.remark}
                   onChange={(e) => handleFormChange('remark', e.target.value)}
                   rows={4}
@@ -548,7 +619,6 @@ const OriginalComponent = () => {
               </div>
             </div>
           </div>
-        </div>
         <div className="modal-footer">
           <button className="btn btn-default" onClick={closeFormModals}>取消</button>
           <button className="btn btn-primary" onClick={handleSubmit}>提交</button>
@@ -574,7 +644,8 @@ const OriginalComponent = () => {
           </div>
           {viewTab === 'apply' && (
             <>
-              <h4 className="section-title"><span className="title-bar"></span>基本信息</h4>
+              {/* 备案信息 */}
+              <h4 className="section-title"><span className="title-bar"></span>备案信息</h4>
               <div className="view-info-table">
                 <div className="info-cell"><span className="info-label">所属地域</span><span className="info-value">{currentRecord.region}</span></div>
                 <div className="info-cell"><span className="info-label">授权运营类型</span><span className="info-value">{currentRecord.authType}</span></div>
@@ -586,10 +657,23 @@ const OriginalComponent = () => {
                 <div className="info-cell"><span className="info-label">法人经办人姓名</span><span className="info-value">{currentRecord.legalHandler}</span></div>
                 <div className="info-cell"><span className="info-label">创建时间</span><span className="info-value">{currentRecord.createTime}</span></div>
                 <div className="info-cell"><span className="info-label">备案状态</span><span className="info-value"><span className={'status-tag ' + getStatusClass(currentRecord.status)}>{currentRecord.status}</span></span></div>
-                {currentRecord.status === '已备案' && (
-                  <div className="info-cell  full-width"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.filingTime}</span></div>
-                )}
-                <div className="info-cell full-width"><span className="info-label">情况说明</span><span className="info-value">{currentRecord.remark || '-'}</span></div>
+                <div className="info-cell full-width"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.status === '已备案' ? currentRecord.filingTime : '-'}</span></div>
+              </div>
+
+              {/* 证明材料 */}
+              <h4 className="section-title"><span className="title-bar"></span>证明材料</h4>
+              <div className="view-info-table">
+                <div className="info-cell"><span className="info-label">会议纪要</span><span className="info-value"><span className="file-line"><span className="file-chip"><Paperclip size={12} />{currentRecord.meetingMinutesFile || '-'}</span><ShieldCheck size={14} className="file-shield" /></span></span></div>
+                <div className="info-cell"><span className="info-label">其他证明材料</span><span className="info-value"><span className="file-line"><span className="file-chip"><Paperclip size={12} />{currentRecord.otherFile || '-'}</span><ShieldCheck size={14} className="file-shield" /></span></span></div>
+              </div>
+
+              {/* 情况说明 */}
+              <h4 className="section-title"><span className="title-bar"></span>情况说明</h4>
+              <div className="view-info-table">
+                <div className="info-cell full-width">
+                  <span className="info-label">情况说明</span>
+                  <span className="info-value">{currentRecord.remark || '-'}</span>
+                </div>
               </div>
             </>
           )}

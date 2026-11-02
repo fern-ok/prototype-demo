@@ -106,16 +106,15 @@ const SIDEBAR_MENU: NavEntry[] = [
   { type: 'divider', key: 'undetermined-requirements-divider', label: '未确定需求' },
   {
     type: 'group',
-    key: 'pending-filing-management',
-    label: '备案管理',
-    icon: FolderOpen,
+    key: 'pending-auth-supervision',
+    label: '授权监管',
+    icon: Shield,
     items: [
-      { key: 'pending-implementation-org-filing', label: '实施机构备案' },
-      { key: 'pending-implementation-plan-filing', label: '实施方案备案' },
-      { key: 'pending-operation-org-filing', label: '运营机构备案' },
-      { key: 'pending-operation-agreement-filing', label: '运营协议备案' }
+      { key: 'pending-data-resource-catalog', label: '数据资源编目监管' },
+      { key: 'pending-data-resource-auth', label: '数据资源授权监管' }
     ]
-  }
+  },
+  { type: 'link', key: 'data-management-workbench', label: '数据管理部门工作台', icon: LayoutDashboard, href: '/prototypes/data-management-workbench.html' }
 ];
 
 /* ============================================================
@@ -217,7 +216,7 @@ async function loadSpaModuleComponent(key: string, previousKey: string | null): 
 
 interface LayoutProps {
   children: ReactNode;
-  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'other-entity-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'industry-dept-management' | 'unified-catalog-query' | 'monitoring-dashboard' | 'implementation-org-filing' | 'implementation-plan-filing' | 'operation-org-filing' | 'institution-supervision' | 'business-overview' | 'pending-implementation-org-filing' | 'pending-implementation-plan-filing' | 'pending-operation-org-filing' | 'pending-operation-agreement-filing';
+  activeMenu: 'implement-org-workbench' | 'other-entity-workbench' | 'data-management-workbench' | 'product-service-filing' | 'operation-agreement-filing' | 'implementation-plan-joint-review' | 'other-entity-filing' | 'product-registration' | 'product-security-review' | 'data-resource-catalog' | 'data-resource-auth' | 'data-resource-review' | 'data-resource-recheck' | 'product-lifecycle' | 'product-subscription-supervision' | 'subscription-order-supervision' | 'redev-data-product-supervision' | 'demand-management' | 'domain-management' | 'industry-dept-management' | 'unified-catalog-query' | 'monitoring-dashboard' | 'implementation-org-filing' | 'implementation-plan-filing' | 'operation-org-filing' | 'institution-supervision' | 'business-overview' | 'pending-implementation-org-filing' | 'pending-implementation-plan-filing' | 'pending-operation-org-filing' | 'pending-operation-agreement-filing' | 'pending-data-resource-catalog' | 'pending-data-resource-auth';
   breadcrumb: string;
   role: string;
   onRoleChange: (role: string) => void;
@@ -332,8 +331,8 @@ const Layout = ({ children, activeMenu, breadcrumb, role, onRoleChange, onAuthRe
     ? ''
     : (activeMenu === 'domain-management' || activeMenu === 'industry-dept-management') ? '系统管理'
       : (activeMenu === 'product-security-review' || activeMenu === 'product-registration' || activeMenu === 'data-resource-catalog' || activeMenu === 'data-resource-review' || activeMenu === 'data-resource-recheck') ? '数据产品开发管理'
-    : (activeMenu === 'implement-org-workbench' || activeMenu === 'other-entity-workbench') ? '工作台'
-        : (activeMenu === 'product-subscription-supervision' || activeMenu === 'subscription-order-supervision' || activeMenu === 'redev-data-product-supervision') ? '授权监管'
+    : (activeMenu === 'implement-org-workbench' || activeMenu === 'other-entity-workbench' || activeMenu === 'data-management-workbench') ? '工作台'
+        : (activeMenu === 'product-subscription-supervision' || activeMenu === 'subscription-order-supervision' || activeMenu === 'redev-data-product-supervision' || activeMenu === 'pending-data-resource-catalog' || activeMenu === 'pending-data-resource-auth') ? '授权监管'
           : (activeMenu === 'institution-supervision' || activeMenu === 'business-overview') ? '其他'
           : activeMenu === 'demand-management' ? '需求管理'
             : '备案管理';

@@ -13,7 +13,7 @@ import { ChevronDown, ChevronUp, Crosshair, ExternalLink, Image as ImageIcon, La
 import v20260824 from './versions/20260824.md?raw';
 import v20260904 from './versions/20260904.md?raw';
 import v20260924 from './versions/20260924.md?raw';
-import v20261027 from './versions/20261027.md?raw';
+import v20261120 from './versions/20261120.md?raw';
 import v20261019 from './versions/20261019.md?raw';
 import v20261107 from './versions/20261107.md?raw';
 import changeFlowImg from './images/变更撤销.svg';
@@ -24,9 +24,9 @@ import './style.css';
 
 const versions = [
   {
-    version: '20261027',
-    title: '20261027版本',
-    content: v20261027,
+    version: '20261120',
+    title: '20261120版本',
+    content: v20261120,
   },
   {
     version: '20261019',

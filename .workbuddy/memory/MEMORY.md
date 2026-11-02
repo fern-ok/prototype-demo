@@ -36,14 +36,21 @@
 - 按钮顺序：关联 → 查看 → 编辑 → 删除 → 变更 → 撤销 → 查看存证。
 - 编辑/变更弹窗字段与新增一致且回显已有数据；新增弹窗按截图精确还原。
 
-## 未确定需求板块（pending-*）
-- 侧边栏「其他」下方红色虚线分区（NavEntry type:'divider'，样式 .nav-divider-label）。含 pending-filing-management + 4 页：pending-implementation-org-filing / pending-implementation-plan-filing / pending-operation-org-filing / pending-operation-agreement-filing，为原备案四页整页复制（仅 index.tsx + style.css，无 md、无文档按钮）。原备案四页保持不变。
-- 四页共性：新增弹窗「情况说明」placeholder 统一「选填，请输入」；卡片式上传（.upload-cards / .upload-card，整卡可点，标题 + 点击上传/重新上传 + 文件名，Tooltip 挂标题旁，校验为卡内红框红字）；旧的 .upload-status / .upload-progress 均 display:none（代码保留）。
-- **运营协议备案（pending-operation-agreement-filing）最终结构（2026-10-26 定稿）**：`「备案信息」分组 → 运营机构 → 运营协议上传行 → 授权期限 → 「备案材料」(会议纪要卡，仅新增弹窗) → 「情况说明」分组 + textarea`。运营协议（.primary-file-section）已由顶部独立整行并入「备案信息」组、位于运营机构与授权期限之间，去掉「主文件」角标、外边框与底色，按普通表单行排版（120px label 列右对齐 + 控件列「点击上传」按钮）；分组标题名「基本信息」已改「备案信息」（标题右侧挂「支持格式: .pdf 单个文件不能超过15MB」注释），情况说明有独立分组标题。字段名/按钮对齐沿用 120px+1fr 网格；命名空间 .pending-op-agree-filing（style.css 末尾）。
-- **实施方案备案（pending-implementation-plan-filing）**：新增弹窗表单顺序（2026-10-26 定稿）= **备案信息**（分组标题 + 旁挂「支持格式: .pdf 单个文件不能超过15MB」）→ **实施方案（2026-10-26 最终：平铺行式，与运营协议一致）**：包在 `.form-grid.plan-file-grid`（单列、gap 0、`padding:5px 0` 上下各留 5px 空隙）内，label .primary-file-section 自身 `display:grid; grid-template-columns:120px minmax(0,1fr); align-items:center; padding:0; margin:0; border:none; background:transparent`，标题右对齐 label 列、13px/400，「点击上传」按钮（h32）左对齐控件列；hover/has-file/has-error 均无边框无底色；文件名/错误提示 `grid-column:2` 左对齐。旧的卡片式规则（calc((100%-24px)/3) 等宽虚线卡）保留在文件中被后面的平铺规则覆盖→ 备案材料（同款支持格式注释 + 4 卡：会议纪要/数据局联审意见/财政厅联审意见/领导批示，3+1）→ **情况说明**（独立分组标题「情况说明」+ `.form-grid.remark-grid`，margin-top 14px）。主文件区内部「支持格式」说明 .upload-hint display:none（代码保留）。
-- **运营机构备案（pending-operation-org-filing）**：「备案信息」（2026-10-26 由「基本信息」更名：实施方案只读 .plan-info-item / 运营机构名称 / 统一社会信用代码）+ 备案材料 5 卡（征集公告 / 专家评审意见 / 公示证明 / 机构资格证明 / 其他证明材料，3+2）→ 「情况说明」独立分组标题 + textarea（2026-10-26 移至表单最末）。
-- **实施机构备案（pending-implementation-org-filing）**：「备案信息」（2026-10-26 由「基本信息」更名：授权运营类型 / 领域名称 / 实施机构名称 / 统一社会信用代码）+ 备案材料 3 卡（会议纪要 / 机构资格证明 / 其他证明材料）；「情况说明」移至表单最末、独立「情况说明」分组标题（2026-10-26，紧随备案材料之后）。
-- 卡片 Tooltip 气泡：以整卡为基准水平居中、宽 180px 防溢出（`.upload-card{position:relative}` + `.field-tip{position:static}`）。
+## 备案四页弹窗视觉（2026-10-29 定稿，正式页）
+> 原 pending-* 复制页已删除，设计落到正式四页：implementation-org-filing / implementation-plan-filing / operation-org-filing / operation-agreement-filing（各含 index.tsx + style.css + spec.md + change.md）。
+
+- **统一结构**：弹窗 `modal-medium filing-form-modal`（640px），内容区 `modal-body filing-form-body`；分组标题 `form-group-title`（左侧 3px #1677ff 竖条 + 14px/600 #1f2937），右侧可选 `form-group-note`（12px 灰）与 `form-group-note-danger`（12px 红 #d54941，无图标）。
+- **统一样式做法**：各页 style.css 末尾追加同一段 `.filing-form-modal ...` 作用域样式：
+  - `.form-grid` 单列（`grid-template-columns:minmax(0,1fr)`、`row-gap:16px`）、`.form-item{min-height:0}`、label 120px 右对齐、textarea min-height 100px；
+  - `.upload-cards` 三列网格（`gap:20px`）；`.upload-card` 白底 + 1px dashed #d8dfe9、圆角 4、`min-height:96px`、竖向居中、标题 13px/400 居中（星号紧贴文字，`gap:0`，ⓘ 距文字 4px）+ 白底灰边按钮 `点击上传/重新上传`（h30，border #d8dfe9，文字 #1f2329）；has-file 实线浅蓝、has-error 红框 + 卡内红字；
+  - 平铺单文件行（实施方案 / 运营协议）：`.primary-file-section` 改为 `grid-template-columns:120px minmax(0,1fr)`，无边框无底色，标题右对齐、按钮左对齐；
+  - Tooltip 气泡在卡片内以卡片为基准（`.upload-card{position:relative}` + `.field-tip{position:static}` + 气泡 `left:0;width:100%`），避免撑出横向滚动条。
+  - `.upload-card-title / -btn / -file / -error` 样式已提升为 `.filing-form-modal` 级（卡片与平铺行共用）。
+- **各页分组与字段**：
+  - 实施机构备案：「备案信息」（授权运营类型 / 领域名称 / 实施机构名称 / 统一社会信用代码，无注释）→「证明材料」（注释支持格式；卡：会议纪要*、机构资格证明*、其他证明材料）→「情况说明」（红字提示）+ textarea。表单新增字段 `minutesFile` / `qualFile`，原 `attachment` 复用为「其他证明材料」。
+  - 实施方案备案：「备案信息」（注释）内为平铺行「* 实施方案 ⓘ + 点击上传」（`.form-grid.plan-file-grid`）→「证明材料」（5 卡：会议纪要*、数据局联审意见*、财政厅联审意见*、分管领导批示*、其他证明材料，3+2）→「情况说明」（红字提示）。新增字段 `leaderFile` / `otherFile`。
+  - 运营机构备案：「备案信息」（无注释；实施方案为 disabled 只读 input、运营机构名称*、统一社会信用代码*）→「证明材料」（5 卡：征集公告*、专家评审意见*、公示证明*、机构资格证明*、其他证明材料，3+2）→「情况说明」（无红字提示）。新增字段 `noticeFile` / `reviewFile` / `qualFile` / `otherFile`，`attachment` = 公示证明。
+  - 运营协议备案：「备案信息」（注释；运营机构只读、* 运营协议平铺行、* 授权期限日期区间）→「证明材料」（会议纪要*、其他证明材料，2 卡）→「情况说明」（红字提示）。新增字段 `otherFileName`；会议纪要卡已改为编辑/变更弹窗也显示。
 
 ## SPA 局部切换（src/common/Layout.tsx）
 - 侧边栏点击拦截（handleSpaNavClick），仅替换中央内容区，外层侧边栏保持挂载；host 身份由 window.__AXHUB_SPA_EMBEDDED__ 判定。

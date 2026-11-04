@@ -192,6 +192,17 @@ const ROLE_CARD_TONE: Record<string, string> = {
 
 const ROLE_TABS = ['全部', '数据管理部门', '行业主管部门', '实施机构', '运营机构', '其他经营主体'];
 
+/** 工作台「机构数据」数字跳转：按 URL 的 roleTab 参数自动定位到对应角色 Tab（无参数时仍为「全部」） */
+const getInitialRoleTab = () => {
+  if (typeof window === 'undefined') return '全部';
+  try {
+    const tab = new URLSearchParams(window.location.search).get('roleTab');
+    return tab && ROLE_TABS.includes(tab) ? tab : '全部';
+  } catch {
+    return '全部';
+  }
+};
+
 /** 跨角色归属过滤（点击「关联实施机构 / 关联其他经营主体 / 行业主管部门数量 / 关联运营机构」数字时触发） */
 interface LinkFilter {
   /** dept：行业主管部门→其备案的实施机构；operator：运营机构→其备案的其他经营主体；
@@ -264,13 +275,15 @@ const OriginalComponent = () => {
   const [activeView, setActiveView] = useState<'list' | 'chain'>('list');
 
   // 顶部角色快捷 Tab（全部 / 各角色），切换时联动「机构角色」筛选
-  const [activeRoleTab, setActiveRoleTab] = useState<string>('全部');
+  // 从工作台机构数据数字跳转时，按 roleTab 参数自动定位到对应角色 Tab
+  const initialRoleTab = getInitialRoleTab();
+  const [activeRoleTab, setActiveRoleTab] = useState<string>(initialRoleTab);
 
   // 筛选条件
   const [searchRegion, setSearchRegion] = useState('');
   const [searchAuthType, setSearchAuthType] = useState('');
   const [searchDomain, setSearchDomain] = useState('');
-  const [searchRole, setSearchRole] = useState('');
+  const [searchRole, setSearchRole] = useState(initialRoleTab === '全部' ? '' : initialRoleTab);
   const [searchOrgName, setSearchOrgName] = useState('');
   const [searchCreditCode, setSearchCreditCode] = useState('');
   const [searchFilingTimeStart, setSearchFilingTimeStart] = useState('');

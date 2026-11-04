@@ -24,6 +24,7 @@ interface ImplOrgFiling {
   implOrg: string;
   creditCode: string;
   legalHandler: string;
+  legalHandlerPhone: string;
   createTime: string;
   status: string;
   filingTime: string;
@@ -53,6 +54,8 @@ interface ImplOrgFormData {
   domain: string;
   implOrg: string;
   creditCode: string;
+  legalHandler: string;
+  legalHandlerPhone: string;
   minutesFile: string;
   qualFile: string;
   attachment: string;
@@ -63,7 +66,9 @@ const STATUS_OPTIONS = ['已备案', '待省级确认', '省级退回'];
 const AUTH_TYPE_OPTIONS = ['分领域授权运营', '整体授权运营'];
 const DOMAIN_OPTIONS = ['医疗健康', '交通运输', '教育', '文化旅游', '自然资源'];
 const REGION_DEFAULT = '省本级';
-const LEGAL_HANDLER_DEFAULT = '张伟';
+
+/** 法人经办人电话格式：11 位手机号 */
+const LEGAL_HANDLER_PHONE_REGEX = /^1[3-9]\d{9}$/;
 
 const filingSeed: ImplOrgFiling[] = [
   {
@@ -77,6 +82,7 @@ const filingSeed: ImplOrgFiling[] = [
     attachment: '其他证明材料.pdf',
     creditCode: '11430100MB1A23456X',
     legalHandler: '张文博',
+    legalHandlerPhone: '13807310011',
     createTime: '2026-05-18 10:05:57',
     status: '已备案',
     filingTime: '2026-05-18 15:30:10',
@@ -96,6 +102,7 @@ const filingSeed: ImplOrgFiling[] = [
     attachment: '其他证明材料.pdf',
     creditCode: '12430000MB1B87654X',
     legalHandler: '李建国',
+    legalHandlerPhone: '13807310012',
     createTime: '2026-06-01 09:30:22',
     status: '待省级确认',
     filingTime: '2026-06-01 09:30:22',
@@ -115,6 +122,7 @@ const filingSeed: ImplOrgFiling[] = [
     attachment: '其他证明材料.pdf',
     creditCode: '91430104MA4C56789X',
     legalHandler: '王思远',
+    legalHandlerPhone: '13807310013',
     createTime: '2026-06-05 14:20:15',
     status: '省级退回',
     filingTime: '2026-06-06 08:45:33',
@@ -135,6 +143,7 @@ const filingSeed: ImplOrgFiling[] = [
     attachment: '其他证明材料.pdf',
     creditCode: '12430600MB1C11223X',
     legalHandler: '赵敏',
+    legalHandlerPhone: '13807310014',
     createTime: '2026-06-15 13:50:44',
     status: '已备案',
     filingTime: '2026-06-16 09:28:17',
@@ -154,6 +163,7 @@ const filingSeed: ImplOrgFiling[] = [
     attachment: '其他证明材料.pdf',
     creditCode: '91430000MA4D99887X',
     legalHandler: '孙佳怡',
+    legalHandlerPhone: '13807310015',
     createTime: '2026-06-10 11:15:28',
     status: '省级退回',
     filingTime: '2026-06-11 10:02:09',
@@ -174,6 +184,7 @@ const filingSeed: ImplOrgFiling[] = [
     attachment: '其他证明材料.pdf',
     creditCode: '12430200MB1E44556X',
     legalHandler: '周文涛',
+    legalHandlerPhone: '13807310016',
     createTime: '2026-07-02 16:41:41',
     status: '待省级确认',
     filingTime: '2026-07-02 16:41:41',
@@ -193,6 +204,7 @@ const filingSeed: ImplOrgFiling[] = [
     attachment: '其他证明材料.pdf',
     creditCode: '12430000MB1F77889X',
     legalHandler: '陈雨桐',
+    legalHandlerPhone: '13807310017',
     createTime: '2026-07-16 09:07:23',
     status: '已备案',
     filingTime: '2026-07-16 14:22:51',
@@ -234,6 +246,8 @@ const createEmptyForm = (): ImplOrgFormData => ({
   domain: '',
   implOrg: '',
   creditCode: '',
+  legalHandler: '',
+  legalHandlerPhone: '',
   minutesFile: '',
   qualFile: '',
   attachment: '',
@@ -380,6 +394,8 @@ const OriginalComponent = () => {
       domain: record.domain,
       implOrg: record.implOrg,
       creditCode: record.creditCode,
+      legalHandler: record.legalHandler,
+      legalHandlerPhone: record.legalHandlerPhone || '',
       minutesFile: record.minutesFile || '',
       qualFile: record.qualFile || '',
       attachment: record.attachment || '',
@@ -406,6 +422,12 @@ const OriginalComponent = () => {
     if (!formData.domain.trim()) errors.domain = '请选择领域名称';
     if (!formData.implOrg.trim()) errors.implOrg = '请输入实施机构名称';
     if (!formData.creditCode.trim()) errors.creditCode = '请输入统一社会信用代码';
+    if (!formData.legalHandler.trim()) errors.legalHandler = '请输入法人经办人姓名';
+    if (!formData.legalHandlerPhone.trim()) {
+      errors.legalHandlerPhone = '请输入法人经办人电话';
+    } else if (!LEGAL_HANDLER_PHONE_REGEX.test(formData.legalHandlerPhone.trim())) {
+      errors.legalHandlerPhone = '法人经办人电话格式不正确（应为 11 位手机号）';
+    }
     if (!formData.minutesFile.trim()) errors.minutesFile = '请上传会议纪要';
     if (!formData.qualFile.trim()) errors.qualFile = '请上传机构资格证明';
     setFormErrors(errors);
@@ -425,7 +447,8 @@ const OriginalComponent = () => {
       minutesFile: formData.minutesFile.trim(),
       qualFile: formData.qualFile.trim(),
       attachment: formData.attachment.trim(),
-      legalHandler: LEGAL_HANDLER_DEFAULT,
+      legalHandler: formData.legalHandler.trim(),
+      legalHandlerPhone: formData.legalHandlerPhone.trim(),
       createTime: time,
       status: '已备案',
       filingTime: time,
@@ -443,7 +466,7 @@ const OriginalComponent = () => {
   const handleSubmitEdit = () => {
     if (!validateForm() || !currentRecord) return;
     setRecords(prev => prev.map(r => (r.id === currentRecord.id
-      ? { ...r, authType: formData.authType, domain: formData.domain, implOrg: formData.implOrg.trim(), creditCode: formData.creditCode.trim(), minutesFile: formData.minutesFile.trim(), qualFile: formData.qualFile.trim(), attachment: formData.attachment.trim(), remark: formData.remark.trim() || undefined }
+      ? { ...r, authType: formData.authType, domain: formData.domain, implOrg: formData.implOrg.trim(), creditCode: formData.creditCode.trim(), legalHandler: formData.legalHandler.trim(), legalHandlerPhone: formData.legalHandlerPhone.trim(), minutesFile: formData.minutesFile.trim(), qualFile: formData.qualFile.trim(), attachment: formData.attachment.trim(), remark: formData.remark.trim() || undefined }
       : r)));
     closeFormModals();
     setCurrentRecord(null);
@@ -538,6 +561,29 @@ const OriginalComponent = () => {
               />
               {formErrors.creditCode && <span className="error-text">{formErrors.creditCode}</span>}
             </div>
+            <div className="form-item form-item-full">
+              <label><span className="required">*</span> 法人经办人姓名</label>
+              <input
+                type="text"
+                placeholder="请输入法人经办人姓名"
+                value={formData.legalHandler}
+                onChange={(e) => handleFormChange('legalHandler', e.target.value)}
+                className={formErrors.legalHandler ? 'has-error' : ''}
+              />
+              {formErrors.legalHandler && <span className="error-text">{formErrors.legalHandler}</span>}
+            </div>
+            <div className="form-item form-item-full">
+              <label><span className="required">*</span> 法人经办人电话</label>
+              <input
+                type="text"
+                placeholder="请输入法人经办人电话"
+                maxLength={11}
+                value={formData.legalHandlerPhone}
+                onChange={(e) => handleFormChange('legalHandlerPhone', e.target.value)}
+                className={formErrors.legalHandlerPhone ? 'has-error' : ''}
+              />
+              {formErrors.legalHandlerPhone && <span className="error-text">{formErrors.legalHandlerPhone}</span>}
+            </div>
           </div>
           <div className="form-group-title">
             证明材料
@@ -614,9 +660,10 @@ const OriginalComponent = () => {
                   <div className="info-cell"><span className="info-label">实施机构</span><span className="info-value">{currentRecord.implOrg}</span></div>
                   <div className="info-cell"><span className="info-label">统一社会信用代码</span><span className="info-value">{currentRecord.creditCode}</span></div>
                   <div className="info-cell"><span className="info-label">法人经办人姓名</span><span className="info-value">{currentRecord.legalHandler}</span></div>
+                  <div className="info-cell"><span className="info-label">法人经办人电话</span><span className="info-value">{currentRecord.legalHandlerPhone || '-'}</span></div>
                   <div className="info-cell"><span className="info-label">创建时间</span><span className="info-value">{currentRecord.createTime}</span></div>
                   <div className="info-cell"><span className="info-label">备案状态</span><span className="info-value"><span className={'status-tag ' + getStatusClass(currentRecord.status)}>{currentRecord.status}</span></span></div>
-                  <div className="info-cell full-width"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.status === '已备案' ? currentRecord.filingTime : '-'}</span></div>
+                  <div className="info-cell"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.status === '已备案' ? currentRecord.filingTime : '-'}</span></div>
                 </div>
               </div>
 

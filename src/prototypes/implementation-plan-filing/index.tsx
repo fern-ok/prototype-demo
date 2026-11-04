@@ -23,6 +23,7 @@ interface PlanFiling {
   domain: string;
   implOrg: string;
   planFile: string;
+  legalHandlerPhone: string;
   minutesFile: string;
   attachFile: string;
   attachFile2: string;
@@ -53,6 +54,8 @@ interface AuditHistoryItem {
 
 interface PlanFormData {
   planFile: string;
+  legalHandler: string;
+  legalHandlerPhone: string;
   minutesFile: string;
   attachFile: string;
   attachFile2: string;
@@ -66,7 +69,9 @@ const AUTH_TYPE_DEFAULT = '分领域授权运营';
 const DOMAIN_DEFAULT = '卫生健康';
 const REGION_DEFAULT = '省本级';
 const IMPL_ORG_DEFAULT = '湖南省数据产业集团有限公司';
-const LEGAL_HANDLER_DEFAULT = '张伟';
+
+/** 法人经办人电话格式：11 位手机号 */
+const LEGAL_HANDLER_PHONE_REGEX = /^1[3-9]\d{9}$/;
 
 const planSeed: PlanFiling[] = [
   {
@@ -82,6 +87,7 @@ const planSeed: PlanFiling[] = [
     leaderFile: '分管领导批示-医疗健康.pdf',
     otherFile: '其他证明材料-医疗健康.pdf',
     legalHandler: '张文博',
+    legalHandlerPhone: '13907310021',
     createTime: '2026-05-18 10:05:57',
     status: '已备案',
     filingTime: '2026-05-20 15:30:10',
@@ -103,6 +109,7 @@ const planSeed: PlanFiling[] = [
     leaderFile: '分管领导批示-交通运输.pdf',
     otherFile: '其他证明材料-交通运输.pdf',
     legalHandler: '李建国',
+    legalHandlerPhone: '13907310022',
     createTime: '2026-06-01 09:30:22',
     status: '待省级确认',
     filingTime: '',
@@ -124,6 +131,7 @@ const planSeed: PlanFiling[] = [
     leaderFile: '分管领导批示-教育.pdf',
     otherFile: '其他证明材料-教育.pdf',
     legalHandler: '王思远',
+    legalHandlerPhone: '13907310023',
     createTime: '2026-06-05 14:20:15',
     status: '省级退回',
     filingTime: '2026-06-06 08:45:33',
@@ -146,6 +154,7 @@ const planSeed: PlanFiling[] = [
     leaderFile: '分管领导批示-文旅.pdf',
     otherFile: '其他证明材料-文旅.pdf',
     legalHandler: '孙佳怡',
+    legalHandlerPhone: '13907310024',
     createTime: '2026-06-10 11:15:28',
     status: '待提交',
     filingTime: '',
@@ -167,6 +176,7 @@ const planSeed: PlanFiling[] = [
     leaderFile: '分管领导批示-自然资源.pdf',
     otherFile: '其他证明材料-自然资源.pdf',
     legalHandler: '赵敏',
+    legalHandlerPhone: '13907310025',
     createTime: '2026-06-15 13:50:44',
     status: '已备案',
     filingTime: '2026-06-16 09:28:17',
@@ -188,6 +198,7 @@ const planSeed: PlanFiling[] = [
     leaderFile: '分管领导批示-株洲交通.pdf',
     otherFile: '其他证明材料-株洲交通.pdf',
     legalHandler: '周文涛',
+    legalHandlerPhone: '13907310026',
     createTime: '2026-07-02 16:41:41',
     status: '待省级确认',
     filingTime: '',
@@ -209,6 +220,7 @@ const planSeed: PlanFiling[] = [
     leaderFile: '分管领导批示-全民健康.pdf',
     otherFile: '其他证明材料-全民健康.pdf',
     legalHandler: '陈雨桐',
+    legalHandlerPhone: '13907310027',
     createTime: '2026-07-16 09:07:23',
     status: '已备案',
     filingTime: '2026-07-16 14:22:51',
@@ -247,6 +259,8 @@ const maskName = (name: string) => {
 
 const createEmptyForm = (): PlanFormData => ({
   planFile: '',
+  legalHandler: '',
+  legalHandlerPhone: '',
   minutesFile: '',
   attachFile: '',
   attachFile2: '',
@@ -396,6 +410,8 @@ const OriginalComponent = () => {
     } else if (record) {
       setFormData({
         planFile: record.planFile,
+        legalHandler: record.legalHandler,
+        legalHandlerPhone: record.legalHandlerPhone || '',
         minutesFile: record.minutesFile,
         attachFile: record.attachFile,
         attachFile2: record.attachFile2,
@@ -424,6 +440,12 @@ const OriginalComponent = () => {
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
+    if (!formData.legalHandler.trim()) errors.legalHandler = '请输入法人经办人姓名';
+    if (!formData.legalHandlerPhone.trim()) {
+      errors.legalHandlerPhone = '请输入法人经办人电话';
+    } else if (!LEGAL_HANDLER_PHONE_REGEX.test(formData.legalHandlerPhone.trim())) {
+      errors.legalHandlerPhone = '法人经办人电话格式不正确（应为 11 位手机号）';
+    }
     if (!formData.planFile.trim()) errors.planFile = '请上传实施方案';
     if (!formData.minutesFile.trim()) errors.minutesFile = '请上传会议纪要';
     if (!formData.attachFile.trim()) errors.attachFile = '请上传数据局联审意见';
@@ -448,7 +470,8 @@ const OriginalComponent = () => {
       attachFile2: formData.attachFile2,
       leaderFile: formData.leaderFile,
       otherFile: formData.otherFile,
-      legalHandler: LEGAL_HANDLER_DEFAULT,
+      legalHandler: formData.legalHandler.trim(),
+      legalHandlerPhone: formData.legalHandlerPhone.trim(),
       createTime: time,
       status: '待提交',
       filingTime: '',
@@ -470,6 +493,8 @@ const OriginalComponent = () => {
       ? {
           ...r,
           planFile: formData.planFile,
+          legalHandler: formData.legalHandler.trim(),
+          legalHandlerPhone: formData.legalHandlerPhone.trim(),
           minutesFile: formData.minutesFile,
           attachFile: formData.attachFile,
           attachFile2: formData.attachFile2,
@@ -491,6 +516,8 @@ const OriginalComponent = () => {
       ? {
           ...r,
           planFile: formData.planFile,
+          legalHandler: formData.legalHandler.trim(),
+          legalHandlerPhone: formData.legalHandlerPhone.trim(),
           minutesFile: formData.minutesFile,
           attachFile: formData.attachFile,
           attachFile2: formData.attachFile2,
@@ -585,6 +612,31 @@ const OriginalComponent = () => {
               />
             </label>
           </div>
+          <div className="form-grid">
+            <div className="form-item form-item-full">
+              <label><span className="required">*</span> 法人经办人姓名</label>
+              <input
+                type="text"
+                placeholder="请输入法人经办人姓名"
+                value={formData.legalHandler}
+                onChange={(e) => handleFormChange('legalHandler', e.target.value)}
+                className={formErrors.legalHandler ? 'has-error' : ''}
+              />
+              {formErrors.legalHandler && <span className="error-text">{formErrors.legalHandler}</span>}
+            </div>
+            <div className="form-item form-item-full">
+              <label><span className="required">*</span> 法人经办人电话</label>
+              <input
+                type="text"
+                placeholder="请输入法人经办人电话"
+                maxLength={11}
+                value={formData.legalHandlerPhone}
+                onChange={(e) => handleFormChange('legalHandlerPhone', e.target.value)}
+                className={formErrors.legalHandlerPhone ? 'has-error' : ''}
+              />
+              {formErrors.legalHandlerPhone && <span className="error-text">{formErrors.legalHandlerPhone}</span>}
+            </div>
+          </div>
           <div className="form-group-title">
             证明材料
             <span className="form-group-note">支持格式: .pdf 单个文件不能超过15MB</span>
@@ -662,9 +714,10 @@ const OriginalComponent = () => {
                   <div className="info-cell"><span className="info-label">实施机构</span><span className="info-value">{currentRecord.implOrg}</span></div>
                   <div className="info-cell"><span className="info-label">实施方案</span><span className="info-value">{renderFileLink(currentRecord.planFile)}</span></div>
                   <div className="info-cell"><span className="info-label">法人经办人姓名</span><span className="info-value">{currentRecord.legalHandler}</span></div>
+                  <div className="info-cell"><span className="info-label">法人经办人电话</span><span className="info-value">{currentRecord.legalHandlerPhone || '-'}</span></div>
                   <div className="info-cell"><span className="info-label">创建时间</span><span className="info-value">{currentRecord.createTime}</span></div>
                   <div className="info-cell"><span className="info-label">备案状态</span><span className="info-value"><span className={'status-tag ' + getStatusClass(currentRecord.status)}>{currentRecord.status}</span></span></div>
-                  <div className="info-cell full-width"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.status === '已备案' && currentRecord.filingTime ? currentRecord.filingTime : '-'}</span></div>
+                  <div className="info-cell"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.status === '已备案' && currentRecord.filingTime ? currentRecord.filingTime : '-'}</span></div>
                 </div>
               </div>
 
@@ -803,8 +856,8 @@ const OriginalComponent = () => {
               <thead>
                 <tr>
                   <th className="col-index">序号</th>
-                  <th>授权运营类型</th>
-                  <th>领域名称</th>
+                  <th className="col-auth-type">授权运营类型</th>
+                  <th className="col-domain">领域名称</th>
                   <th>实施方案</th>
                   <th>会议纪要</th>
                   <th className="col-time">创建时间</th>

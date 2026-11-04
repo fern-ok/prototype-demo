@@ -24,6 +24,7 @@ interface OperOrgFiling {
   operOrg: string;
   creditCode: string;
   legalHandler: string;
+  legalHandlerPhone: string;
   planName: string;
   planFileLink: string;
   noticeFile?: string;
@@ -56,6 +57,8 @@ interface OperOrgFormData {
   planName: string;
   operOrg: string;
   creditCode: string;
+  legalHandler: string;
+  legalHandlerPhone: string;
   noticeFile: string;
   reviewFile: string;
   attachment: string;
@@ -68,7 +71,8 @@ const STATUS_OPTIONS = ['待省级确认', '已备案', '省级退回'];
 const AUTH_TYPE_OPTIONS = ['分领域授权运营', '整体授权运营'];
 const DOMAIN_OPTIONS = ['医疗健康', '交通运输', '教育', '文化旅游', '自然资源', '整体'];
 const REGION_DEFAULT = '省本级';
-const LEGAL_HANDLER_DEFAULT = '刘洋';
+/** 法人经办人电话格式：11 位手机号 */
+const LEGAL_HANDLER_PHONE_REGEX = /^1[3-9]\d{9}$/;
 /** 已完成备案的实施方案（下拉枚举，禁用不可修改） */
 const PLAN_OPTIONS = [
   '长沙市医疗健康领域公共数据授权运营实施方案',
@@ -90,6 +94,7 @@ const filingSeed: OperOrgFiling[] = [
     operOrg: '长沙市医疗健康数据运营有限公司',
     creditCode: '91430100MA4C12345X',
     legalHandler: '刘洋',
+    legalHandlerPhone: '13707310031',
     planName: '长沙市医疗健康领域公共数据授权运营实施方案',
     planFileLink: '#',
     noticeFile: '长沙市医疗健康领域运营机构征集公告.pdf',
@@ -113,6 +118,7 @@ const filingSeed: OperOrgFiling[] = [
     operOrg: '湖南省智能交通数据运营集团有限公司',
     creditCode: '91430000MA4B87654X',
     legalHandler: '陈志强',
+    legalHandlerPhone: '13707310032',
     planName: '湖南省交通运输领域数据授权运营实施方案（已备案）',
     planFileLink: '#',
     noticeFile: '湖南省交通运输领域运营机构征集公告.pdf',
@@ -136,6 +142,7 @@ const filingSeed: OperOrgFiling[] = [
     operOrg: '长沙市岳麓区智慧教育数据运营发展有限公司',
     creditCode: '91430104MA4C56789X',
     legalHandler: '王小冉',
+    legalHandlerPhone: '13707310033',
     planName: '长沙市教育领域公共数据授权运营实施方案（已备案）',
     planFileLink: '#',
     noticeFile: '长沙市教育领域运营机构征集公告.pdf',
@@ -160,6 +167,7 @@ const filingSeed: OperOrgFiling[] = [
     operOrg: '岳阳市自然资源数据运营服务有限公司',
     creditCode: '91430600MA4C11223X',
     legalHandler: '赵敏',
+    legalHandlerPhone: '13707310034',
     planName: '岳阳市自然资源领域数据授权运营实施方案（已备案）',
     planFileLink: '#',
     noticeFile: '岳阳市自然资源领域运营机构征集公告.pdf',
@@ -183,6 +191,7 @@ const filingSeed: OperOrgFiling[] = [
     operOrg: '湖南文旅大数据运营有限公司',
     creditCode: '91430000MA4D99887X',
     legalHandler: '孙佳怡',
+    legalHandlerPhone: '13707310035',
     planName: '湖南省整体授权运营实施方案（已备案）',
     planFileLink: '#',
     noticeFile: '湖南省整体授权运营运营机构征集公告.pdf',
@@ -207,6 +216,7 @@ const filingSeed: OperOrgFiling[] = [
     operOrg: '株洲市轨道交通与智慧交通数据运营集团有限公司',
     creditCode: '91430200MA4E44556X',
     legalHandler: '周文涛',
+    legalHandlerPhone: '13707310036',
     planName: '株洲市交通运输领域公共数据授权运营实施方案（已备案）',
     planFileLink: '#',
     noticeFile: '株洲市交通运输领域运营机构征集公告.pdf',
@@ -230,6 +240,7 @@ const filingSeed: OperOrgFiling[] = [
     operOrg: '湖南省全民健康数据运营中心',
     creditCode: '91430000MA4F77889X',
     legalHandler: '陈雨桐',
+    legalHandlerPhone: '13707310037',
     planName: '长沙市医疗健康领域公共数据授权运营实施方案',
     planFileLink: '#',
     noticeFile: '湖南省医疗健康领域运营机构征集公告.pdf',
@@ -277,6 +288,8 @@ const createEmptyForm = (): OperOrgFormData => ({
   planName: PLAN_OPTIONS[0],
   operOrg: '',
   creditCode: '',
+  legalHandler: '',
+  legalHandlerPhone: '',
   noticeFile: '',
   reviewFile: '',
   attachment: '',
@@ -399,6 +412,8 @@ const OriginalComponent = () => {
       planName: record.planName,
       operOrg: record.operOrg,
       creditCode: record.creditCode,
+      legalHandler: record.legalHandler,
+      legalHandlerPhone: record.legalHandlerPhone || '',
       noticeFile: record.noticeFile || '',
       reviewFile: record.reviewFile || '',
       attachment: record.attachment || '',
@@ -430,6 +445,12 @@ const OriginalComponent = () => {
     } else if (!isValidCreditCode(formData.creditCode)) {
       errors.creditCode = '统一社会信用代码格式不正确（应为 18 位，由数字与大写字母组成）';
     }
+    if (!formData.legalHandler.trim()) errors.legalHandler = '请输入法人经办人姓名';
+    if (!formData.legalHandlerPhone.trim()) {
+      errors.legalHandlerPhone = '请输入法人经办人电话';
+    } else if (!LEGAL_HANDLER_PHONE_REGEX.test(formData.legalHandlerPhone.trim())) {
+      errors.legalHandlerPhone = '法人经办人电话格式不正确（应为 11 位手机号）';
+    }
     if (!formData.noticeFile.trim()) errors.noticeFile = '请上传征集公告';
     if (!formData.reviewFile.trim()) errors.reviewFile = '请上传专家评审意见';
     if (!formData.attachment.trim()) errors.attachment = '请上传公示证明';
@@ -453,7 +474,8 @@ const OriginalComponent = () => {
       attachment: formData.attachment.trim(),
       qualFile: formData.qualFile.trim(),
       otherFile: formData.otherFile.trim(),
-      legalHandler: LEGAL_HANDLER_DEFAULT,
+      legalHandler: formData.legalHandler.trim(),
+      legalHandlerPhone: formData.legalHandlerPhone.trim(),
       planName: formData.planName,
       planFileLink: '#',
       createTime: time,
@@ -473,7 +495,7 @@ const OriginalComponent = () => {
   const handleSubmitEdit = () => {
     if (!validateForm() || !currentRecord) return;
     setRecords(prev => prev.map(r => (r.id === currentRecord.id
-      ? { ...r, planName: formData.planName, operOrg: formData.operOrg.trim(), creditCode: formData.creditCode.trim().toUpperCase(), attachment: formData.attachment.trim(), noticeFile: formData.noticeFile.trim(), reviewFile: formData.reviewFile.trim(), qualFile: formData.qualFile.trim(), otherFile: formData.otherFile.trim(), remark: formData.remark.trim() || undefined, status: '待省级确认', filingTime: nowText() }
+      ? { ...r, planName: formData.planName, operOrg: formData.operOrg.trim(), creditCode: formData.creditCode.trim().toUpperCase(), legalHandler: formData.legalHandler.trim(), legalHandlerPhone: formData.legalHandlerPhone.trim(), attachment: formData.attachment.trim(), noticeFile: formData.noticeFile.trim(), reviewFile: formData.reviewFile.trim(), qualFile: formData.qualFile.trim(), otherFile: formData.otherFile.trim(), remark: formData.remark.trim() || undefined, status: '待省级确认', filingTime: nowText() }
       : r)));
     closeFormModals();
     setCurrentRecord(null);
@@ -549,6 +571,29 @@ const OriginalComponent = () => {
               />
               {formErrors.creditCode && <span className="error-text">{formErrors.creditCode}</span>}
             </div>
+            <div className="form-item form-item-full">
+              <label><span className="required">*</span> 法人经办人姓名</label>
+              <input
+                type="text"
+                placeholder="请输入法人经办人姓名"
+                value={formData.legalHandler}
+                onChange={(e) => handleFormChange('legalHandler', e.target.value)}
+                className={formErrors.legalHandler ? 'has-error' : ''}
+              />
+              {formErrors.legalHandler && <span className="error-text">{formErrors.legalHandler}</span>}
+            </div>
+            <div className="form-item form-item-full">
+              <label><span className="required">*</span> 法人经办人电话</label>
+              <input
+                type="text"
+                placeholder="请输入法人经办人电话"
+                maxLength={11}
+                value={formData.legalHandlerPhone}
+                onChange={(e) => handleFormChange('legalHandlerPhone', e.target.value)}
+                className={formErrors.legalHandlerPhone ? 'has-error' : ''}
+              />
+              {formErrors.legalHandlerPhone && <span className="error-text">{formErrors.legalHandlerPhone}</span>}
+            </div>
           </div>
           <div className="form-group-title">
             证明材料
@@ -622,9 +667,10 @@ const OriginalComponent = () => {
                   <div className="info-cell"><span className="info-label">运营机构</span><span className="info-value">{currentRecord.operOrg}</span></div>
                   <div className="info-cell"><span className="info-label">统一社会信用代码</span><span className="info-value">{currentRecord.creditCode}</span></div>
                   <div className="info-cell"><span className="info-label">法人经办人姓名</span><span className="info-value">{currentRecord.legalHandler}</span></div>
+                  <div className="info-cell"><span className="info-label">法人经办人电话</span><span className="info-value">{currentRecord.legalHandlerPhone || '-'}</span></div>
                   <div className="info-cell"><span className="info-label">创建时间</span><span className="info-value">{currentRecord.createTime}</span></div>
                   <div className="info-cell"><span className="info-label">备案状态</span><span className="info-value"><span className={'status-tag ' + getStatusClass(currentRecord.status)}>{currentRecord.status}</span></span></div>
-                  <div className="info-cell"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.status === '已备案' ? currentRecord.filingTime : '-'}</span></div>
+                  <div className="info-cell full-width"><span className="info-label">备案时间</span><span className="info-value">{currentRecord.status === '已备案' ? currentRecord.filingTime : '-'}</span></div>
                 </div>
               </div>
 

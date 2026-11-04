@@ -30,14 +30,17 @@
   color: var(--dmw-text);
 }
 
-/* ── 数据范围 ── */
+/* ── 数据范围（页面顶部通栏，内容居左） ── */
 .dmw-scope-bar {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 8px;
-  min-height: 52px;
-  padding: 10px 18px;
+  width: 100%;
+  min-height: 44px;
+  margin: 0 0 16px;
+  padding: 8px 16px;
   border: 1px solid var(--dmw-line);
   border-radius: 8px;
   background: var(--dmw-card);
@@ -46,6 +49,31 @@
 
 .dmw-scope-label { color: #46566e; font-size: 14px; font-weight: 600; }
 .dmw-scope-prefix, .dmw-scope-suffix { color: var(--dmw-muted); font-size: 13px; }
+/* 「时间范围：」文字按要求不展示，代码保留 */
+.dmw-scope-time-label { display: none; }
+
+/* 时间范围：快捷周期下拉 + 起止日期区间（与地域/领域下拉同风格） */
+/* 原分组分隔线随文字一并隐藏，代码保留 */
+.dmw-scope-divider { display: none; width: 1px; height: 18px; margin: 0 4px; background: var(--dmw-line); }
+.dmw-scope-date-range { display: inline-flex; align-items: center; gap: 8px; }
+.dmw-scope-date {
+  width: 134px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid #cfe0f5;
+  border-radius: 5px;
+  background: #f3f8ff;
+  color: var(--dmw-blue);
+  color-scheme: light;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dmw-scope-date:hover { border-color: #9fc0f7; }
+.dmw-scope-date:focus { outline: none; border-color: var(--dmw-blue); box-shadow: 0 0 0 2px rgba(22, 119, 255, .12); }
+.dmw-scope-date::-webkit-calendar-picker-indicator { opacity: .55; cursor: pointer; }
+.dmw-scope-date-sep { color: var(--dmw-muted); font-size: 13px; }
 
 .dmw-scope-select { position: relative; display: inline-flex; align-items: center; gap: 4px; }
 
@@ -174,15 +202,22 @@
 .dmw-stat-value { display: flex; align-items: baseline; gap: 3px; }
 .dmw-stat-value strong { color: #17233d; font-size: 22px; line-height: 1; font-weight: 700; }
 .dmw-stat-value em { color: var(--dmw-muted); font-size: 11px; font-style: normal; }
+/* 机构数据数字：可点击跳转机构监管页对应角色 Tab，外观与普通数字一致 */
+.dmw-stat-value-link { text-decoration: none; cursor: pointer; border-radius: 2px; }
+.dmw-stat-value-link:hover strong,
+.dmw-stat-value-link:hover em { color: var(--dmw-blue); }
+.dmw-stat-value-link:focus-visible { outline: 2px solid var(--dmw-blue); outline-offset: 2px; }
 
-/* ── 2×2 两栏布局（左宽右窄） ── */
+/* ── 2×2 两栏布局（左宽右窄；两栏等高，末尾面板底边对齐） ── */
 .dmw-grid {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 .dmw-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+/* 两栏各自末尾面板撑满剩余高度：右栏「地市推进排行」底边与左栏「授权业务漏斗」底边对齐 */
+.dmw-funnel-panel, .dmw-rank-panel { flex: 1; }
 
 /* ── 授权业务漏斗（数据资源在左、数据产品在右） ── */
 .dmw-funnel-wrap {
@@ -203,6 +238,8 @@
 .dmw-funnel-body { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .dmw-funnel-stage {
   min-height: 46px;
+  /* 兜底：列宽较窄时也不压缩阶段名称、数量、单位与占比 */
+  min-width: 200px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -216,7 +253,36 @@
 .dmw-funnel-stage-value { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; }
 .dmw-funnel-stage-value em { font-style: normal; font-size: 11px; opacity: .9; font-weight: 600; }
 .dmw-funnel-stage-value i { font-style: normal; font-size: 11px; opacity: .85; padding: 1px 6px; border-radius: 999px; background: rgba(255, 255, 255, .22); }
-.dmw-funnel-connector { display: grid; place-items: center; height: 14px; }
+/* 阶段间连接行：箭头与流失量合成一个胶囊，整体居中 */
+.dmw-funnel-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 18px;
+}
+.dmw-funnel-connector-arrow { display: inline-flex; align-items: center; flex: 0 0 auto; }
+.dmw-funnel-loss {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border: 1px solid #ffd0cb;
+  border-radius: 999px;
+  background: #fff1f0;
+  color: #cf3b32;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.5;
+  box-shadow: 0 1px 2px rgba(207, 59, 50, .08);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.dmw-funnel-loss:hover { background: #ffe4e0; border-color: #f3a39b; box-shadow: 0 2px 6px rgba(207, 59, 50, .16); }
+.dmw-funnel-loss:focus-visible { outline: 2px solid #cf3b32; outline-offset: 2px; }
+.dmw-funnel-loss em { font-style: normal; font-weight: 400; opacity: .85; }
 
 /* ── 待办表格 ── */
 .dmw-todo-panel .dmw-panel-head-row { margin-bottom: 8px; }
@@ -305,41 +371,125 @@
 .dmw-page-input { width: 36px; padding: 0 4px; text-align: center; }
 .dmw-jump-to { color: #5a6b82; font-size: 12px; }
 
-/* ── 快捷入口（与统计项一致的卡片风格：白底、黑字、细边框） ── */
+/* ── 快捷入口（紧凑条：图标与文字同行、缩小占区，为下方排行榜留空间） ── */
+.dmw-quick-panel { padding: 12px 16px 14px; }
+.dmw-quick-panel .dmw-panel-title { font-size: 15px; }
 .dmw-quick-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 10px;
 }
 .dmw-quick-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 8px;
-  padding: 10px 6px;
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: 34px;
+  padding: 5px 7px;
   background: #fff;
   border: 1px solid var(--dmw-line);
-  border-radius: 8px;
+  border-radius: 6px;
   text-decoration: none;
   transition: border-color .15s ease, background .15s ease;
 }
 .dmw-quick-item:hover { border-color: #c9dcf7; background: #fafcff; }
 .dmw-quick-icon {
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: 6px;
 }
+.dmw-quick-icon svg { width: 14px; height: 14px; }
 .dmw-quick-icon.blue { color: var(--dmw-blue); background: #e9f3ff; }
 .dmw-quick-icon.violet { color: var(--dmw-violet); background: #f1edff; }
 .dmw-quick-icon.teal { color: var(--dmw-teal); background: #e6faf6; }
 .dmw-quick-icon.green { color: #16a34a; background: #e8f8ee; }
 .dmw-quick-icon.orange { color: #d97706; background: #fef3e2; }
 .dmw-quick-icon.indigo { color: var(--dmw-indigo); background: #eef1ff; }
-.dmw-quick-label { color: #17233d; font-size: 11px; line-height: 1.3; text-align: center; white-space: nowrap; }
+.dmw-quick-label { min-width: 0; color: #17233d; font-size: 11px; line-height: 1.25; text-align: left; white-space: normal; }
+
+/* ── 地市推进排行（按交易额） ── */
+.dmw-rank-panel { padding: 16px 18px 18px; }
+.dmw-rank-head { display: flex; align-items: center; gap: 8px; }
+.dmw-rank-new {
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #e5443e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.dmw-rank-note { color: var(--dmw-muted); font-size: 13px; white-space: nowrap; }
+.dmw-rank-table-wrap { margin-top: 14px; overflow-x: auto; }
+.dmw-rank-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
+.dmw-rank-table th {
+  padding: 9px 6px;
+  background: #f5f8fd;
+  color: #5a6b82;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 1px solid var(--dmw-line);
+  white-space: nowrap;
+}
+/* 表头排序：资源登记 / 产品上架 / 交易额均可点击切换倒序与正序 */
+.dmw-rank-table th.dmw-rank-sortable { padding: 0; }
+.dmw-rank-sort-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  padding: 9px 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease;
+}
+.dmw-rank-sort-btn:hover { background: #eaf2ff; color: var(--dmw-blue); }
+.dmw-rank-sort-btn:focus-visible { outline: 2px solid var(--dmw-blue); outline-offset: -2px; }
+.dmw-rank-sort-btn.active { color: var(--dmw-blue); }
+.dmw-rank-sort-ind { font-size: 10px; line-height: 1; color: #9aa8bb; }
+.dmw-rank-sort-btn.active .dmw-rank-sort-ind { color: var(--dmw-blue); font-weight: 700; }
+.dmw-rank-table td {
+  padding: 7px 6px;
+  color: #334155;
+  text-align: center;
+  border-bottom: 1px solid #f1f4f8;
+  white-space: nowrap;
+}
+.dmw-rank-table tbody tr:last-child td { border-bottom: 0; }
+.dmw-rank-table tbody tr:hover { background: #fafcff; }
+.dmw-rank-table th:nth-child(1), .dmw-rank-table td:nth-child(1) { width: 52px; }
+.dmw-rank-table th:nth-child(2), .dmw-rank-table td:nth-child(2) { width: 96px; }
+.dmw-rank-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.dmw-rank-badge.first { background: #c8362f; }
+.dmw-rank-badge.second { background: #e8871e; }
+.dmw-rank-badge.third { background: #eec33b; }
+.dmw-rank-badge.rest, .dmw-rank-badge.more { background: #b6c0cd; }
+.dmw-rank-badge.more { letter-spacing: 1px; }
+.dmw-rank-city { color: #1a2943; font-weight: 600; }
+.dmw-rank-amount { font-variant-numeric: tabular-nums; }
 
 /* ── 响应式 ── */
 @media (max-width: 1280px) {

@@ -935,3 +935,37 @@
   color: #179b55;
   flex: 0 0 auto;
 }
+
+/* ==================== 列表列宽分配（2026-11-02） ====================
+   table-layout: fixed 下为各列分配固定宽度：
+   时间 / 状态 / 操作列加宽，保证操作按钮（查看 / 提交备案 / 编辑 / 变更 / 查看存证）
+   与完整时间串不截断；实施方案 / 会议纪要两列均分剩余宽度，
+   超长文件名省略号展示（td 自带 title 提示）。 */
+
+.data-table {
+  min-width: 1080px;
+}
+
+.data-table .col-index {
+  width: 64px;
+}
+
+.data-table .col-auth-type {
+  width: 130px;
+}
+
+.data-table .col-domain {
+  width: 96px;
+}
+
+.data-table .col-time {
+  width: 175px;
+}
+
+.data-table .col-status {
+  width: 110px;
+}
+
+.data-table .col-action {
+  width: 180px;
+}

@@ -39,6 +39,36 @@ import './style.css';
 
 const REGION_OPTIONS = ['全省', '省本级', '地市', '长沙市', '株洲市'] as const;
 const DOMAIN_OPTIONS = ['全部', '整体', '医疗健康'] as const;
+const TIME_OPTIONS = ['全部时间', '近7天', '近30天', '近90天', '本年', '自定义'] as const;
+// 「近90天」按需求不在下拉中展示，原枚举值与映射保留
+const VISIBLE_TIME_OPTIONS = TIME_OPTIONS.filter(opt => opt !== '近90天');
+
+const PRESET_DAYS: Record<string, number> = { '近7天': 7, '近30天': 30, '近90天': 90 };
+
+const formatDate = (date: Date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+const TODAY = new Date();
+const TODAY_TEXT = formatDate(TODAY);
+const YEAR_START_TEXT = `${TODAY.getFullYear()}-01-01`;
+
+/** 快捷周期 → 起止日期；「全部时间」清空区间，「自定义」保留用户已选区间 */
+const resolveTimeRange = (preset: string): { start: string; end: string } | null => {
+  if (preset === '自定义') return null;
+  if (preset === '全部时间') return { start: '', end: '' };
+  const end = new Date(TODAY);
+  const start = new Date(TODAY);
+  if (preset === '本年') {
+    start.setMonth(0, 1);
+  } else {
+    start.setDate(start.getDate() - ((PRESET_DAYS[preset] ?? 30) - 1));
+  }
+  return { start: formatDate(start), end: formatDate(end) };
+};
 
 const ScopeSelect = ({ label, value, options, onChange }: { label: string; value: string; options: readonly string[]; onChange: (v: string) => void }) => {
   const [open, setOpen] = useState(false);
@@ -90,6 +120,8 @@ interface StatItem {
   value: string;
   unit: string;
   tone: StatTone;
+  /** 仅机构数据组：点击数字跳转机构监管页对应角色 Tab */
+  href?: string;
 }
 
 interface StatGroup {
@@ -97,15 +129,18 @@ interface StatGroup {
   items: StatItem[];
 }
 
+/** 机构监管页角色 Tab 直达链接（roleTab 由机构监管页读取并自动定位） */
+const institutionTabHref = (tab: string) => `/prototypes/institution-supervision.html?roleTab=${encodeURIComponent(tab)}`;
+
 const statGroups: StatGroup[] = [
   {
     title: '机构数据',
     items: [
-      { icon: <Building2 size={22} />, label: '数据管理部门', value: '5', unit: '家', tone: 'blue' },
-      { icon: <Landmark size={22} />, label: '行业主管部门', value: '5', unit: '家', tone: 'violet' },
-      { icon: <Factory size={22} />, label: '实施机构', value: '8', unit: '家', tone: 'teal' },
-      { icon: <Store size={22} />, label: '运营机构', value: '7', unit: '家', tone: 'green' },
-      { icon: <Briefcase size={22} />, label: '其他经营主体', value: '6', unit: '家', tone: 'orange' },
+      { icon: <Building2 size={22} />, label: '数据管理部门', value: '5', unit: '家', tone: 'blue', href: institutionTabHref('数据管理部门') },
+      { icon: <Landmark size={22} />, label: '行业主管部门', value: '5', unit: '家', tone: 'violet', href: institutionTabHref('行业主管部门') },
+      { icon: <Factory size={22} />, label: '实施机构', value: '8', unit: '家', tone: 'teal', href: institutionTabHref('实施机构') },
+      { icon: <Store size={22} />, label: '运营机构', value: '7', unit: '家', tone: 'green', href: institutionTabHref('运营机构') },
+      { icon: <Briefcase size={22} />, label: '其他经营主体', value: '6', unit: '家', tone: 'orange', href: institutionTabHref('其他经营主体') },
     ],
   },
   {
@@ -153,35 +188,54 @@ const productFunnel: FunnelStage[] = [
   { label: '产品授权/交易', value: 76, unit: '笔' },
 ];
 
-const Funnel = ({ title, stages }: { title: string; stages: FunnelStage[] }) => {
+const Funnel = ({ title, stages, lossHref, lossTarget }: {
+  title: string;
+  stages: FunnelStage[];
+  lossHref: string;
+  lossTarget: string;
+}) => {
   const maxValue = Math.max(...stages.map(s => s.value));
-  // 宽度随阶段序号递减，呈现漏斗收窄效果
-  const widthFor = (index: number) => 100 - index * (index === 0 ? 0 : Math.round(74 / (stages.length - 1)));
+  // 宽度随阶段序号递减，呈现漏斗收窄效果；底部保留 68% 下限，保证末级节点信息完整展示
+  const widthFor = (index: number) => 100 - index * (32 / (stages.length - 1));
 
   return (
     <div className="dmw-funnel">
       <div className="dmw-funnel-title">{title}</div>
       <div className="dmw-funnel-body">
-        {stages.map((stage, index) => (
-          <React.Fragment key={stage.label}>
-            <div
-              className="dmw-funnel-stage"
-              style={{ width: `${widthFor(index)}%`, background: `linear-gradient(90deg, var(--dmw-funnel-${index % 2 ? 'b' : 'a'}), var(--dmw-funnel-${index % 2 ? 'a' : 'b'}))` }}
-            >
-              <span className="dmw-funnel-stage-label">{stage.label}</span>
-              <span className="dmw-funnel-stage-value">
-                {stage.value.toLocaleString()}
-                <em>{stage.unit}</em>
-                <i>{Math.round((stage.value / maxValue) * 100)}%</i>
-              </span>
-            </div>
-            {index < stages.length - 1 && (
-              <span className="dmw-funnel-connector" aria-hidden="true">
-                <svg viewBox="0 0 20 12" width="20" height="12"><path d="M2 2l8 8 8-8" fill="none" stroke="#aeb9c9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              </span>
-            )}
-          </React.Fragment>
-        ))}
+        {stages.map((stage, index) => {
+          const loss = index < stages.length - 1 ? stages[index].value - stages[index + 1].value : 0;
+          return (
+            <React.Fragment key={stage.label}>
+              <div
+                className="dmw-funnel-stage"
+                style={{ width: `${widthFor(index)}%`, background: `linear-gradient(90deg, var(--dmw-funnel-${index % 2 ? 'b' : 'a'}), var(--dmw-funnel-${index % 2 ? 'a' : 'b'}))` }}
+              >
+                <span className="dmw-funnel-stage-label">{stage.label}</span>
+                <span className="dmw-funnel-stage-value">
+                  {stage.value.toLocaleString()}
+                  <em>{stage.unit}</em>
+                  <i>{Math.round((stage.value / maxValue) * 100)}%</i>
+                </span>
+              </div>
+              {index < stages.length - 1 && (
+                <div className="dmw-funnel-connector">
+                  {/* 箭头与流失量合成一个整体，居中显示；点击跳转对应监管/产品库页面 */}
+                  <a
+                    className="dmw-funnel-loss"
+                    href={lossHref}
+                    title={`流失 ${loss} ${stages[index].unit}，点击查看${lossTarget}`}
+                  >
+                    <span className="dmw-funnel-connector-arrow" aria-hidden="true">
+                      <svg viewBox="0 0 20 12" width="14" height="10"><path d="M2 2l8 8 8-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </span>
+                    流失 {loss}
+                    <em>{stages[index].unit}</em>
+                  </a>
+                </div>
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
     </div>
   );
@@ -219,11 +273,88 @@ const quickEntries: Array<{ icon: ReactNode; label: string; tone: StatTone; href
   { icon: <ShoppingCart size={20} />, label: '数据产品交易', tone: 'indigo', href: '/prototypes/product-subscription-supervision.html' },
 ];
 
+/* ───────────────────────── 地市推进排行 ───────────────────────── */
+
+interface CityRankRow {
+  rank: string;
+  city: string;
+  resource: string;
+  product: string;
+  amount: string;
+  /** 排名徽章配色：前三名高亮，其余灰色，最后一行为汇总省略行 */
+  tone: 'first' | 'second' | 'third' | 'rest' | 'more';
+}
+
+/**
+ * 展示前 9 名地市 + 「其他5市州」汇总行（按交易额降序）。
+ * 合计与工作台统计口径一致：资源登记 246 个、产品上架 89 个、交易额 10111 万（1.0111 亿元）。
+ */
+const cityRankRows: CityRankRow[] = [
+  { rank: '1', city: '长沙', resource: '68', product: '24', amount: '4200', tone: 'first' },
+  { rank: '2', city: '株洲', resource: '42', product: '15', amount: '2100', tone: 'second' },
+  { rank: '3', city: '岳阳', resource: '31', product: '10', amount: '1200', tone: 'third' },
+  { rank: '4', city: '常德', resource: '25', product: '8', amount: '800', tone: 'rest' },
+  { rank: '5', city: '益阳', resource: '18', product: '5', amount: '400', tone: 'rest' },
+  { rank: '6', city: '湘潭', resource: '16', product: '7', amount: '300', tone: 'rest' },
+  { rank: '7', city: '衡阳', resource: '14', product: '6', amount: '260', tone: 'rest' },
+  { rank: '8', city: '郴州', resource: '12', product: '5', amount: '220', tone: 'rest' },
+  { rank: '9', city: '邵阳', resource: '10', product: '5', amount: '180', tone: 'rest' },
+  { rank: '···', city: '其他5市州', resource: '10', product: '4', amount: '451', tone: 'more' },
+];
+
+/** 可排序的数值列：点击表头切换排序字段，再次点击切换倒序 / 正序 */
+type RankSortKey = 'resource' | 'product' | 'amount';
+type RankSortDir = 'desc' | 'asc';
+
+const RANK_SORT_COLUMNS: Array<{ key: RankSortKey; head: string; label: string }> = [
+  { key: 'resource', head: '资源登记', label: '资源登记' },
+  { key: 'product', head: '产品上架', label: '产品上架' },
+  { key: 'amount', head: '交易额(万)', label: '交易额' },
+];
+
 /* ───────────────────────── 主体 ───────────────────────── */
 
 const OriginalComponent = () => {
   const [region, setRegion] = useState<string>('全省');
   const [domain, setDomain] = useState<string>('全部');
+
+  /* 时间范围：快捷周期与起止日期联动 */
+  const [timePreset, setTimePreset] = useState<string>('本年');
+  const [timeStart, setTimeStart] = useState<string>(YEAR_START_TEXT);
+  const [timeEnd, setTimeEnd] = useState<string>(TODAY_TEXT);
+
+  const handleTimePreset = (v: string) => {
+    setTimePreset(v);
+    const range = resolveTimeRange(v);
+    if (range) { setTimeStart(range.start); setTimeEnd(range.end); }
+  };
+  const handleTimeStart = (v: string) => {
+    setTimeStart(v);
+    setTimePreset('自定义');
+    if (v && timeEnd && v > timeEnd) setTimeEnd(v);
+  };
+  const handleTimeEnd = (v: string) => {
+    setTimeEnd(v);
+    setTimePreset('自定义');
+    if (v && timeStart && v < timeStart) setTimeStart(v);
+  };
+
+  /* 地市推进排行：三列均可排序，默认按交易额倒序（数量大的在前） */
+  const [rankSort, setRankSort] = useState<{ key: RankSortKey; dir: RankSortDir }>({ key: 'amount', dir: 'desc' });
+  const handleRankSort = (key: RankSortKey) => {
+    setRankSort(prev => prev.key === key
+      ? { key, dir: prev.dir === 'desc' ? 'asc' : 'desc' }
+      : { key, dir: 'desc' });
+  };
+  /** 「其他5市州」为汇总行，固定置于末尾、不参与名次排序 */
+  const sortedRankRows = useMemo(() => {
+    const detail = cityRankRows.filter(row => row.tone !== 'more');
+    const summary = cityRankRows.filter(row => row.tone === 'more');
+    const factor = rankSort.dir === 'desc' ? -1 : 1;
+    const sorted = [...detail].sort((a, b) => (Number(a[rankSort.key]) - Number(b[rankSort.key])) * factor);
+    return [...sorted, ...summary];
+  }, [rankSort]);
+  const rankSortLabel = RANK_SORT_COLUMNS.find(col => col.key === rankSort.key)?.label ?? '交易额';
 
   /* 待办分页 */
   const [todoPage, setTodoPage] = useState(1);
@@ -244,6 +375,44 @@ const OriginalComponent = () => {
       changeLogContent={changeLogContent}
     >
       <div className="dmw-page">
+        {/* 数据范围：置于页面顶部，整行内容居左显示 */}
+        <section className="dmw-scope-bar" aria-label="数据范围">
+          <span className="dmw-scope-label">数据范围：</span>
+          <span className="dmw-scope-prefix">您正在查看</span>
+          <ScopeSelect label="" value={region} options={REGION_OPTIONS} onChange={setRegion} />
+          <ScopeSelect label="" value={domain} options={DOMAIN_OPTIONS} onChange={setDomain} />
+          <span className="dmw-scope-suffix">领域</span>
+          {/* 时间筛选插入「领域」与「的」之间；「时间范围：」文字与分隔线按要求隐藏，代码保留 */}
+          <span className="dmw-scope-divider" aria-hidden="true" />
+          <span className="dmw-scope-label dmw-scope-time-label">时间范围：</span>
+          <ScopeSelect label="" value={timePreset} options={VISIBLE_TIME_OPTIONS} onChange={handleTimePreset} />
+          {/* 仅「自定义」展示起止日期区间，其余枚举值下不出现 */}
+          {timePreset === '自定义' && (
+            <div className="dmw-scope-date-range" aria-label="时间范围">
+              <input
+                type="date"
+                className="dmw-scope-date"
+                value={timeStart}
+                max={timeEnd || undefined}
+                onChange={e => handleTimeStart(e.target.value)}
+                aria-label="开始日期"
+                title="开始日期"
+              />
+              <span className="dmw-scope-date-sep">至</span>
+              <input
+                type="date"
+                className="dmw-scope-date"
+                value={timeEnd}
+                min={timeStart || undefined}
+                onChange={e => handleTimeEnd(e.target.value)}
+                aria-label="结束日期"
+                title="结束日期"
+              />
+            </div>
+          )}
+          <span className="dmw-scope-suffix">的数据</span>
+        </section>
+
         {/* 2×2 布局：左上概览 / 右上待办 / 左下方漏斗 / 右下方快捷入口 */}
         <div className="dmw-grid">
           <div className="dmw-col dmw-col-left">
@@ -259,10 +428,21 @@ const OriginalComponent = () => {
                           <div className={'dmw-stat-icon ' + item.tone}>{item.icon}</div>
                           <div className="dmw-stat-body">
                             <span className="dmw-stat-label">{item.label}</span>
-                            <span className="dmw-stat-value">
-                              <strong>{item.value}</strong>
-                              <em>{item.unit}</em>
-                            </span>
+                            {item.href ? (
+                              <a
+                                className="dmw-stat-value dmw-stat-value-link"
+                                href={item.href}
+                                title={`点击查看${item.label}列表`}
+                              >
+                                <strong>{item.value}</strong>
+                                <em>{item.unit}</em>
+                              </a>
+                            ) : (
+                              <span className="dmw-stat-value">
+                                <strong>{item.value}</strong>
+                                <em>{item.unit}</em>
+                              </span>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -272,27 +452,41 @@ const OriginalComponent = () => {
               </div>
             </section>
 
+            {/* 快捷入口（紧凑排布，置于统计项与授权业务漏斗之间） */}
+            <section className="dmw-panel dmw-quick-panel" aria-labelledby="dmw-quick-title">
+              <h2 className="dmw-panel-title" id="dmw-quick-title">快捷入口</h2>
+              <div className="dmw-quick-grid">
+                {quickEntries.map(item => (
+                  <a className="dmw-quick-item" key={item.label} href={item.href}>
+                    <span className={'dmw-quick-icon ' + item.tone}>{item.icon}</span>
+                    <span className="dmw-quick-label">{item.label}</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+
             {/* 授权业务漏斗（数据资源在左，数据产品在右） */}
             <section className="dmw-panel dmw-funnel-panel" aria-labelledby="dmw-funnel-title">
               <h2 className="dmw-panel-title" id="dmw-funnel-title">授权业务漏斗</h2>
               <div className="dmw-funnel-wrap">
-                <Funnel title="数据资源" stages={resourceFunnel} />
-                <Funnel title="数据产品" stages={productFunnel} />
+                <Funnel
+                  title="数据资源"
+                  stages={resourceFunnel}
+                  lossHref="/prototypes/pending-data-resource-catalog.html"
+                  lossTarget="数据资源编目监管"
+                />
+                <Funnel
+                  title="数据产品"
+                  stages={productFunnel}
+                  lossHref="/prototypes/product-lifecycle.html"
+                  lossTarget="产品库"
+                />
               </div>
             </section>
 
           </div>
 
           <div className="dmw-col dmw-col-right">
-            {/* 数据范围 */}
-            <section className="dmw-scope-bar" aria-label="数据范围">
-              <span className="dmw-scope-label">数据范围：</span>
-              <span className="dmw-scope-prefix">您正在查看</span>
-              <ScopeSelect label="" value={region} options={REGION_OPTIONS} onChange={setRegion} />
-              <ScopeSelect label="" value={domain} options={DOMAIN_OPTIONS} onChange={setDomain} />
-              <span className="dmw-scope-suffix">领域的数据</span>
-            </section>
-
             {/* 待办 */}
             <section className="dmw-panel dmw-todo-panel" aria-labelledby="dmw-todo-title">
               <div className="dmw-panel-head-row">
@@ -369,16 +563,60 @@ const OriginalComponent = () => {
               </div>
             </section>
 
-            {/* 快捷入口 */}
-            <section className="dmw-panel dmw-quick-panel" aria-labelledby="dmw-quick-title">
-              <h2 className="dmw-panel-title" id="dmw-quick-title">快捷入口</h2>
-              <div className="dmw-quick-grid">
-                {quickEntries.map(item => (
-                  <a className="dmw-quick-item" key={item.label} href={item.href}>
-                    <span className={'dmw-quick-icon ' + item.tone}>{item.icon}</span>
-                    <span className="dmw-quick-label">{item.label}</span>
-                  </a>
-                ))}
+            {/* 地市推进排行（按交易额） */}
+            <section className="dmw-panel dmw-rank-panel" aria-labelledby="dmw-rank-title">
+              <div className="dmw-rank-head">
+                <h2 className="dmw-panel-title" id="dmw-rank-title">地市推进排行</h2>
+                {/* 排序规则说明：默认按交易额降序，表头点击可切换字段与升/降序 */}
+                <span className="dmw-rank-note">（默认按照交易额降序排列）</span>
+              </div>
+              <div className="dmw-rank-table-wrap">
+                <table className="dmw-rank-table">
+                  <thead>
+                    <tr>
+                      <th>排名</th>
+                      <th>地市</th>
+                      {RANK_SORT_COLUMNS.map(col => {
+                        const active = rankSort.key === col.key;
+                        const nextDir: RankSortDir = active && rankSort.dir === 'asc' ? 'desc' : active ? 'asc' : 'desc';
+                        return (
+                          <th
+                            key={col.key}
+                            className="dmw-rank-sortable"
+                            aria-sort={active ? (rankSort.dir === 'desc' ? 'descending' : 'ascending') : 'none'}
+                          >
+                            <button
+                              type="button"
+                              className={'dmw-rank-sort-btn' + (active ? ' active' : '')}
+                              onClick={() => handleRankSort(col.key)}
+                              title={`点击按${col.label}${nextDir === 'desc' ? '倒序' : '正序'}排列`}
+                            >
+                              {col.head}
+                              <span className="dmw-rank-sort-ind" aria-hidden="true">
+                                {active ? (rankSort.dir === 'desc' ? '↓' : '↑') : '↕'}
+                              </span>
+                            </button>
+                          </th>
+                        );
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedRankRows.map((row, index) => {
+                      const isSummary = row.tone === 'more';
+                      const badgeTone = isSummary ? 'more' : index === 0 ? 'first' : index === 1 ? 'second' : index === 2 ? 'third' : 'rest';
+                      return (
+                        <tr key={row.city}>
+                          <td><span className={'dmw-rank-badge ' + badgeTone}>{isSummary ? '···' : index + 1}</span></td>
+                          <td className="dmw-rank-city">{row.city}</td>
+                          <td>{row.resource}</td>
+                          <td>{row.product}</td>
+                          <td className="dmw-rank-amount">{row.amount}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </section>
           </div>
